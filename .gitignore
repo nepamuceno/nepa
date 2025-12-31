@@ -1,0 +1,36 @@
+# --- Secretos y Seguridad (MANTENER PROTEGIDO) ---
+.env
+
+# --- Archivos que SÍ queremos en el repo ---
+# Se eliminó history/ para que se suba el archivo de comandos
+# Se eliminó gist.txt para tener el respaldo completo
+
+# --- Scripts de herramientas ---
+.env.*
+
+# --- Binarios y Ejecutables ---
+dist/
+bin/
+nepa
+nepa_lib
+*.exe
+*.dll
+*.so
+*.dylib
+
+# --- Dependencias de Go ---
+vendor/
+
+# --- Archivos Temporales y Logs ---
+*.log
+*.tmp
+*.nepa.tmp
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- IDEs y Editores ---
+.vscode/
+.idea/

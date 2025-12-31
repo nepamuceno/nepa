@@ -1,0 +1,88 @@
+// =========================================================
+// TEST DE ESTRÉS INTEGRAL: SDK MATEMÁTICAS NEPA
+// =========================================================
+
+imprime("--- INICIANDO DIAGNÓSTICO DEL SISTEMA ---")
+
+// 1. TEST DEL SISTEMA DE AUTO-AYUDA
+imprime("\n[1] Verificando Sistema de Ayuda...")
+imprime(ayuda("vol_cono"))
+imprime(ayuda("proyectil_pos"))
+imprime(ayuda("es_primo"))
+
+// 2. TEST DE CONSTANTES UNIVERSALES
+imprime("\n[2] Validando Constantes...")
+imprime("PI: " + pi)
+imprime("E: " + e)
+imprime("Gravedad: " + gravedad)
+imprime("PHI: " + phi)
+imprime("Velocidad de la Luz: " + luz)
+
+// 3. TEST DE GEOMETRÍA 3D (VOLÚMENES)
+imprime("\n[3] Calculando Volúmenes Complejos...")
+radio = 5.5
+altura = 12.0
+v_esfera = vol_esfera(radio)
+v_cono = vol_cono(radio, altura)
+v_cil = vol_cilindro(radio, altura)
+
+imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
+imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
+imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+
+// 4. TEST DE TEORÍA DE NÚMEROS (BÚSQUEDA DE PRIMOS)
+imprime("\n[4] Stress de Teoría de Números (Buscando Primos hasta 50)...")
+n = 1
+mientras n <= 50 {
+    si es_primo(n) {
+        imprime("Encontrado primo: " + n)
+    }
+    n = n + 1
+}
+
+// 5. TEST DE ESTADÍSTICA (CONJUNTOS DINÁMICOS)
+imprime("\n[5] Stress de Estadística...")
+avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+imprime("Media de 10-100: " + avg)
+imprime("Varianza de 1-10: " + formatear(var_val, 2))
+imprime("Desviación Estándar: " + formatear(desv, 4))
+
+// 6. TEST DE FÍSICA CINEMÁTICA (SIMULACIÓN DE TIRO)
+imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45°)...")
+t = 0.0
+mientras t <= 5.0 {
+    pos = proyectil_pos(50, 45, t)
+    imprime("Tiempo " + t + "s -> Posición [x,y]: " + pos)
+    t = t + 1.0
+}
+
+// 7. TEST DE BITWISE Y BASES NUMÉRICAS
+imprime("\n[7] Operaciones de Bajo Nivel...")
+num = 255
+imprime("Decimal: " + num)
+imprime("Binario: " + binario(num))
+imprime("Hexadecimal: " + hex(num))
+imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
+
+// 8. TEST DE FINANZAS Y CÁLCULO
+imprime("\n[8] Test de Interés y Potencia...")
+capital = 1000
+tasa = 0.05
+tiempo = 10
+total = interes_compuesto(capital, tasa, tiempo)
+imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
+
+// 9. TEST DE TRIGONOMETRÍA HIPERBÓLICA
+imprime("\n[9] Funciones Hiperbólicas...")
+val = 1.0
+imprime("senoh(1.0): " + formatear(senoh(val), 6))
+imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
+
+imprime("\n--- TEST DE ESTRÉS FINALIZADO CON ÉXITO ---")
+
+
+
+

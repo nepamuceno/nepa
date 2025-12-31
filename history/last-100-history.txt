@@ -1,0 +1,100 @@
+bash probar.sh 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+ls desarrollo/interno/modulo/
+nano desarrollo/interno/modulo/core_math.go
+bash probar.sh 
+cat inicio.nepa 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+ash probar.sh 
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+nano inicio.nepa
+./dist/bin/nepa inicio.nepa
+cat inicio.nepa
+bash probar.sh 
+cat desarrollo/interno/modulo/core_math.go
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+cat desarrollo/interno/modulo/core_math.go
+cat desarrollo/interno/modulo/modulo.go
+cat inicio.nepa
+bash probar.sh 
+nano gist.sh
+bash gist.sh
+ls
+cat gist.txt
+no en binario, solo los text files
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+sudo apt update && sudo apt install xclip -y
+nano gist.sh
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+go mod init nepa 2>/dev/null || go mod tidy
+bash probar.sh 
+go mod tidy
+bash probar.sh 
+export GO111MODULE=on
+go mod edit -module nepa
+bash probar.sh 
+# Borrar archivos de módulos viejos si existen
+rm -f go.mod go.sum
+# Reiniciar el módulo con el nombre correcto
+go mod init nepa
+# Forzar a Go a encontrar las dependencias locales
+go mod tidy
+tree .
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+cat inicio.nepa
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 

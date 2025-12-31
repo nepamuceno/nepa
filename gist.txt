@@ -1,0 +1,1514 @@
+/home/deb/nepa/desarrollo/cmd/nepa_lib/main.go:
+package main
+
+import (
+	"fmt"
+	"math"
+	"math/rand"
+	"nepa/desarrollo/interno/modulo"
+	"strconv"
+	"time"
+)
+
+func main() {
+	// CORRECCIÓN: lib, _ para recibir los dos valores que devuelve Cargar
+	lib, _ := modulo.Cargar("matematicas")
+
+	// --- 1. CONSTANTES (Matemáticas, Física y Astronomía) ---
+	lib.Variables["pi"] = math.Pi
+	lib.Variables["e"] = math.E
+	lib.Variables["phi"] = 1.618033988749895
+	lib.Variables["luz"] = 299792458.0
+	lib.Variables["gravedad"] = 9.80665
+	lib.Variables["planck"] = 6.62607015e-34
+	lib.Variables["avogadro"] = 6.02214076e23
+	lib.Variables["boltzmann"] = 1.380649e-23
+	lib.Variables["raiz2"] = math.Sqrt(2)
+	lib.Variables["inf"] = math.Inf(1)
+	lib.Variables["nan"] = math.NaN()
+
+	// --- 2. TRIGONOMETRÍA Y GEOMETRÍA (Básica, Inversa e Hiperbólica) ---
+	lib.Funciones["seno"] = func(args ...interface{}) interface{} { return math.Sin(args[0].(float64)) }
+	lib.Funciones["coseno"] = func(args ...interface{}) interface{} { return math.Cos(args[0].(float64)) }
+	lib.Funciones["tangente"] = func(args ...interface{}) interface{} { return math.Tan(args[0].(float64)) }
+	lib.Funciones["asen"] = func(args ...interface{}) interface{} { return math.Asin(args[0].(float64)) }
+	lib.Funciones["acos"] = func(args ...interface{}) interface{} { return math.Asin(args[0].(float64)) } // Nota: podrías cambiar a Acos si gustas
+	lib.Funciones["atan"] = func(args ...interface{}) interface{} { return math.Atan(args[0].(float64)) }
+	lib.Funciones["atan2"] = func(args ...interface{}) interface{} { return math.Atan2(args[0].(float64), args[1].(float64)) }
+	lib.Funciones["senh"] = func(args ...interface{}) interface{} { return math.Sinh(args[0].(float64)) }
+	lib.Funciones["cosh"] = func(args ...interface{}) interface{} { return math.Cosh(args[0].(float64)) }
+	lib.Funciones["tanh"] = func(args ...interface{}) interface{} { return math.Tanh(args[0].(float64)) }
+	lib.Funciones["grados"] = func(args ...interface{}) interface{} { return args[0].(float64) * (180 / math.Pi) }
+	lib.Funciones["radianes"] = func(args ...interface{}) interface{} { return args[0].(float64) * (math.Pi / 180) }
+	lib.Funciones["hipotenusa"] = func(args ...interface{}) interface{} { return math.Hypot(args[0].(float64), args[1].(float64)) }
+
+	// --- 3. ÁLGEBRA, POTENCIAS Y LOGARITMOS ---
+	lib.Funciones["raiz"] = func(args ...interface{}) interface{} { return math.Sqrt(args[0].(float64)) }
+	lib.Funciones["raiz_c"] = func(args ...interface{}) interface{} { return math.Cbrt(args[0].(float64)) }
+	lib.Funciones["raiz_n"] = func(args ...interface{}) interface{} { return math.Pow(args[0].(float64), 1/args[1].(float64)) }
+	lib.Funciones["potencia"] = func(args ...interface{}) interface{} { return math.Pow(args[0].(float64), args[1].(float64)) }
+	lib.Funciones["exp"] = func(args ...interface{}) interface{} { return math.Exp(args[0].(float64)) }
+	lib.Funciones["log"] = func(args ...interface{}) interface{} { return math.Log(args[0].(float64)) }
+	lib.Funciones["log10"] = func(args ...interface{}) interface{} { return math.Log10(args[0].(float64)) }
+	lib.Funciones["log2"] = func(args ...interface{}) interface{} { return math.Log2(args[0].(float64)) }
+	lib.Funciones["log_n"] = func(args ...interface{}) interface{} { return math.Log(args[1].(float64)) / math.Log(args[0].(float64)) }
+
+	// --- 4. TEORÍA DE NÚMEROS Y ARITMÉTICA ---
+	lib.Funciones["abs"] = func(args ...interface{}) interface{} { return math.Abs(args[0].(float64)) }
+	lib.Funciones["mod"] = func(args ...interface{}) interface{} { return math.Mod(args[0].(float64), args[1].(float64)) }
+	lib.Funciones["mcd"] = func(args ...interface{}) interface{} {
+		a, b := int(args[0].(float64)), int(args[1].(float64))
+		for b != 0 { a, b = b, a%b }; return float64(a)
+	}
+	lib.Funciones["es_primo"] = func(args ...interface{}) interface{} {
+		n := int(args[0].(float64))
+		if n <= 1 { return 0.0 }
+		for i := 2; i*i <= n; i++ { if n%i == 0 { return 0.0 } }; return 1.0
+	}
+	lib.Funciones["factorial"] = func(args ...interface{}) interface{} {
+		n, res := args[0].(float64), 1.0
+		for i := 2.0; i <= n; i++ { res *= i }; return res
+	}
+
+	// --- 5. REDONDEO Y CLASIFICACIÓN ---
+	lib.Funciones["piso"] = func(args ...interface{}) interface{} { return math.Floor(args[0].(float64)) }
+	lib.Funciones["techo"] = func(args ...interface{}) interface{} { return math.Ceil(args[0].(float64)) }
+	lib.Funciones["redondear"] = func(args ...interface{}) interface{} { return math.Round(args[0].(float64)) }
+	lib.Funciones["es_nan"] = func(args ...interface{}) interface{} { if math.IsNaN(args[0].(float64)) { return 1.0 }; return 0.0 }
+
+	// --- 6. SISTEMAS DIGITALES (Bases y Bits) ---
+	lib.Funciones["a_binario"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 2) }
+	lib.Funciones["a_octal"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 8) }
+	lib.Funciones["a_hex"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 16) }
+	lib.Funciones["desde_base"] = func(args ...interface{}) interface{} {
+		val, _ := strconv.ParseInt(args[0].(string), int(args[1].(float64)), 64); return float64(val)
+	}
+	lib.Funciones["bit_y"] = func(args ...interface{}) interface{} { return float64(int64(args[0].(float64)) & int64(args[1].(float64))) }
+	lib.Funciones["bit_o"] = func(args ...interface{}) interface{} { return float64(int64(args[0].(float64)) | int64(args[1].(float64))) }
+
+	// --- 7. CÁLCULO NUMÉRICO ---
+	lib.Funciones["derivada_x2"] = func(args ...interface{}) interface{} {
+		x, h := args[0].(float64), 0.000001
+		f := func(v float64) float64 { return v * v }
+		return (f(x+h) - f(x)) / h
+	}
+	lib.Funciones["integral_x2"] = func(args ...interface{}) interface{} {
+		a, b, n := args[0].(float64), args[1].(float64), 1000.0
+		h, suma := (b-a)/n, 0.0
+		for i := 0.0; i < n; i++ { x := a + i*h; suma += (x*x + (x+h)*(x+h)) * h / 2 }
+		return suma
+	}
+
+	// --- 8. AZAR Y ESTADÍSTICA ---
+	rand.Seed(time.Now().UnixNano())
+	lib.Funciones["azar"] = func(args ...interface{}) interface{} {
+		if len(args) == 2 { return args[0].(float64) + rand.Float64()*(args[1].(float64)-args[0].(float64)) }
+		return rand.Float64()
+	}
+	lib.Funciones["azar_normal"] = func(args ...interface{}) interface{} { return rand.NormFloat64() }
+
+	// --- 9. UTILIDADES DE SISTEMA ---
+	lib.Funciones["esperar"] = func(args ...interface{}) interface{} {
+		time.Sleep(time.Duration(args[0].(float64)) * time.Millisecond); return nil
+	}
+	lib.Funciones["limpiar"] = func(args ...interface{}) interface{} { fmt.Print("\033[H\033[2J"); return nil }
+
+	// --- 10. DOCUMENTACIÓN ---
+	ayuda := `
+--- NEPA MATH SDK v3.0 (COMPLETO) ---
+[Trig]: seno, coseno, tangente, asen, acos, atan, atan2, senh, cosh, tanh, grados, radianes
+[Algebra]: raiz, raiz_c, raiz_n, potencia, exp, log, log10, log2, log_n, hipotenusa
+[Teoria]: abs, mod, mcd, es_primo, factorial, redondear, piso, techo, es_nan
+[Digital]: a_binario, a_octal, a_hex, desde_base, bit_y, bit_o
+[Calculo]: derivada_x2(x), integral_x2(a,b)
+[Azar]: azar, azar_normal
+[Const]: pi, e, phi, luz, gravedad, planck, avogadro, boltzmann
+`
+	lib.Funciones["ayuda"] = func(args ...interface{}) interface{} { fmt.Println(ayuda); return nil }
+
+	lib.Exportar("./dist/lib/matematicas.ndll")
+	fmt.Println("🪐 Nepa Math SDK Universal generado correctamente.")
+}
+
+
+
+
+/home/deb/nepa/desarrollo/cmd/nepa/main.go:
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"nepa/desarrollo/interno/evaluador"
+	"nepa/desarrollo/interno/lexer"
+	"nepa/desarrollo/interno/parser"
+	"os"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("❌ Uso: nepa <archivo.nepa>")
+		return
+	}
+
+	nombre := os.Args[1]
+	contenido, err := ioutil.ReadFile(nombre)
+	if err != nil { 
+		fmt.Printf("Error: %v\n", err)
+		return 
+	}
+
+	// 1. Lexer: Convierte el texto en tokens
+	l := lexer.Nuevo(string(contenido))
+	tokens := l.Tokenizar()
+
+	// 2. Parser: Convierte los tokens en un árbol de nodos (AST)
+	p := parser.Nuevo(tokens, nombre)
+	nodos := p.Parsear()
+
+	// 3. Evaluador: Ejecuta la lógica de los nodos
+	e := evaluador.NuevoEntorno()
+	fmt.Printf("🚀 Ejecutando: %s\n--------------------------\n", nombre)
+	e.Ejecutar(nodos)
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/ast/ast.go:
+package ast
+
+// Posicion representa la ubicación de un nodo en el código fuente
+type Posicion struct {
+	Linea   int
+	Columna int
+	Archivo string
+}
+
+// Base contiene la información común a todos los nodos
+type Base struct {
+	Pos Posicion
+}
+
+// Nodo es la interfaz base para todos los elementos del AST
+type Nodo interface{}
+
+// Importar representa la sentencia 'incluir' (Añadido para el motor de módulos)
+type Importar struct {
+	Base
+	Nombre string
+}
+
+// Identificador representa nombres de variables o funciones
+type Identificador struct {
+	Base
+	Nombre string
+}
+
+// Literal representa valores constantes (números, strings, booleanos)
+type Literal struct {
+	Base
+	Valor interface{}
+}
+
+// Asignacion representa la creación o actualización de una variable
+type Asignacion struct {
+	Base
+	Nombre string
+	Valor  Nodo
+}
+
+// OperacionBinaria representa cálculos como suma, resta, comparaciones
+type OperacionBinaria struct {
+	Base
+	Izquierda Nodo
+	Operador  string
+	Derecha   Nodo
+}
+
+// LlamadaFuncion representa la ejecución de una función nativa o de usuario
+type LlamadaFuncion struct {
+	Base
+	Nombre string
+	Args   []Nodo
+}
+
+// LlamadaModulo representa el acceso a funciones/variables de un SDK (ej. matematicas.raiz)
+type LlamadaModulo struct {
+	Base
+	Modulo  string
+	Funcion string
+	Args    []Nodo
+}
+
+// Si representa la estructura condicional
+type Si struct {
+	Base
+	Condicion Nodo
+	Cuerpo    Nodo
+	Sino      Nodo
+}
+
+// Mientras representa el bucle iterativo
+type Mientras struct {
+	Base
+	Condicion Nodo
+	Cuerpo    Nodo
+}
+
+// FuncionDef representa la declaración de una nueva función
+type FuncionDef struct {
+	Base
+	Nombre     string
+	Parametros []string
+	Cuerpo     Nodo
+}
+
+// Retornar representa la sentencia de salida de una función
+type Retornar struct {
+	Base
+	Valor Nodo
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/lexer/lexer.go:
+package lexer
+
+import (
+    "unicode"
+)
+
+type TipoToken int
+
+const (
+    T_EOF TipoToken = iota
+    T_IDENT
+    T_NUMERO
+    T_CADENA
+    T_OP
+    T_IGUAL
+    T_PARENT_A
+    T_PARENT_C
+    T_COMA
+    T_PUNTO
+    T_DOSPUNTOS
+    T_KEYWORD
+    T_LINEA
+    T_INDENT
+    T_DEDENT
+)
+
+type Token struct {
+    Tipo    TipoToken
+    Literal string
+    Linea   int
+}
+
+type Lexer struct {
+    entrada     string
+    pos         int
+    linea       int
+    indents     []int
+    pendientes  []Token
+}
+
+func Nuevo(entrada string) *Lexer {
+    return &Lexer{
+        entrada: entrada,
+        linea:   1,
+        indents: []int{0},
+    }
+}
+
+func (l *Lexer) Tokenizar() []Token {
+    var tokens []Token
+    for {
+        t := l.SiguienteToken()
+        tokens = append(tokens, t)
+        if t.Tipo == T_EOF {
+            break
+        }
+    }
+    return tokens
+}
+
+func (l *Lexer) SiguienteToken() Token {
+    if len(l.pendientes) > 0 {
+        t := l.pendientes[0]
+        l.pendientes = l.pendientes[1:]
+        return t
+    }
+
+    l.saltarEspacios()
+
+    if l.pos >= len(l.entrada) {
+        // Al final, cerramos todos los niveles de indentación abiertos
+        if len(l.indents) > 1 {
+            l.indents = l.indents[:len(l.indents)-1]
+            return Token{T_DEDENT, "", l.linea}
+        }
+        return Token{T_EOF, "", l.linea}
+    }
+
+    char := l.entrada[l.pos]
+
+    // Soporte para comentarios (ignora hasta el final de la línea)
+    if char == '#' {
+        for l.pos < len(l.entrada) && l.entrada[l.pos] != '\n' {
+            l.pos++
+        }
+        return l.SiguienteToken()
+    }
+
+    // Manejo de nuevas líneas e indentación
+    if char == '\n' {
+        l.pos++
+        l.linea++
+        l.procesarIndentacion()
+        return Token{T_LINEA, "\n", l.linea - 1}
+    }
+
+    // Identificadores y Palabras Clave
+    if unicode.IsLetter(rune(char)) || char == '_' {
+        inicio := l.pos
+        for l.pos < len(l.entrada) && (unicode.IsLetter(rune(l.entrada[l.pos])) || unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '_') {
+            l.pos++
+        }
+        lit := l.entrada[inicio:l.pos]
+        if l.esKeyword(lit) {
+            return Token{T_KEYWORD, lit, l.linea}
+        }
+        return Token{T_IDENT, lit, l.linea}
+    }
+
+    // Números
+    if unicode.IsDigit(rune(char)) {
+        inicio := l.pos
+        for l.pos < len(l.entrada) && (unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '.') {
+            l.pos++
+        }
+        return Token{T_NUMERO, l.entrada[inicio:l.pos], l.linea}
+    }
+
+    // Cadenas
+    if char == '"' {
+        l.pos++
+        inicio := l.pos
+        for l.pos < len(l.entrada) && l.entrada[l.pos] != '"' {
+            l.pos++
+        }
+        lit := l.entrada[inicio:l.pos]
+        l.pos++
+        return Token{T_CADENA, lit, l.linea}
+    }
+
+    // Operadores y Símbolos
+    l.pos++
+    switch char {
+    case '=':
+        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+            l.pos++
+            return Token{T_OP, "==", l.linea}
+        }
+        return Token{T_IGUAL, "=", l.linea}
+    case '+': return Token{T_OP, "+", l.linea}
+    case '-': return Token{T_OP, "-", l.linea}
+    case '*': return Token{T_OP, "*", l.linea}
+    case '/': return Token{T_OP, "/", l.linea}
+    case '>':
+        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+            l.pos++
+            return Token{T_OP, ">=", l.linea}
+        }
+        return Token{T_OP, ">", l.linea}
+    case '<':
+        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+            l.pos++
+            return Token{T_OP, "<=", l.linea}
+        }
+        return Token{T_OP, "<", l.linea}
+    case '!':
+        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+            l.pos++
+            return Token{T_OP, "!=", l.linea}
+        }
+        // Si es solo !, lo tratamos como operador aunque falte el =
+        return Token{T_OP, "!", l.linea}
+    case '(': return Token{T_PARENT_A, "(", l.linea}
+    case ')': return Token{T_PARENT_C, ")", l.linea}
+    case ',': return Token{T_COMA, ",", l.linea}
+    case '.': return Token{T_PUNTO, ".", l.linea}
+    case ':': return Token{T_DOSPUNTOS, ":", l.linea}
+    }
+
+    return l.SiguienteToken()
+}
+
+func (l *Lexer) procesarIndentacion() {
+    espacios := 0
+    for l.pos < len(l.entrada) && (l.entrada[l.pos] == ' ' || l.entrada[l.pos] == '\t') {
+        if l.entrada[l.pos] == '\t' {
+            espacios += 4
+        } else {
+            espacios++
+        }
+        l.pos++
+    }
+
+    // Si la línea está vacía o es un comentario, ignorar procesamiento de indentación
+    if l.pos < len(l.entrada) && (l.entrada[l.pos] == '\n' || l.entrada[l.pos] == '#') {
+        return
+    }
+
+    ultimo := l.indents[len(l.indents)-1]
+    if espacios > ultimo {
+        l.indents = append(l.indents, espacios)
+        l.pendientes = append(l.pendientes, Token{T_INDENT, "", l.linea})
+    } else {
+        for espacios < ultimo {
+            l.indents = l.indents[:len(l.indents)-1]
+            ultimo = l.indents[len(l.indents)-1]
+            l.pendientes = append(l.pendientes, Token{T_DEDENT, "", l.linea})
+        }
+    }
+}
+
+func (l *Lexer) saltarEspacios() {
+    // Solo saltamos espacios si no estamos al inicio de una línea procesando indentación
+    for l.pos < len(l.entrada) && l.entrada[l.pos] == ' ' {
+        l.pos++
+    }
+}
+
+func (l *Lexer) esKeyword(lit string) bool {
+    ks := []string{"variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no"}
+    for _, k := range ks {
+        if k == lit {
+            return true
+        }
+    }
+    return false
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador.go:
+package evaluador
+
+import (
+	"fmt"
+	"nepa/desarrollo/interno/ast"
+	"nepa/desarrollo/interno/modulo"
+	"strconv"
+	"strings"
+)
+
+type Interpretador struct {
+	Entorno    map[string]interface{}
+	Modulos    map[string]*modulo.LibreriaNepa
+	Protegidos map[string]bool 
+}
+
+func NuevoEntorno() *Interpretador {
+	i := &Interpretador{
+		Entorno:    make(map[string]interface{}),
+		Modulos:    make(map[string]*modulo.LibreriaNepa),
+		Protegidos: make(map[string]bool),
+	}
+
+	// Registro de funciones nativas
+	i.registrarNativa("imprime", func(args ...interface{}) interface{} {
+		for idx, arg := range args {
+			if s, ok := arg.(string); ok {
+				args[idx] = strings.ReplaceAll(s, "\\n", "\n")
+			}
+		}
+		fmt.Println(args...)
+		return nil
+	})
+
+	i.registrarNativa("ayuda", func(args ...interface{}) interface{} {
+		fmt.Println("--- SISTEMA DE AYUDA NEPA ---")
+		return nil
+	})
+
+	i.registrarNativa("formatear", func(args ...interface{}) interface{} {
+		if len(args) < 2 { return args[0] }
+		val, _ := toFloatSafe(args[0])
+		prec, _ := toFloatSafe(args[1])
+		return fmt.Sprintf("%.*f", int(prec), val)
+	})
+
+	// Carga automática del SDK
+	sdk, err := modulo.Cargar("matematicas")
+	if err == nil {
+		for nombre, fn := range sdk.Funciones { i.registrarNativa(nombre, fn) }
+		for nombre, val := range sdk.Variables { i.registrarNativa(nombre, val) }
+	}
+
+	return i
+}
+
+func (i *Interpretador) registrarNativa(nombre string, valor interface{}) {
+	i.Entorno[nombre] = valor
+	i.Protegidos[nombre] = true
+}
+
+func toFloatSafe(v interface{}) (float64, bool) {
+	switch t := v.(type) {
+	case float64: return t, true
+	case int: return float64(t), true
+	case int64: return float64(t), true
+	case string:
+		if f, err := strconv.ParseFloat(t, 64); err == nil { return f, true }
+	}
+	return 0, false
+}
+
+func (i *Interpretador) Ejecutar(nodos []ast.Nodo) {
+	for _, nodo := range nodos {
+		i.Evaluar(nodo)
+	}
+}
+
+func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
+	if nodo == nil { return nil }
+
+	switch n := nodo.(type) {
+
+	case *ast.Importar, ast.Importar:
+		var nombre string
+		if v, ok := n.(*ast.Importar); ok { nombre = v.Nombre } else { nombre = n.(ast.Importar).Nombre }
+		mod, err := modulo.Cargar(nombre)
+		if err != nil { panic(fmt.Sprintf("Error al cargar módulo '%s': %v", nombre, err)) }
+		i.Modulos[nombre] = mod
+		return nil
+
+	case *ast.Literal, ast.Literal:
+		if v, ok := n.(*ast.Literal); ok { return v.Valor }
+		return n.(ast.Literal).Valor
+
+	case *ast.Identificador, ast.Identificador:
+		var nombre string
+		if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
+		if val, ok := i.Entorno[nombre]; ok { return val }
+		return nombre
+
+	case *ast.Asignacion, ast.Asignacion:
+		var nombre string
+		var valorNodo ast.Nodo
+		if v, ok := n.(*ast.Asignacion); ok { nombre, valorNodo = v.Nombre, v.Valor } else { 
+			nombre, valorNodo = n.(ast.Asignacion).Nombre, n.(ast.Asignacion).Valor 
+		}
+
+		if i.Protegidos[nombre] {
+			panic(fmt.Sprintf("Error: No puedes reasignar la función o constante nativa '%s'", nombre))
+		}
+
+		valor := i.Evaluar(valorNodo)
+		if f, ok := toFloatSafe(valor); ok { i.Entorno[nombre] = f } else { i.Entorno[nombre] = valor }
+		return valor
+
+	case *ast.OperacionBinaria, ast.OperacionBinaria:
+		var op string
+		var izqN, derN ast.Nodo
+		if v, ok := n.(*ast.OperacionBinaria); ok { op, izqN, derN = v.Operador, v.Izquierda, v.Derecha } else {
+			op, izqN, derN = n.(ast.OperacionBinaria).Operador, n.(ast.OperacionBinaria).Izquierda, n.(ast.OperacionBinaria).Derecha
+		}
+
+		if op == "." {
+			modNombre := ""
+			if id, ok := izqN.(*ast.Identificador); ok { modNombre = id.Nombre } else if id, ok := izqN.(ast.Identificador); ok { modNombre = id.Nombre }
+			if mod, existe := i.Modulos[modNombre]; existe {
+				miembro := ""
+				switch m := derN.(type) {
+				case *ast.Identificador: miembro = m.Nombre
+				case ast.Identificador: miembro = m.Nombre
+				}
+				if fn, ok := mod.Funciones[miembro]; ok { return fn }
+				if val, ok := mod.Variables[miembro]; ok { return val }
+			}
+			return nil
+		}
+
+		izq, der := i.Evaluar(izqN), i.Evaluar(derN)
+		v1, ok1 := toFloatSafe(izq)
+		v2, ok2 := toFloatSafe(der)
+
+		if ok1 && ok2 {
+			switch op {
+			case "+": return v1 + v2
+			case "-": return v1 - v2
+			case "*": return v1 * v2
+			case "/": 
+				if v2 == 0 { return 0.0 }
+				return v1 / v2
+			case "==": return v1 == v2
+			case "!=": return v1 != v2
+			case ">":  return v1 > v2
+			case "<":  return v1 < v2
+			case ">=": return v1 >= v2
+			case "<=": return v1 <= v2
+			}
+		}
+		if op == "+" { return fmt.Sprintf("%v%v", izq, der) }
+		return nil
+
+	case *ast.Si, ast.Si:
+		var c, cuerpo, sino ast.Nodo
+		if v, ok := n.(*ast.Si); ok { c, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino } else {
+			c, cuerpo, sino = n.(ast.Si).Condicion, n.(ast.Si).Cuerpo, n.(ast.Si).Sino
+		}
+		if val := i.Evaluar(c); val == true || val == 1.0 { return i.Evaluar(cuerpo) } else if sino != nil { return i.Evaluar(sino) }
+		return nil
+
+	case *ast.Mientras, ast.Mientras:
+		var c, cuerpo ast.Nodo
+		if v, ok := n.(*ast.Mientras); ok { c, cuerpo = v.Condicion, v.Cuerpo } else { c, cuerpo = n.(ast.Mientras).Condicion, n.(ast.Mientras).Cuerpo }
+		for {
+			val := i.Evaluar(c)
+			if val != true && val != 1.0 { break }
+			i.Evaluar(cuerpo)
+		}
+		return nil
+
+	case *ast.LlamadaFuncion, ast.LlamadaFuncion:
+		var nombre string
+		var argsN []ast.Nodo
+		if v, ok := n.(*ast.LlamadaFuncion); ok { nombre, argsN = v.Nombre, v.Args } else { nombre, argsN = n.(ast.LlamadaFuncion).Nombre, n.(ast.LlamadaFuncion).Args }
+
+		obj := i.Entorno[nombre]
+		if fn, ok := obj.(func(...interface{}) interface{}); ok {
+			args := make([]interface{}, len(argsN))
+			for idx, arg := range argsN { args[idx] = i.Evaluar(arg) }
+			return fn(args...)
+		}
+		if fDef, ok := obj.(*ast.FuncionDef); ok { return i.Evaluar(fDef.Cuerpo) }
+		panic(fmt.Sprintf("'%s' no es una función invocable", nombre))
+
+	case *ast.FuncionDef, ast.FuncionDef:
+		var nombre string
+		if v, ok := n.(*ast.FuncionDef); ok { nombre = v.Nombre } else { nombre = n.(ast.FuncionDef).Nombre }
+		if i.Protegidos[nombre] { panic(fmt.Sprintf("Error: No puedes usar el nombre nativo '%s'", nombre)) }
+		i.Entorno[nombre] = n
+		return nil
+
+	case []ast.Nodo:
+		var last interface{}
+		for _, sn := range n { last = i.Evaluar(sn) }
+		return last
+
+	default:
+		return nil
+	}
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/modulo/core_math.go:
+package modulo
+
+import (
+	"fmt"
+	"math"
+	"math/rand"
+	"sort"
+	"strconv"
+	"time"
+)
+
+func toFloat(v interface{}) float64 {
+	switch t := v.(type) {
+	case float64: return t
+	case int:     return float64(t)
+	case int64:   return float64(t)
+	case float32: return float64(t)
+	default:      return 0.0
+	}
+}
+
+func InyectarMatematicas(lib *LibreriaNepa) {
+	ayudaInfo := make(map[string]string)
+
+	rand.Seed(time.Now().UnixNano())
+
+	reg := func(n string, desc string, f func(...interface{}) interface{}) {
+		lib.Funciones[n] = f
+		ayudaInfo[n] = desc
+	}
+
+	// --- CONSTANTES ---
+	lib.Variables["pi"] = math.Pi
+	lib.Variables["e"] = math.E
+	lib.Variables["gravedad"] = 9.80665
+	lib.Variables["phi"] = 1.618033988749895
+	lib.Variables["luz"] = 299792458.0 
+	lib.Variables["infinito"] = math.Inf(1)
+	lib.Variables["cero_absoluto"] = -273.15
+	lib.Variables["planck"] = 6.62607015e-34
+	lib.Variables["stefan_boltzmann"] = 5.670374e-8
+	lib.Variables["gas_ideal"] = 8.314462 
+
+	// --- SISTEMA DE AYUDA ---
+	reg("ayuda", "Muestra ayuda: ayuda('funcion') o ayuda() para lista", func(args ...interface{}) interface{} {
+		if len(args) > 0 {
+			nom := fmt.Sprintf("%v", args[0])
+			if val, ok := ayudaInfo[nom]; ok {
+				return fmt.Sprintf("Sintaxis [%s]: %s", nom, val)
+			}
+			return "Función no encontrada."
+		}
+		var lista string
+		for k := range ayudaInfo { lista += k + ", " }
+		return "Funciones disponibles: " + lista
+	})
+
+	// --- BÁSICAS Y TRIGONOMETRÍA ---
+	reg("raiz", "raiz(n) -> Raíz cuadrada", func(args ...interface{}) interface{} { return math.Sqrt(toFloat(args[0])) })
+	reg("raiz_n", "raiz_n(v, n) -> Raíz enésima", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), 1/toFloat(args[1])) })
+	reg("potencia", "potencia(base, exp)", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), toFloat(args[1])) })
+	reg("abs", "abs(n) -> Valor absoluto", func(args ...interface{}) interface{} { return math.Abs(toFloat(args[0])) })
+	reg("log", "log(n) -> Logaritmo natural", func(args ...interface{}) interface{} { return math.Log(toFloat(args[0])) })
+	reg("log10", "log10(n) -> Logaritmo base 10", func(args ...interface{}) interface{} { return math.Log10(toFloat(args[0])) })
+	reg("signo", "signo(n) -> Retorna -1, 0 o 1", func(args ...interface{}) interface{} {
+		val := toFloat(args[0])
+		if val > 0 { return 1.0 } else if val < 0 { return -1.0 }
+		return 0.0
+	})
+	
+	reg("seno", "seno(rad)", func(args ...interface{}) interface{} { return math.Sin(toFloat(args[0])) })
+	reg("coseno", "coseno(rad)", func(args ...interface{}) interface{} { return math.Cos(toFloat(args[0])) })
+	reg("tangente", "tangente(rad)", func(args ...interface{}) interface{} { return math.Tan(toFloat(args[0])) })
+	reg("secante", "secante(rad)", func(args ...interface{}) interface{} { return 1 / math.Cos(toFloat(args[0])) })
+	reg("cosecante", "cosecante(rad)", func(args ...interface{}) interface{} { return 1 / math.Sin(toFloat(args[0])) })
+	reg("cotangente", "cotangente(rad)", func(args ...interface{}) interface{} { return 1 / math.Tan(toFloat(args[0])) })
+	
+	reg("senoh", "senoh(n)", func(args ...interface{}) interface{} { return math.Sinh(toFloat(args[0])) })
+	reg("cosenoh", "cosenoh(n)", func(args ...interface{}) interface{} { return math.Cosh(toFloat(args[0])) })
+	reg("tangenteh", "tangenteh(n)", func(args ...interface{}) interface{} { return math.Tanh(toFloat(args[0])) })
+	reg("aseno", "aseno(n) -> Arcoseno", func(args ...interface{}) interface{} { return math.Asin(toFloat(args[0])) })
+	reg("acoseno", "acoseno(n) -> Arcocoseno", func(args ...interface{}) interface{} { return math.Acos(toFloat(args[0])) })
+	reg("atangente", "atangente(n) -> Arcotangente", func(args ...interface{}) interface{} { return math.Atan(toFloat(args[0])) })
+	reg("a_radianes", "a_radianes(grados)", func(args ...interface{}) interface{} { return toFloat(args[0]) * (math.Pi / 180) })
+	reg("a_grados", "a_grados(rad)", func(args ...interface{}) interface{} { return toFloat(args[0]) * (180 / math.Pi) })
+
+	// --- GEOMETRÍA ANALÍTICA Y ÁREAS (2D) ---
+	reg("distancia2d", "distancia2d(x1, y1, x2, y2)", func(args ...interface{}) interface{} {
+		return math.Hypot(toFloat(args[2])-toFloat(args[0]), toFloat(args[3])-toFloat(args[1]))
+	})
+	reg("punto_medio", "punto_medio(x1, y1, x2, y2) -> string 'x,y'", func(args ...interface{}) interface{} {
+		return fmt.Sprintf("%f,%f", (toFloat(args[0])+toFloat(args[2]))/2, (toFloat(args[1])+toFloat(args[3]))/2)
+	})
+	reg("hipotenusa", "hipotenusa(cat1, cat2)", func(args ...interface{}) interface{} { return math.Hypot(toFloat(args[0]), toFloat(args[1])) })
+	
+	reg("area_circulo", "area_circulo(radio)", func(args ...interface{}) interface{} { return math.Pi * math.Pow(toFloat(args[0]), 2) })
+	reg("area_rectangulo", "area_rectangulo(b, a)", func(args ...interface{}) interface{} { return toFloat(args[0]) * toFloat(args[1]) })
+	reg("area_triangulo", "area_triangulo(b, a)", func(args ...interface{}) interface{} { return (toFloat(args[0]) * toFloat(args[1])) / 2 })
+	reg("area_elipse", "area_elipse(eje_a, eje_b)", func(args ...interface{}) interface{} { return math.Pi * toFloat(args[0]) * toFloat(args[1]) })
+	reg("area_trapecio", "area_trapecio(b_menor, b_mayor, h)", func(args ...interface{}) interface{} { return ((toFloat(args[0]) + toFloat(args[1])) * toFloat(args[2])) / 2 })
+	reg("area_poligono", "area_poligono(n_lados, lado, apotema)", func(args ...interface{}) interface{} { return (toFloat(args[0]) * toFloat(args[1]) * toFloat(args[2])) / 2 })
+
+	// --- GEOMETRÍA 3D (VOLÚMENES Y SUPERFICIES) ---
+	reg("vol_esfera", "vol_esfera(radio)", func(args ...interface{}) interface{} { return (4.0/3.0) * math.Pi * math.Pow(toFloat(args[0]), 3) })
+	reg("vol_cubo", "vol_cubo(lado)", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), 3) })
+	reg("vol_cilindro", "vol_cilindro(radio, h)", func(args ...interface{}) interface{} { return math.Pi * math.Pow(toFloat(args[0]), 2) * toFloat(args[1]) })
+	reg("vol_cono", "vol_cono(radio, h)", func(args ...interface{}) interface{} { return (1.0/3.0) * math.Pi * math.Pow(toFloat(args[0]), 2) * toFloat(args[1]) })
+	reg("vol_piramide", "vol_piramide(area_base, h)", func(args ...interface{}) interface{} { return (1.0/3.0) * toFloat(args[0]) * toFloat(args[1]) })
+	reg("area_sup_esfera", "area_sup_esfera(r)", func(args ...interface{}) interface{} { return 4 * math.Pi * math.Pow(toFloat(args[0]), 2) })
+	reg("area_sup_cilindro", "area_sup_cilindro(r, h)", func(args ...interface{}) interface{} {
+		r, h := toFloat(args[0]), toFloat(args[1])
+		return 2 * math.Pi * r * (r + h)
+	})
+
+	// --- ESTADÍSTICA Y PROBABILIDAD ---
+	reg("media", "media(n1, n2, ...)", func(args ...interface{}) interface{} {
+		sum := 0.0; for _, v := range args { sum += toFloat(v) }
+		return sum / float64(len(args))
+	})
+	reg("mediana", "mediana(n1, n2, ...)", func(args ...interface{}) interface{} {
+		vals := []float64{}; for _, v := range args { vals = append(vals, toFloat(v)) }
+		sort.Float64s(vals); l := len(vals)
+		if l%2 == 0 { return (vals[l/2-1] + vals[l/2]) / 2 }
+		return vals[l/2]
+	})
+	reg("varianza", "varianza(n1, n2, ...)", func(args ...interface{}) interface{} {
+		var sum, sumSq float64; for _, v := range args { val := toFloat(v); sum += val; sumSq += val * val }
+		n := float64(len(args)); return (sumSq / n) - (math.Pow(sum/n, 2))
+	})
+	reg("desviacion_est", "desviacion_est(n1, n2...)", func(args ...interface{}) interface{} {
+		var sum, sumSq float64; for _, v := range args { val := toFloat(v); sum += val; sumSq += val * val }
+		n := float64(len(args)); return math.Sqrt((sumSq / n) - (math.Pow(sum/n, 2)))
+	})
+	reg("rango", "rango(n1, n2...)", func(args ...interface{}) interface{} {
+		vals := []float64{}; for _, v := range args { vals = append(vals, toFloat(v)) }
+		sort.Float64s(vals); return vals[len(vals)-1] - vals[0]
+	})
+
+	// --- AZAR Y SIMULACIÓN ALEATORIA ---
+	reg("azar", "azar() -> float [0, 1)", func(args ...interface{}) interface{} { return rand.Float64() })
+	reg("azar_rango", "azar_rango(min, max)", func(args ...interface{}) interface{} { return toFloat(args[0]) + rand.Float64()*(toFloat(args[1])-toFloat(args[0])) })
+	reg("azar_int", "azar_int(min, max)", func(args ...interface{}) interface{} { 
+		min := int(toFloat(args[0])); max := int(toFloat(args[1]))
+		return float64(rand.Intn(max-min+1) + min) 
+	})
+	reg("azar_dado", "azar_dado(caras)", func(args ...interface{}) interface{} { return float64(rand.Intn(int(toFloat(args[0]))) + 1) })
+
+	// --- COMBINATORIA Y NÚMEROS ---
+	reg("factorial", "factorial(n)", func(args ...interface{}) interface{} {
+		n := int(toFloat(args[0])); res := 1.0; for i := 1; i <= n; i++ { res *= float64(i) }
+		return res
+	})
+	reg("combinacion", "combinacion(n, k) -> nCr", func(args ...interface{}) interface{} {
+		n := toFloat(args[0]); k := toFloat(args[1]); res := 1.0
+		for i := 1.0; i <= k; i++ { res = res * (n - i + 1) / i }; return math.Round(res)
+	})
+	reg("permutacion", "permutacion(n, k) -> nPr", func(args ...interface{}) interface{} {
+		n := toFloat(args[0]); k := toFloat(args[1]); res := 1.0
+		for i := 0.0; i < k; i++ { res *= (n - i) }; return res
+	})
+	reg("es_primo", "es_primo(n) -> bool", func(args ...interface{}) interface{} {
+		n := int(toFloat(args[0])); if n < 2 { return false }
+		for i := 2; i*i <= n; i++ { if n%i == 0 { return false } }; return true
+	})
+	reg("mcd", "mcd(a, b) -> MCD", func(args ...interface{}) interface{} {
+		a, b := int(toFloat(args[0])), int(toFloat(args[1]))
+		for b != 0 { a, b = b, a%b }; return float64(a)
+	})
+	reg("mcm", "mcm(a, b) -> MCM", func(args ...interface{}) interface{} {
+		a, b := toFloat(args[0]), toFloat(args[1]); tempA, tempB := int(a), int(b)
+		for tempB != 0 { tempA, tempB = tempB, tempA%tempB }; return math.Abs(a*b) / float64(tempA)
+	})
+
+	// --- ÁLGEBRA LINEAL ---
+	reg("det2x2", "det2x2(a,b,c,d)", func(args ...interface{}) interface{} {
+		return (toFloat(args[0]) * toFloat(args[3])) - (toFloat(args[1]) * toFloat(args[2]))
+	})
+	reg("det3x3", "det3x3(a11,a12,a13,a21,a22,a23,a31,a32,a33)", func(args ...interface{}) interface{} {
+		a, b, c := toFloat(args[0]), toFloat(args[1]), toFloat(args[2])
+		d, e, f := toFloat(args[3]), toFloat(args[4]), toFloat(args[5])
+		g, h, i := toFloat(args[6]), toFloat(args[7]), toFloat(args[8])
+		return a*(e*i-f*h) - b*(d*i-f*g) + c*(d*h-e*g)
+	})
+	reg("producto_punto", "producto_punto(x1,y1,z1, x2,y2,z2)", func(args ...interface{}) interface{} {
+		return (toFloat(args[0]) * toFloat(args[3])) + (toFloat(args[1]) * toFloat(args[4])) + (toFloat(args[2]) * toFloat(args[5]))
+	})
+
+	// --- REDONDEOS Y FORMATO ---
+	reg("redondear", "redondear(n)", func(args ...interface{}) interface{} { return math.Round(toFloat(args[0])) })
+	reg("piso", "piso(n) -> Floor", func(args ...interface{}) interface{} { return math.Floor(toFloat(args[0])) })
+	reg("techo", "techo(n) -> Ceil", func(args ...interface{}) interface{} { return math.Ceil(toFloat(args[0])) })
+	reg("formatear", "formatear(n, decimales)", func(args ...interface{}) interface{} {
+		val := toFloat(args[0]); prec := int(toFloat(args[1]))
+		res, _ := strconv.ParseFloat(fmt.Sprintf("%.*f", prec, val), 64)
+		return res
+	})
+
+	// --- BITWISE Y BASES ---
+	reg("bit_and", "bit_and(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) & int64(toFloat(args[1]))) })
+	reg("bit_or", "bit_or(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) | int64(toFloat(args[1]))) })
+	reg("bit_xor", "bit_xor(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) ^ int64(toFloat(args[1]))) })
+	reg("binario", "binario(n) -> string", func(args ...interface{}) interface{} { return strconv.FormatInt(int64(toFloat(args[0])), 2) })
+	reg("hex", "hex(n) -> string", func(args ...interface{}) interface{} { return strconv.FormatInt(int64(toFloat(args[0])), 16) })
+
+	// --- FÍSICA Y SIMULACIÓN ---
+	reg("energia_relativista", "energia_relativista(masa) -> E=mc^2", func(args ...interface{}) interface{} {
+		return toFloat(args[0]) * math.Pow(299792458.0, 2)
+	})
+	reg("caida_libre", "caida_libre(tiempo) -> d=0.5*g*t^2", func(args ...interface{}) interface{} {
+		return 0.5 * 9.80665 * math.Pow(toFloat(args[0]), 2)
+	})
+	reg("proyectil_pos", "proyectil_pos(v0, ang, t) -> string 'x,y'", func(args ...interface{}) interface{} {
+		v0 := toFloat(args[0]); ang := toFloat(args[1]) * math.Pi / 180; t := toFloat(args[2])
+		x := v0 * math.Cos(ang) * t
+		y := (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+		return fmt.Sprintf("%f,%f", x, y)
+	})
+	// AGREGADAS PARA EVITAR PANIC EN CONCATENACIÓN
+	reg("proyectil_x", "proyectil_x(v0, ang, t)", func(args ...interface{}) interface{} {
+		return toFloat(args[0]) * math.Cos(toFloat(args[1])*math.Pi/180) * toFloat(args[2])
+	})
+	reg("proyectil_y", "proyectil_y(v0, ang, t)", func(args ...interface{}) interface{} {
+		v0, ang, t := toFloat(args[0]), toFloat(args[1])*math.Pi/180, toFloat(args[2])
+		return (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+	})
+
+	reg("presion_gas", "presion_gas(n, t, v) -> P=nRT/V", func(args ...interface{}) interface{} {
+		return (toFloat(args[0]) * 8.314462 * toFloat(args[1])) / toFloat(args[2])
+	})
+
+	// --- FINANZAS AVANZADAS ---
+	reg("interes_compuesto", "interes_compuesto(c, i, t)", func(args ...interface{}) interface{} {
+		return toFloat(args[0]) * math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+	})
+	reg("valor_presente", "valor_presente(vf, i, t)", func(args ...interface{}) interface{} {
+		return toFloat(args[0]) / math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+	})
+	reg("amortizacion", "amortizacion(capital, tasa, meses)", func(args ...interface{}) interface{} {
+		p := toFloat(args[0]); i := toFloat(args[1]) / 12; n := toFloat(args[2])
+		return (p * i * math.Pow(1+i, n)) / (math.Pow(1+i, n) - 1)
+	})
+	reg("tasa_crecimiento", "tasa_crecimiento(final, inicial, t)", func(args ...interface{}) interface{} {
+		return math.Pow(toFloat(args[0])/toFloat(args[1]), 1/toFloat(args[2])) - 1
+	})
+
+	// --- FÍSICA Y MATEMÁTICA AVANZADA ---
+	reg("fuerza_gravitatoria", "fuerza_grav(m1, m2, r)", func(args ...interface{}) interface{} {
+		G := 6.67430e-11
+		return G * (toFloat(args[0]) * toFloat(args[1])) / math.Pow(toFloat(args[2]), 2)
+	})
+	reg("energia_cinetica", "energia_cinetica(m, v)", func(args ...interface{}) interface{} {
+		return 0.5 * toFloat(args[0]) * math.Pow(toFloat(args[1]), 2)
+	})
+	reg("trabajo", "trabajo(f, d, ang_deg)", func(args ...interface{}) interface{} {
+		ang := toFloat(args[2]) * math.Pi / 180
+		return toFloat(args[0]) * toFloat(args[1]) * math.Cos(ang)
+	})
+	reg("densidad", "densidad(masa, vol)", func(args ...interface{}) interface{} {
+		return toFloat(args[0]) / toFloat(args[1])
+	})
+	reg("ley_ohm_v", "ley_ohm_v(i, r) -> V", func(args ...interface{}) interface{} { return toFloat(args[0]) * toFloat(args[1]) })
+	reg("magnitud_vector", "magnitud_vector(x, y, z)", func(args ...interface{}) interface{} {
+		return math.Sqrt(math.Pow(toFloat(args[0]), 2) + math.Pow(toFloat(args[1]), 2) + math.Pow(toFloat(args[2]), 2))
+	})
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/modulo/modulo.go:
+package modulo
+
+type LibreriaNepa struct {
+	Nombre    string
+	Variables map[string]interface{}
+	Funciones map[string]func(...interface{}) interface{}
+	Valores   map[string]float64
+}
+
+func Cargar(nombre string) (*LibreriaNepa, error) {
+	lib := &LibreriaNepa{
+		Nombre:    nombre,
+		Variables: make(map[string]interface{}),
+		Funciones: make(map[string]func(...interface{}) interface{}),
+		Valores:   make(map[string]float64),
+	}
+
+	if nombre == "matematicas" {
+		InyectarMatematicas(lib)
+		// Pasamos las constantes al mapa de Valores
+		for k, v := range lib.Variables {
+			if val, ok := v.(float64); ok {
+				lib.Valores[k] = val
+			}
+		}
+		return lib, nil
+	}
+	return lib, nil
+}
+
+func (l *LibreriaNepa) Exportar(ruta string) error { return nil }
+
+
+
+
+/home/deb/nepa/desarrollo/interno/parser/parser.go:
+package parser
+
+import (
+	"nepa/desarrollo/interno/ast"
+	"nepa/desarrollo/interno/lexer"
+	"strconv"
+)
+
+type Parser struct {
+	tokens  []lexer.Token
+	pos     int
+	archivo string
+}
+
+func Nuevo(tokens []lexer.Token, archivo string) *Parser {
+	return &Parser{tokens, 0, archivo}
+}
+
+func (p *Parser) getPos() ast.Posicion {
+	if p.pos >= len(p.tokens) {
+		return ast.Posicion{Linea: 0, Archivo: p.archivo}
+	}
+	return ast.Posicion{Linea: p.actual().Linea, Archivo: p.archivo}
+}
+
+func (p *Parser) Parsear() []ast.Nodo {
+	var programa []ast.Nodo
+	for !p.esFin() {
+		if p.actual().Tipo == lexer.T_LINEA {
+			p.avanzar()
+			continue
+		}
+		nodo := p.parsearInstruccion()
+		if nodo != nil {
+			programa = append(programa, nodo)
+		} else {
+			// EVITAR LOOP INFINITO: Si nada parsea, avanzamos sí o sí
+			p.avanzar()
+		}
+	}
+	return programa
+}
+
+func (p *Parser) parsearInstruccion() ast.Nodo {
+	t := p.actual()
+	
+	// Caso: Asignación directa (identificador = ...)
+	if t.Tipo == lexer.T_IDENT && p.pos+1 < len(p.tokens) && p.tokens[p.pos+1].Tipo == lexer.T_IGUAL {
+		return p.parsearAsignacionDirecta()
+	}
+
+	if t.Tipo == lexer.T_KEYWORD {
+		switch t.Literal {
+		case "variable": return p.parsearAsignacion()
+		case "incluir":  return p.parsearIncluir()
+		case "imprime":  
+			p.avanzar()
+			return p.parsearLlamada("imprime")
+		case "si":       return p.parsearSi()
+		case "mientras": return p.parsearMientras()
+		case "funcion":  return p.parsearDefFuncion()
+		case "retorna":
+			pos := p.getPos(); p.avanzar()
+			return ast.Retornar{Base: ast.Base{Pos: pos}, Valor: p.parsearExpresion()}
+		}
+	}
+	return p.parsearExpresion()
+}
+
+func (p *Parser) parsearAsignacionDirecta() ast.Nodo {
+	pos := p.getPos()
+	nombre := p.consumir(lexer.T_IDENT).Literal
+	p.consumir(lexer.T_IGUAL)
+	return ast.Asignacion{Base: ast.Base{Pos: pos}, Nombre: nombre, Valor: p.parsearExpresion()}
+}
+
+func (p *Parser) parsearMientras() ast.Nodo {
+	pos := p.getPos()
+	p.avanzar() // saltar 'mientras'
+	cond := p.parsearExpresion()
+	p.consumir(lexer.T_DOSPUNTOS)
+	return ast.Mientras{Base: ast.Base{Pos: pos}, Condicion: cond, Cuerpo: p.parsearBloque()}
+}
+
+func (p *Parser) parsearBloque() []ast.Nodo {
+	if p.actual().Tipo == lexer.T_LINEA { p.avanzar() }
+	p.consumir(lexer.T_INDENT)
+	var nodos []ast.Nodo
+	for !p.esFin() && p.actual().Tipo != lexer.T_DEDENT {
+		if p.actual().Tipo == lexer.T_LINEA {
+			p.avanzar()
+			continue
+		}
+		nodo := p.parsearInstruccion()
+		if nodo != nil {
+			nodos = append(nodos, nodo)
+		} else {
+			p.avanzar()
+		}
+	}
+	p.consumir(lexer.T_DEDENT)
+	return nodos
+}
+
+// --- JERARQUÍA DE EXPRESIONES (Para evitar 1 + 2 * 3 = 0) ---
+
+func (p *Parser) parsearExpresion() ast.Nodo {
+	izq := p.parsearComparacion()
+	for p.actual().Tipo == lexer.T_KEYWORD && (p.actual().Literal == "y" || p.actual().Literal == "o") {
+		pos := p.getPos(); op := p.actual().Literal; p.avanzar()
+		der := p.parsearComparacion()
+		izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
+	}
+	return izq
+}
+
+func (p *Parser) parsearComparacion() ast.Nodo {
+	izq := p.parsearSumaResta()
+	for p.actual().Tipo == lexer.T_OP {
+		op := p.actual().Literal
+		if op == "==" || op == "!=" || op == "<" || op == ">" || op == "<=" || op == ">=" {
+			pos := p.getPos(); p.avanzar()
+			der := p.parsearSumaResta()
+			izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
+		} else {
+			break 
+		}
+	}
+	return izq
+}
+
+func (p *Parser) parsearSumaResta() ast.Nodo {
+	izq := p.parsearMultDiv()
+	for p.actual().Tipo == lexer.T_OP && (p.actual().Literal == "+" || p.actual().Literal == "-") {
+		pos := p.getPos(); op := p.actual().Literal; p.avanzar()
+		der := p.parsearMultDiv()
+		izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
+	}
+	return izq
+}
+
+func (p *Parser) parsearMultDiv() ast.Nodo {
+	izq := p.parsearPrimario()
+	for p.actual().Tipo == lexer.T_OP && (p.actual().Literal == "*" || p.actual().Literal == "/") {
+		pos := p.getPos(); op := p.actual().Literal; p.avanzar()
+		der := p.parsearPrimario()
+		izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
+	}
+	return izq
+}
+
+func (p *Parser) parsearPrimario() ast.Nodo {
+	pos := p.getPos()
+	t := p.actual()
+
+	switch t.Tipo {
+	case lexer.T_NUMERO:
+		v, _ := strconv.ParseFloat(t.Literal, 64)
+		p.avanzar()
+		return ast.Literal{Base: ast.Base{Pos: pos}, Valor: v}
+	case lexer.T_CADENA:
+		v := t.Literal; p.avanzar()
+		return ast.Literal{Base: ast.Base{Pos: pos}, Valor: v}
+	case lexer.T_IDENT:
+		nombre := t.Literal; p.avanzar()
+		// Caso: modulo.funcion(...)
+		if p.actual().Tipo == lexer.T_PUNTO {
+			p.avanzar()
+			prop := p.consumir(lexer.T_IDENT).Literal
+			if p.actual().Tipo == lexer.T_PARENT_A {
+				return p.parsearLlamadaModulo(nombre, prop)
+			}
+			return ast.LlamadaModulo{Base: ast.Base{Pos: pos}, Modulo: nombre, Funcion: prop}
+		}
+		// Caso: funcion(...)
+		if p.actual().Tipo == lexer.T_PARENT_A {
+			return p.parsearLlamada(nombre)
+		}
+		return ast.Identificador{Base: ast.Base{Pos: pos}, Nombre: nombre}
+	case lexer.T_PARENT_A:
+		p.avanzar()
+		exp := p.parsearExpresion()
+		p.consumir(lexer.T_PARENT_C)
+		return exp
+	}
+	return nil
+}
+
+func (p *Parser) parsearLlamada(nombre string) ast.Nodo {
+	pos := p.getPos(); p.consumir(lexer.T_PARENT_A)
+	var args []ast.Nodo
+	for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
+		args = append(args, p.parsearExpresion())
+		if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
+	}
+	p.consumir(lexer.T_PARENT_C)
+	return ast.LlamadaFuncion{Base: ast.Base{Pos: pos}, Nombre: nombre, Args: args}
+}
+
+func (p *Parser) parsearLlamadaModulo(mod, fn string) ast.Nodo {
+	pos := p.getPos(); p.consumir(lexer.T_PARENT_A)
+	var args []ast.Nodo
+	for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
+		args = append(args, p.parsearExpresion())
+		if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
+	}
+	p.consumir(lexer.T_PARENT_C)
+	return ast.LlamadaModulo{Base: ast.Base{Pos: pos}, Modulo: mod, Funcion: fn, Args: args}
+}
+
+func (p *Parser) parsearSi() ast.Nodo {
+	pos := p.getPos(); p.avanzar()
+	cond := p.parsearExpresion()
+	p.consumir(lexer.T_DOSPUNTOS)
+	cuerpo := p.parsearBloque()
+	var sino []ast.Nodo
+	if p.actual().Literal == "sino" {
+		p.avanzar()
+		if p.actual().Literal == "si" {
+			sino = append(sino, p.parsearSi())
+		} else {
+			if p.actual().Tipo == lexer.T_DOSPUNTOS { p.avanzar() }
+			sino = p.parsearBloque()
+		}
+	}
+	return ast.Si{Base: ast.Base{Pos: pos}, Condicion: cond, Cuerpo: cuerpo, Sino: sino}
+}
+
+func (p *Parser) parsearDefFuncion() ast.Nodo {
+	pos := p.getPos(); p.avanzar()
+	nombre := p.consumir(lexer.T_IDENT).Literal
+	p.consumir(lexer.T_PARENT_A)
+	params := []string{}
+	for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
+		params = append(params, p.consumir(lexer.T_IDENT).Literal)
+		if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
+	}
+	p.consumir(lexer.T_PARENT_C); p.consumir(lexer.T_DOSPUNTOS)
+	return ast.FuncionDef{Base: ast.Base{Pos: pos}, Nombre: nombre, Parametros: params, Cuerpo: p.parsearBloque()}
+}
+
+func (p *Parser) parsearAsignacion() ast.Nodo {
+	pos := p.getPos(); p.avanzar()
+	nombre := p.consumir(lexer.T_IDENT).Literal
+	p.consumir(lexer.T_IGUAL)
+	return ast.Asignacion{Base: ast.Base{Pos: pos}, Nombre: nombre, Valor: p.parsearExpresion()}
+}
+
+func (p *Parser) parsearIncluir() ast.Nodo {
+	pos := p.getPos(); p.avanzar()
+	nombre := p.consumir(lexer.T_CADENA).Literal
+	return ast.LlamadaFuncion{Base: ast.Base{Pos: pos}, Nombre: "incluir", Args: []ast.Nodo{ast.Literal{Base: ast.Base{Pos: pos}, Valor: nombre}}}
+}
+
+func (p *Parser) actual() lexer.Token { 
+	if p.pos >= len(p.tokens) { return lexer.Token{Tipo: lexer.T_EOF} }
+	return p.tokens[p.pos] 
+}
+func (p *Parser) avanzar() { p.pos++ }
+func (p *Parser) esFin() bool { return p.actual().Tipo == lexer.T_EOF }
+func (p *Parser) consumir(t lexer.TipoToken) lexer.Token { 
+	tok := p.actual()
+	p.avanzar() 
+	return tok 
+}
+
+
+
+
+/home/deb/nepa/go.mod:
+module nepa
+
+go 1.23.2
+
+
+
+
+/home/deb/nepa/probar.sh:
+#!/bin/bash
+
+# Colores para la terminal
+VERDE='\033[0;32m'
+AZUL='\033[0;34m'
+ROJO='\033[0;31m'
+NC='\033[0m' # Sin color
+
+echo -e "${AZUL}🛠️  Limpiando y Compilando...${NC}"
+make clean && make
+
+if [ $? -eq 0 ]; then
+    echo -e "${VERDE}✅ Compilación exitosa.${NC}"
+    
+    echo -e "${AZUL}📚 Generando librerías...${NC}"
+    ./dist/bin/nepa_lib
+    
+    echo -e "${AZUL}🚀 Ejecutando inicio.nepa...${NC}"
+    echo "--------------------------"
+    ./dist/bin/nepa inicio.nepa
+else
+    echo -e "${ROJO}❌ Error en la compilación.${NC}"
+    exit 1
+fi
+
+
+
+
+/home/deb/nepa/Makefile:
+# Nombres de los binarios
+INTERPRETE=nepa
+GENERADOR=nepa_lib
+
+# Rutas de origen
+SRC_MAIN=./desarrollo/cmd/nepa/main.go
+SRC_LIB=./desarrollo/cmd/nepa_lib/main.go
+
+# Ruta de destino
+DEST=./dist/bin
+
+all: clean build install
+
+build:
+	@echo "🔨 Compilando Nepa (Intérprete)..."
+	@go build -o $(INTERPRETE) $(SRC_MAIN)
+	@echo "🔨 Compilando Generador de Librerías..."
+	@go build -o $(GENERADOR) $(SRC_LIB)
+
+install:
+	@mkdir -p $(DEST)
+	@mkdir -p ./dist/lib
+	@mv $(INTERPRETE) $(DEST)/
+	@mv $(GENERADOR) $(DEST)/
+	@echo "✅ Binarios instalados en $(DEST)/"
+
+clean:
+	@rm -f $(INTERPRETE) $(GENERADOR)
+	@rm -rf ./dist/bin/*
+	@echo "🧹 Limpieza completada."
+
+
+
+
+/home/deb/nepa/inicio.nepa:
+// =========================================================
+// TEST DE ESTRÉS INTEGRAL: SDK MATEMÁTICAS NEPA
+// =========================================================
+
+imprime("--- INICIANDO DIAGNÓSTICO DEL SISTEMA ---")
+
+// 1. TEST DEL SISTEMA DE AUTO-AYUDA
+imprime("\n[1] Verificando Sistema de Ayuda...")
+imprime(ayuda("vol_cono"))
+imprime(ayuda("proyectil_pos"))
+imprime(ayuda("es_primo"))
+
+// 2. TEST DE CONSTANTES UNIVERSALES
+imprime("\n[2] Validando Constantes...")
+imprime("PI: " + pi)
+imprime("E: " + e)
+imprime("Gravedad: " + gravedad)
+imprime("PHI: " + phi)
+imprime("Velocidad de la Luz: " + luz)
+
+// 3. TEST DE GEOMETRÍA 3D (VOLÚMENES)
+imprime("\n[3] Calculando Volúmenes Complejos...")
+radio = 5.5
+altura = 12.0
+v_esfera = vol_esfera(radio)
+v_cono = vol_cono(radio, altura)
+v_cil = vol_cilindro(radio, altura)
+
+imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
+imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
+imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+
+// 4. TEST DE TEORÍA DE NÚMEROS (BÚSQUEDA DE PRIMOS)
+imprime("\n[4] Stress de Teoría de Números (Buscando Primos hasta 50)...")
+n = 1
+mientras n <= 50 {
+    si es_primo(n) {
+        imprime("Encontrado primo: " + n)
+    }
+    n = n + 1
+}
+
+// 5. TEST DE ESTADÍSTICA (CONJUNTOS DINÁMICOS)
+imprime("\n[5] Stress de Estadística...")
+avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+imprime("Media de 10-100: " + avg)
+imprime("Varianza de 1-10: " + formatear(var_val, 2))
+imprime("Desviación Estándar: " + formatear(desv, 4))
+
+// 6. TEST DE FÍSICA CINEMÁTICA (SIMULACIÓN DE TIRO)
+imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45°)...")
+t = 0.0
+mientras t <= 5.0 {
+    pos = proyectil_pos(50, 45, t)
+    imprime("Tiempo " + t + "s -> Posición [x,y]: " + pos)
+    t = t + 1.0
+}
+
+// 7. TEST DE BITWISE Y BASES NUMÉRICAS
+imprime("\n[7] Operaciones de Bajo Nivel...")
+num = 255
+imprime("Decimal: " + num)
+imprime("Binario: " + binario(num))
+imprime("Hexadecimal: " + hex(num))
+imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
+
+// 8. TEST DE FINANZAS Y CÁLCULO
+imprime("\n[8] Test de Interés y Potencia...")
+capital = 1000
+tasa = 0.05
+tiempo = 10
+total = interes_compuesto(capital, tasa, tiempo)
+imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
+
+// 9. TEST DE TRIGONOMETRÍA HIPERBÓLICA
+imprime("\n[9] Funciones Hiperbólicas...")
+val = 1.0
+imprime("senoh(1.0): " + formatear(senoh(val), 6))
+imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
+
+imprime("\n--- TEST DE ESTRÉS FINALIZADO CON ÉXITO ---")
+
+
+
+
+/home/deb/nepa/nepa_setup.go:
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	// Definimos la carpeta base de desarrollo
+	base := "desarrollo"
+
+	// 1. Carpetas de Desarrollo
+	devDirs := []string{
+		base + "/cmd/nepa",
+		base + "/interno/lexer",
+		base + "/interno/parser",
+		base + "/interno/ast",
+		base + "/interno/evaluador",
+		base + "/interno/modulo",
+		base + "/librerias_estandar",
+	}
+
+	// 2. Carpetas de Distribución
+	distDirs := []string{
+		"dist/bin",
+		"dist/lib",
+	}
+
+	fmt.Println("🏗️  Configurando entorno Nepa...")
+
+	// Crear carpetas de desarrollo
+	for _, dir := range devDirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Printf("❌ Error creando %s: %v\n", dir, err)
+		} else {
+			fmt.Printf("📂 Creada: %s\n", dir)
+		}
+	}
+
+	// Crear carpetas de distribución
+	for _, dir := range distDirs {
+		os.MkdirAll(dir, 0755)
+		fmt.Printf("📦 Creada: %s\n", dir)
+	}
+
+	// 3. Crear archivos iniciales .go
+	archivos := map[string]string{
+		base + "/cmd/nepa/main.go":           "main",
+		base + "/interno/lexer/lexer.go":      "lexer",
+		base + "/interno/parser/parser.go":    "parser",
+		base + "/interno/ast/ast.go":          "ast",
+		base + "/interno/modulo/cargador.go":  "modulo",
+	}
+
+	for ruta, pkg := range archivos {
+		contenido := fmt.Sprintf("package %s\n\n// Módulo %s del lenguaje Nepa\n", pkg, pkg)
+		os.WriteFile(ruta, []byte(contenido), 0644)
+	}
+
+	fmt.Println("\n✅ Estructura creada con éxito.")
+}
+
+
+
+
