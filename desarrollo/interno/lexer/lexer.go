@@ -207,7 +207,7 @@ func (l *Lexer) saltarEspacios() {
 }
 
 func (l *Lexer) esKeyword(lit string) bool {
-    ks := []string{"variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no"}
+    ks := []string{"variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no", "para", "desde", "hasta", "en", "incremento"}
     for _, k := range ks {
         if k == lit {
             return true
@@ -215,7 +215,3 @@ func (l *Lexer) esKeyword(lit string) bool {
     }
     return false
 }
-
-
-
-

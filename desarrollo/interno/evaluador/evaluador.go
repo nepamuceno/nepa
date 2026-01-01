@@ -97,7 +97,6 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
         var nombre string
         if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
         if val, ok := i.Entorno[nombre]; ok { return val }
-        // Si no existe, devolvemos el nombre como string para evitar panics en evaluaciones
         return nombre
 
     case *ast.Asignacion, ast.Asignacion:
@@ -139,11 +138,9 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
 
         izq, der := i.Evaluar(izqN), i.Evaluar(derN)
         
-        // Manejo de Concatenación (Soporta String + Cualquier cosa)
         if op == "+" {
             _, ok1 := toFloatSafe(izq)
             _, ok2 := toFloatSafe(der)
-            // Si uno de los dos NO es número, concatenamos como texto
             if !ok1 || !ok2 {
                 return fmt.Sprintf("%v%v", izq, der)
             }
@@ -188,6 +185,12 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
         }
         return nil
 
+    // --- BLOQUE AÑADIDO PARA EL PARA UNIVERSAL ---
+    case *ast.Para, ast.Para:
+        var p ast.Para
+        if v, ok := n.(*ast.Para); ok { p = *v } else { p = n.(ast.Para) }
+        return i.EjecutarPara(p)
+
     case *ast.LlamadaFuncion, ast.LlamadaFuncion:
         var nombre string
         var argsN []ast.Nodo
@@ -198,8 +201,6 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
         }
 
         obj := i.Entorno[nombre]
-        
-        // Se cambió el panic por un retorno nil para ignorar llamadas a funciones no definidas
         if obj == nil { return nil }
 
         if fn, ok := obj.(func(...interface{}) interface{}); ok {

@@ -92,6 +92,12 @@ type Retornar struct {
 	Valor Nodo
 }
 
-
-
-
+// Para representa el bucle universal (rangos, cadenas, matrices, archivos)
+type Para struct {
+    Base
+    Variable   string // Nombre de la variable iteradora
+    Origen     Nodo   // Inicio del rango o la colección a recorrer
+    Fin        Nodo   // Límite final (opcional, usado en rangos)
+    Incremento Nodo   // Salto dinámico (opcional)
+    Cuerpo     Nodo   // Bloque de código a ejecutar
+}
