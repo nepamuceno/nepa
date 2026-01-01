@@ -8,6 +8,9 @@ import (
     "strings"
 )
 
+// NepaRetorno es necesario para capturar el valor de 'retorna' en funciones
+type NepaRetorno struct{ Valor interface{} }
+
 type Interpretador struct {
     Entorno    map[string]interface{}
     Modulos    map[string]*modulo.LibreriaNepa
@@ -21,7 +24,7 @@ func NuevoEntorno() *Interpretador {
         Protegidos: make(map[string]bool),
     }
 
-    // Registro de funciones nativas
+    // --- REGISTRO DE FUNCIONES NATIVAS ---
     i.registrarNativa("imprime", func(args ...interface{}) interface{} {
         for idx, arg := range args {
             if s, ok := arg.(string); ok {
@@ -37,14 +40,7 @@ func NuevoEntorno() *Interpretador {
         return nil
     })
 
-    i.registrarNativa("formatear", func(args ...interface{}) interface{} {
-        if len(args) < 2 { return args[0] }
-        val, _ := toFloatSafe(args[0])
-        prec, _ := toFloatSafe(args[1])
-        return fmt.Sprintf("%.*f", int(prec), val)
-    })
-
-    // Carga automática del SDK
+    // Carga de SDK Matemáticas por defecto
     sdk, err := modulo.Cargar("matematicas")
     if err == nil {
         for nombre, fn := range sdk.Funciones { i.registrarNativa(nombre, fn) }
@@ -60,6 +56,7 @@ func (i *Interpretador) registrarNativa(nombre string, valor interface{}) {
 }
 
 func toFloatSafe(v interface{}) (float64, bool) {
+    if r, ok := v.(NepaRetorno); ok { v = r.Valor }
     switch t := v.(type) {
     case float64: return t, true
     case int: return float64(t), true
@@ -72,32 +69,44 @@ func toFloatSafe(v interface{}) (float64, bool) {
 
 func (i *Interpretador) Ejecutar(nodos []ast.Nodo) {
     for _, nodo := range nodos {
-        i.Evaluar(nodo)
+        res := i.Evaluar(nodo)
+        // Si hay un error o un retorno fuera de función, manejarlo aquí
+        if _, ok := res.(NepaRetorno); ok {
+            return 
+        }
     }
 }
 
-func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
+func (i *Interpretador) Evaluar(nodo interface{}) interface{} {
     if nodo == nil { return nil }
 
     switch n := nodo.(type) {
 
-    case *ast.Importar, ast.Importar:
+    case *ast.FuncionDef, ast.FuncionDef:
         var nombre string
-        if v, ok := n.(*ast.Importar); ok { nombre = v.Nombre } else { nombre = n.(ast.Importar).Nombre }
-        mod, err := modulo.Cargar(nombre)
-        if err != nil { panic(fmt.Sprintf("Error al cargar módulo '%s': %v", nombre, err)) }
-        i.Modulos[nombre] = mod
+        var fDef *ast.FuncionDef
+        if v, ok := n.(*ast.FuncionDef); ok { 
+            nombre = v.Nombre
+            fDef = v 
+        } else { 
+            d := n.(ast.FuncionDef)
+            nombre = d.Nombre
+            fDef = &d
+        }
+        i.Entorno[nombre] = fDef
+        return nil
+
+    case *ast.Identificador, ast.Identificador:
+        var nombre string
+        if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
+        if val, ok := i.Entorno[nombre]; ok {
+            return val
+        }
         return nil
 
     case *ast.Literal, ast.Literal:
         if v, ok := n.(*ast.Literal); ok { return v.Valor }
         return n.(ast.Literal).Valor
-
-    case *ast.Identificador, ast.Identificador:
-        var nombre string
-        if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
-        if val, ok := i.Entorno[nombre]; ok { return val }
-        return nombre
 
     case *ast.Asignacion, ast.Asignacion:
         var nombre string
@@ -105,13 +114,9 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
         if v, ok := n.(*ast.Asignacion); ok { nombre, valorNodo = v.Nombre, v.Valor } else { 
             nombre, valorNodo = n.(ast.Asignacion).Nombre, n.(ast.Asignacion).Valor 
         }
-
-        if i.Protegidos[nombre] {
-            panic(fmt.Sprintf("Error: No puedes reasignar la función o constante nativa '%s'", nombre))
-        }
-
         valor := i.Evaluar(valorNodo)
-        if f, ok := toFloatSafe(valor); ok { i.Entorno[nombre] = f } else { i.Entorno[nombre] = valor }
+        if r, ok := valor.(NepaRetorno); ok { valor = r.Valor }
+        i.Entorno[nombre] = valor
         return valor
 
     case *ast.OperacionBinaria, ast.OperacionBinaria:
@@ -121,108 +126,110 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
             op, izqN, derN = n.(ast.OperacionBinaria).Operador, n.(ast.OperacionBinaria).Izquierda, n.(ast.OperacionBinaria).Derecha
         }
 
-        if op == "." {
-            modNombre := ""
-            if id, ok := izqN.(*ast.Identificador); ok { modNombre = id.Nombre } else if id, ok := izqN.(ast.Identificador); ok { modNombre = id.Nombre }
-            if mod, existe := i.Modulos[modNombre]; existe {
-                miembro := ""
-                switch m := derN.(type) {
-                case *ast.Identificador: miembro = m.Nombre
-                case ast.Identificador: miembro = m.Nombre
-                }
-                if fn, ok := mod.Funciones[miembro]; ok { return fn }
-                if val, ok := mod.Variables[miembro]; ok { return val }
-            }
-            return nil
-        }
+        resIzq := i.Evaluar(izqN)
+        resDer := i.Evaluar(derN)
 
-        izq, der := i.Evaluar(izqN), i.Evaluar(derN)
-        
-        if op == "+" {
-            _, ok1 := toFloatSafe(izq)
-            _, ok2 := toFloatSafe(der)
-            if !ok1 || !ok2 {
-                return fmt.Sprintf("%v%v", izq, der)
-            }
-        }
+        // IMPORTANTE: Extraer valores reales de retornos para operaciones matemáticas
+        if r, ok := resIzq.(NepaRetorno); ok { resIzq = r.Valor }
+        if r, ok := resDer.(NepaRetorno); ok { resDer = r.Valor }
 
-        v1, ok1 := toFloatSafe(izq)
-        v2, ok2 := toFloatSafe(der)
+        v1, ok1 := toFloatSafe(resIzq)
+        v2, ok2 := toFloatSafe(resDer)
 
         if ok1 && ok2 {
             switch op {
             case "+": return v1 + v2
             case "-": return v1 - v2
             case "*": return v1 * v2
-            case "/": 
-                if v2 == 0 { return 0.0 }
-                return v1 / v2
+            case "/": if v2 != 0 { return v1 / v2 }; return 0.0
             case "==": return v1 == v2
             case "!=": return v1 != v2
-            case ">":  return v1 > v2
-            case "<":  return v1 < v2
-            case ">=": return v1 >= v2
             case "<=": return v1 <= v2
+            case ">=": return v1 >= v2
+            case "<": return v1 < v2
+            case ">": return v1 > v2
             }
         }
         return nil
 
-    case *ast.Si, ast.Si:
-        var c, cuerpo, sino ast.Nodo
-        if v, ok := n.(*ast.Si); ok { c, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino } else {
-            c, cuerpo, sino = n.(ast.Si).Condicion, n.(ast.Si).Cuerpo, n.(ast.Si).Sino
-        }
-        if val := i.Evaluar(c); val == true || val == 1.0 { return i.Evaluar(cuerpo) } else if sino != nil { return i.Evaluar(sino) }
-        return nil
-
-    case *ast.Mientras, ast.Mientras:
-        var c, cuerpo ast.Nodo
-        if v, ok := n.(*ast.Mientras); ok { c, cuerpo = v.Condicion, v.Cuerpo } else { c, cuerpo = n.(ast.Mientras).Condicion, n.(ast.Mientras).Cuerpo }
-        for {
-            val := i.Evaluar(c)
-            if val != true && val != 1.0 { break }
-            i.Evaluar(cuerpo)
-        }
-        return nil
-
-    // --- BLOQUE AÑADIDO PARA EL PARA UNIVERSAL ---
-    case *ast.Para, ast.Para:
-        var p ast.Para
-        if v, ok := n.(*ast.Para); ok { p = *v } else { p = n.(ast.Para) }
-        return i.EjecutarPara(p)
-
     case *ast.LlamadaFuncion, ast.LlamadaFuncion:
         var nombre string
         var argsN []ast.Nodo
-        if v, ok := n.(*ast.LlamadaFuncion); ok { 
-            nombre, argsN = v.Nombre, v.Args 
-        } else { 
-            nombre, argsN = n.(ast.LlamadaFuncion).Nombre, n.(ast.LlamadaFuncion).Args 
+        if v, ok := n.(*ast.LlamadaFuncion); ok { nombre, argsN = v.Nombre, v.Args } else { nombre, argsN = n.(ast.LlamadaFuncion).Nombre, n.(ast.LlamadaFuncion).Args }
+        
+        obj, existe := i.Entorno[nombre]
+        if !existe {
+            return nil
         }
 
-        obj := i.Entorno[nombre]
-        if obj == nil { return nil }
+        argsValores := make([]interface{}, len(argsN))
+        for idx, arg := range argsN {
+            val := i.Evaluar(arg)
+            if r, ok := val.(NepaRetorno); ok { val = r.Valor }
+            argsValores[idx] = val
+        }
+
+        if fDef, ok := obj.(*ast.FuncionDef); ok {
+            // Clonar entorno para alcance local (Scope)
+            respaldo := make(map[string]interface{})
+            for k, v := range i.Entorno { respaldo[k] = v }
+            
+            for idx, param := range fDef.Parametros {
+                if idx < len(argsValores) { i.Entorno[param] = argsValores[idx] }
+            }
+            
+            resultado := i.Evaluar(fDef.Cuerpo)
+            i.Entorno = respaldo
+            
+            if r, ok := resultado.(NepaRetorno); ok { return r.Valor }
+            return resultado
+        }
 
         if fn, ok := obj.(func(...interface{}) interface{}); ok {
-            args := make([]interface{}, len(argsN))
-            for idx, arg := range argsN { args[idx] = i.Evaluar(arg) }
-            return fn(args...)
+            return fn(argsValores...)
         }
-        if fDef, ok := obj.(*ast.FuncionDef); ok { return i.Evaluar(fDef.Cuerpo) }
-        
         return nil
 
-    case *ast.FuncionDef, ast.FuncionDef:
-        var nombre string
-        if v, ok := n.(*ast.FuncionDef); ok { nombre = v.Nombre } else { nombre = n.(ast.FuncionDef).Nombre }
-        if i.Protegidos[nombre] { panic(fmt.Sprintf("Error: No puedes usar el nombre nativo '%s'", nombre)) }
-        i.Entorno[nombre] = n
+    case *ast.Si, ast.Si:
+        var cond ast.Nodo
+        var cuerpo, sino []ast.Nodo
+        if v, ok := n.(*ast.Si); ok { 
+            cond, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino 
+        } else {
+            s := n.(ast.Si)
+            cond, cuerpo, sino = s.Condicion, s.Cuerpo, s.Sino
+        }
+        valCond := i.Evaluar(cond)
+        if r, ok := valCond.(NepaRetorno); ok { valCond = r.Valor }
+
+        esVerdad := false
+        if b, ok := valCond.(bool); ok { esVerdad = b } else if f, ok := toFloatSafe(valCond); ok { esVerdad = f != 0 }
+
+        if esVerdad { 
+            return i.Evaluar(cuerpo) 
+        } else if sino != nil { 
+            return i.Evaluar(sino) 
+        }
         return nil
+
+    case *ast.Retornar, ast.Retornar:
+        var valNodo ast.Nodo
+        if v, ok := n.(*ast.Retornar); ok { valNodo = v.Valor } else { valNodo = n.(ast.Retornar).Valor }
+        return NepaRetorno{ Valor: i.Evaluar(valNodo) }
 
     case []ast.Nodo:
-        var last interface{}
-        for _, sn := range n { last = i.Evaluar(sn) }
-        return last
+        var ultimo interface{}
+        for _, sn := range n {
+            ultimo = i.Evaluar(sn)
+            if _, ok := ultimo.(NepaRetorno); ok { return ultimo }
+        }
+        return ultimo
+
+    case *ast.Para, ast.Para:
+        var pDef *ast.Para
+        if v, ok := n.(*ast.Para); ok { pDef = v } else { d := n.(ast.Para); pDef = &d }
+        // Se llama al método EjecutarPara que reside en el archivo para.go del mismo paquete
+        return i.EjecutarPara(*pDef)
 
     default:
         return nil

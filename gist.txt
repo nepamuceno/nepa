@@ -1,3 +1,107 @@
+/home/deb/nepa/README.md:
+// =========================================================
+// TEST DE ESTRES INTEGRAL: SDK MATEMATICAS NEPA
+// =========================================================
+# Calculo de area y condicional en Nepa
+radio = 5
+area = pi * radio * radio
+
+si (area > 50) {
+    imprime("El area es grande:", area)
+} sino {
+    imprime("El area es pequeña:", area)
+}
+
+x = 0
+mientras (x < 3) {
+    imprime("Contador:", x)
+    x = x + 1
+}
+
+imprime("--- INICIANDO DIAGNOSTICO DEL SISTEMA ---")
+
+// TEST 1 SISTEMA DE AYUDA
+imprime("\n[1] Verificando Sistema de Ayuda...")
+imprime(ayuda("vol_cono"))
+imprime(ayuda("proyectil_pos"))
+imprime(ayuda("es_primo"))
+
+// TEST 2 CONSTANTES
+imprime("\n[2] Validando Constantes...")
+imprime("PI: " + pi)
+imprime("E: " + e)
+imprime("Gravedad: " + gravedad)
+imprime("PHI: " + phi)
+imprime("Velocidad de la Luz: " + luz)
+
+// TEST 3 GEOMETRIA 3D
+imprime("\n[3] Calculando Volumenes Complejos...")
+radio = 5.5
+altura = 12.0
+v_esfera = vol_esfera(radio)
+v_cono = vol_cono(radio, altura)
+v_cil = vol_cilindro(radio, altura)
+
+imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
+imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
+imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+
+// TEST 4 TEORIA DE NUMEROS
+imprime("\n[4] Stress de Teoria de Numeros (Buscando Primos hasta 50)...")
+n = 1
+mientras n <= 50 {
+    si es_primo(n) {
+        imprime("Encontrado primo: " + n)
+    }
+    n = n + 1
+}
+
+// TEST 5 ESTADISTICA
+imprime("\n[5] Stress de Estadistica...")
+avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+imprime("Media de 10-100: " + avg)
+imprime("Varianza de 1-10: " + formatear(var_val, 2))
+imprime("Desviacion Estandar: " + formatear(desv, 4))
+
+// TEST 6 FISICA CINEMATICA
+imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45)...")
+t = 0.0
+mientras t <= 5.0 {
+    pos = proyectil_pos(50, 45, t)
+    imprime("Tiempo " + t + "s -> Posicion [x,y]: " + pos)
+    t = t + 1.0
+}
+
+// TEST 7 BITWISE Y BASES
+imprime("\n[7] Operaciones de Bajo Nivel...")
+num = 255
+imprime("Decimal: " + num)
+imprime("Binario: " + binario(num))
+imprime("Hexadecimal: " + hex(num))
+imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
+
+// TEST 8 FINANZAS
+imprime("\n[8] Test de Interes y Potencia...")
+capital = 1000
+tasa = 0.05
+tiempo = 10
+total = interes_compuesto(capital, tasa, tiempo)
+imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
+
+// TEST 9 TRIGONOMETRIA
+imprime("\n[9] Funciones Hiperbolicas...")
+val = 1.0
+imprime("senoh(1.0): " + formatear(senoh(val), 6))
+imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
+
+imprime("\n--- TEST DE ESTRES FINALIZADO CON EXITO ---")
+
+
+
+
 /home/deb/nepa/desarrollo/cmd/nepa_lib/main.go:
 package main
 
@@ -133,6 +237,10 @@ func main() {
 
 
 
+
+
+
+
 /home/deb/nepa/desarrollo/cmd/nepa/main.go:
 package main
 
@@ -175,99 +283,99 @@ func main() {
 
 
 
+
+
+
+
 /home/deb/nepa/desarrollo/interno/ast/ast.go:
 package ast
 
-// Posicion representa la ubicación de un nodo en el código fuente
 type Posicion struct {
-	Linea   int
-	Columna int
-	Archivo string
+    Linea   int
+    Columna int
+    Archivo string
 }
 
-// Base contiene la información común a todos los nodos
 type Base struct {
-	Pos Posicion
+    Pos Posicion
 }
 
-// Nodo es la interfaz base para todos los elementos del AST
+// Nodo vuelve a ser una interfaz vacía para que []ast.Nodo sea compatible
 type Nodo interface{}
 
-// Importar representa la sentencia 'incluir' (Añadido para el motor de módulos)
 type Importar struct {
-	Base
-	Nombre string
+    Base
+    Nombre string
 }
 
-// Identificador representa nombres de variables o funciones
 type Identificador struct {
-	Base
-	Nombre string
+    Base
+    Nombre string
 }
 
-// Literal representa valores constantes (números, strings, booleanos)
 type Literal struct {
-	Base
-	Valor interface{}
+    Base
+    Valor interface{}
 }
 
-// Asignacion representa la creación o actualización de una variable
 type Asignacion struct {
-	Base
-	Nombre string
-	Valor  Nodo
+    Base
+    Nombre string
+    Valor  Nodo
 }
 
-// OperacionBinaria representa cálculos como suma, resta, comparaciones
 type OperacionBinaria struct {
-	Base
-	Izquierda Nodo
-	Operador  string
-	Derecha   Nodo
+    Base
+    Izquierda Nodo
+    Operador  string
+    Derecha   Nodo
 }
 
-// LlamadaFuncion representa la ejecución de una función nativa o de usuario
 type LlamadaFuncion struct {
-	Base
-	Nombre string
-	Args   []Nodo
+    Base
+    Nombre string
+    Args   []Nodo
 }
 
-// LlamadaModulo representa el acceso a funciones/variables de un SDK (ej. matematicas.raiz)
 type LlamadaModulo struct {
-	Base
-	Modulo  string
-	Funcion string
-	Args    []Nodo
+    Base
+    Modulo  string
+    Funcion string
+    Args    []Nodo
 }
 
-// Si representa la estructura condicional
 type Si struct {
-	Base
-	Condicion Nodo
-	Cuerpo    Nodo
-	Sino      Nodo
+    Base
+    Condicion Nodo
+    Cuerpo    Nodo
+    Sino      Nodo
 }
 
-// Mientras representa el bucle iterativo
 type Mientras struct {
-	Base
-	Condicion Nodo
-	Cuerpo    Nodo
+    Base
+    Condicion Nodo
+    Cuerpo    Nodo
 }
 
-// FuncionDef representa la declaración de una nueva función
 type FuncionDef struct {
-	Base
-	Nombre     string
-	Parametros []string
-	Cuerpo     Nodo
+    Base
+    Nombre     string
+    Parametros []string
+    Cuerpo     Nodo
 }
 
-// Retornar representa la sentencia de salida de una función
 type Retornar struct {
-	Base
-	Valor Nodo
+    Base
+    Valor Nodo
+}
+
+type Para struct {
+    Base
+    Variable   string
+    Origen     Nodo
+    Fin        Nodo
+    Incremento Nodo
+    Cuerpo     Nodo
 }
 
 
@@ -277,74 +385,76 @@ type Retornar struct {
 package lexer
 
 import (
-    "unicode"
+	"fmt"
+	"os"
+	"unicode"
 )
 
 type TipoToken int
 
 const (
-    T_EOF TipoToken = iota
-    T_IDENT
-    T_NUMERO
-    T_CADENA
-    T_OP
-    T_IGUAL
-    T_PARENT_A
-    T_PARENT_C
-    T_COMA
-    T_PUNTO
-    T_DOSPUNTOS
-    T_KEYWORD
-    T_LINEA
-    T_INDENT
-    T_DEDENT
+	T_EOF TipoToken = iota
+	T_IDENT
+	T_NUMERO
+	T_CADENA
+	T_OP
+	T_IGUAL
+	T_PARENT_A
+	T_PARENT_C
+	T_COMA
+	T_PUNTO
+	T_DOSPUNTOS
+	T_KEYWORD
+	T_LINEA
+	T_INDENT
+	T_DEDENT
 )
 
 type Token struct {
-    Tipo    TipoToken
-    Literal string
-    Linea   int
+	Tipo    TipoToken
+	Literal string
+	Linea   int
 }
 
 type Lexer struct {
-    entrada     string
-    pos         int
-    linea       int
-    indents     []int
-    pendientes  []Token
+	entrada    string
+	pos        int
+	linea      int
+	indents    []int
+	pendientes []Token
 }
 
 func Nuevo(entrada string) *Lexer {
-    return &Lexer{
-        entrada: entrada,
-        linea:   1,
-        indents: []int{0},
-    }
+	return &Lexer{
+		entrada: entrada,
+		linea:   1,
+		indents: []int{0},
+	}
 }
 
 func (l *Lexer) Tokenizar() []Token {
-    var tokens []Token
-    for {
-        t := l.SiguienteToken()
-        tokens = append(tokens, t)
-        if t.Tipo == T_EOF {
-            break
-        }
-    }
-    return tokens
+	var tokens []Token
+	for {
+		t := l.SiguienteToken()
+		tokens = append(tokens, t)
+		if t.Tipo == T_EOF {
+			break
+		}
+	}
+	return tokens
 }
 
 func (l *Lexer) SiguienteToken() Token {
-    if len(l.pendientes) > 0 {
-        t := l.pendientes[0]
-        l.pendientes = l.pendientes[1:]
-        return t
-    }
+	if len(l.pendientes) > 0 {
+		t := l.pendientes[0]
+		l.pendientes = l.pendientes[1:]
+		return t
+	}
 
-    l.saltarEspacios()
+	l.saltarEspacios()
 
-    if l.pos >= len(l.entrada) {
-        // Al final, cerramos todos los niveles de indentación abiertos
+	if l.pos >= len(l.entrada) {
+        // Si todavía hay niveles de indentación (más allá del nivel 0 inicial)
         if len(l.indents) > 1 {
             l.indents = l.indents[:len(l.indents)-1]
             return Token{T_DEDENT, "", l.linea}
@@ -352,144 +462,170 @@ func (l *Lexer) SiguienteToken() Token {
         return Token{T_EOF, "", l.linea}
     }
 
-    char := l.entrada[l.pos]
+	char := l.entrada[l.pos]
 
-    // Soporte para comentarios (ignora hasta el final de la línea)
-    if char == '#' {
-        for l.pos < len(l.entrada) && l.entrada[l.pos] != '\n' {
-            l.pos++
-        }
-        return l.SiguienteToken()
-    }
+	// Soporte para comentarios (ignora hasta el final de la línea)
+	if char == '#' {
+		for l.pos < len(l.entrada) && l.entrada[l.pos] != '\n' {
+			l.pos++
+		}
+		return l.SiguienteToken()
+	}
 
-    // Manejo de nuevas líneas e indentación
-    if char == '\n' {
-        l.pos++
-        l.linea++
-        l.procesarIndentacion()
-        return Token{T_LINEA, "\n", l.linea - 1}
-    }
+	// Manejo de nuevas líneas e indentación
+	if char == '\n' {
+		l.pos++
+		l.linea++
+		
+		// Antes de devolver la línea, procesamos la indentación de la SIGUIENTE línea
+		l.procesarIndentacion()
+		
+		// Si procesarIndentacion generó INDENT/DEDENT, los entregamos PRIMERO
+		if len(l.pendientes) > 0 {
+			t := l.pendientes[0]
+			l.pendientes = l.pendientes[1:]
+			// IMPORTANTE: El T_LINEA se guarda para después, para que el Parser
+			// sepa que la instrucción terminó ANTES de que empiece el bloque.
+			l.pendientes = append(l.pendientes, Token{T_LINEA, "\n", l.linea - 1})
+			return t
+		}
+		
+		return Token{T_LINEA, "\n", l.linea - 1}
+	}
 
-    // Identificadores y Palabras Clave
-    if unicode.IsLetter(rune(char)) || char == '_' {
-        inicio := l.pos
-        for l.pos < len(l.entrada) && (unicode.IsLetter(rune(l.entrada[l.pos])) || unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '_') {
-            l.pos++
-        }
-        lit := l.entrada[inicio:l.pos]
-        if l.esKeyword(lit) {
-            return Token{T_KEYWORD, lit, l.linea}
-        }
-        return Token{T_IDENT, lit, l.linea}
-    }
+	// Identificadores y Palabras Clave
+	if unicode.IsLetter(rune(char)) || char == '_' {
+		inicio := l.pos
+		for l.pos < len(l.entrada) && (unicode.IsLetter(rune(l.entrada[l.pos])) || unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '_') {
+			l.pos++
+		}
+		lit := l.entrada[inicio:l.pos]
+		if l.esKeyword(lit) {
+			return Token{T_KEYWORD, lit, l.linea}
+		}
+		return Token{T_IDENT, lit, l.linea}
+	}
 
-    // Números
-    if unicode.IsDigit(rune(char)) {
-        inicio := l.pos
-        for l.pos < len(l.entrada) && (unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '.') {
-            l.pos++
-        }
-        return Token{T_NUMERO, l.entrada[inicio:l.pos], l.linea}
-    }
+	// Números
+	if unicode.IsDigit(rune(char)) {
+		inicio := l.pos
+		for l.pos < len(l.entrada) && (unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '.') {
+			l.pos++
+		}
+		return Token{T_NUMERO, l.entrada[inicio:l.pos], l.linea}
+	}
 
-    // Cadenas
-    if char == '"' {
-        l.pos++
-        inicio := l.pos
-        for l.pos < len(l.entrada) && l.entrada[l.pos] != '"' {
-            l.pos++
-        }
-        lit := l.entrada[inicio:l.pos]
-        l.pos++
-        return Token{T_CADENA, lit, l.linea}
-    }
+	// Cadenas
+	if char == '"' {
+		l.pos++
+		inicio := l.pos
+		for l.pos < len(l.entrada) && l.entrada[l.pos] != '"' {
+			l.pos++
+		}
+		lit := l.entrada[inicio:l.pos]
+		l.pos++
+		return Token{T_CADENA, lit, l.linea}
+	}
 
-    // Operadores y Símbolos
-    l.pos++
-    switch char {
-    case '=':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "==", l.linea}
-        }
-        return Token{T_IGUAL, "=", l.linea}
-    case '+': return Token{T_OP, "+", l.linea}
-    case '-': return Token{T_OP, "-", l.linea}
-    case '*': return Token{T_OP, "*", l.linea}
-    case '/': return Token{T_OP, "/", l.linea}
-    case '>':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, ">=", l.linea}
-        }
-        return Token{T_OP, ">", l.linea}
-    case '<':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "<=", l.linea}
-        }
-        return Token{T_OP, "<", l.linea}
-    case '!':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "!=", l.linea}
-        }
-        // Si es solo !, lo tratamos como operador aunque falte el =
-        return Token{T_OP, "!", l.linea}
-    case '(': return Token{T_PARENT_A, "(", l.linea}
-    case ')': return Token{T_PARENT_C, ")", l.linea}
-    case ',': return Token{T_COMA, ",", l.linea}
-    case '.': return Token{T_PUNTO, ".", l.linea}
-    case ':': return Token{T_DOSPUNTOS, ":", l.linea}
-    }
+	// Operadores y Símbolos
+	l.pos++
+	switch char {
+	// --- BLOQUE DE SEGURIDAD: PROHIBICIÓN DE LLAVES Y CORCHETES ---
+	case '{', '}', '[', ']':
+		fmt.Printf("❌ Error de Sintaxis Nepa (Línea %d): Carácter prohibido '%c'. Nepa utiliza indentación profunda para definir bloques.\n", l.linea, char)
+		os.Exit(1)
 
-    return l.SiguienteToken()
+	case '=':
+		if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+			l.pos++
+			return Token{T_OP, "==", l.linea}
+		}
+		return Token{T_IGUAL, "=", l.linea}
+	case '+': 
+		return Token{T_OP, "+", l.linea}
+	case '-': 
+		return Token{T_OP, "-", l.linea}
+	case '*': 
+		return Token{T_OP, "*", l.linea}
+	case '/': 
+		return Token{T_OP, "/", l.linea}
+	case '>':
+		if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+			l.pos++
+			return Token{T_OP, ">=", l.linea}
+		}
+		return Token{T_OP, ">", l.linea}
+	case '<':
+		if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+			l.pos++
+			return Token{T_OP, "<=", l.linea}
+		}
+		return Token{T_OP, "<", l.linea}
+	case '!':
+		if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
+			l.pos++
+			return Token{T_OP, "!=", l.linea}
+		}
+		return Token{T_OP, "!", l.linea}
+	case '(': 
+		return Token{T_PARENT_A, "(", l.linea}
+	case ')': 
+		return Token{T_PARENT_C, ")", l.linea}
+	case ',': 
+		return Token{T_COMA, ",", l.linea}
+	case '.': 
+		return Token{T_PUNTO, ".", l.linea}
+	case ':': 
+		return Token{T_DOSPUNTOS, ":", l.linea}
+	}
+
+	return l.SiguienteToken()
 }
 
 func (l *Lexer) procesarIndentacion() {
-    espacios := 0
-    for l.pos < len(l.entrada) && (l.entrada[l.pos] == ' ' || l.entrada[l.pos] == '\t') {
-        if l.entrada[l.pos] == '\t' {
-            espacios += 4
-        } else {
-            espacios++
-        }
-        l.pos++
-    }
+	espacios := 0
+	for l.pos < len(l.entrada) && (l.entrada[l.pos] == ' ' || l.entrada[l.pos] == '\t') {
+		if l.entrada[l.pos] == '\t' {
+			espacios += 4
+		} else {
+			espacios++
+		}
+		l.pos++
+	}
 
-    // Si la línea está vacía o es un comentario, ignorar procesamiento de indentación
-    if l.pos < len(l.entrada) && (l.entrada[l.pos] == '\n' || l.entrada[l.pos] == '#') {
-        return
-    }
+	// Si la línea está vacía o es un comentario, ignorar procesamiento de indentación
+	if l.pos < len(l.entrada) && (l.entrada[l.pos] == '\n' || l.entrada[l.pos] == '#') {
+		return
+	}
 
-    ultimo := l.indents[len(l.indents)-1]
-    if espacios > ultimo {
-        l.indents = append(l.indents, espacios)
-        l.pendientes = append(l.pendientes, Token{T_INDENT, "", l.linea})
-    } else {
-        for espacios < ultimo {
-            l.indents = l.indents[:len(l.indents)-1]
-            ultimo = l.indents[len(l.indents)-1]
-            l.pendientes = append(l.pendientes, Token{T_DEDENT, "", l.linea})
-        }
-    }
+	ultimo := l.indents[len(l.indents)-1]
+	if espacios > ultimo {
+		l.indents = append(l.indents, espacios)
+		l.pendientes = append(l.pendientes, Token{T_INDENT, "", l.linea})
+	} else if espacios < ultimo {
+		// CORRECCIÓN: Generar múltiples DEDENTS si bajamos varios niveles de golpe
+		for len(l.indents) > 1 && espacios < l.indents[len(l.indents)-1] {
+			l.indents = l.indents[:len(l.indents)-1]
+			l.pendientes = append(l.pendientes, Token{T_DEDENT, "", l.linea})
+		}
+	}
 }
 
 func (l *Lexer) saltarEspacios() {
-    // Solo saltamos espacios si no estamos al inicio de una línea procesando indentación
-    for l.pos < len(l.entrada) && l.entrada[l.pos] == ' ' {
-        l.pos++
-    }
+	// Solo saltamos espacios si no estamos al inicio de una línea procesando indentación
+	for l.pos < len(l.entrada) && l.entrada[l.pos] == ' ' {
+		l.pos++
+	}
 }
 
 func (l *Lexer) esKeyword(lit string) bool {
-    ks := []string{"variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no"}
-    for _, k := range ks {
-        if k == lit {
-            return true
-        }
-    }
-    return false
+	ks := []string{"func", "var", "variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no", "para", "desde", "hasta", "en", "incremento"}
+	for _, k := range ks {
+		if k == lit { 
+			return true 
+		}
+	}
+	return false
 }
 
 
@@ -506,6 +642,9 @@ import (
 	"strings"
 )
 
+// NepaRetorno es necesario para capturar el valor de 'retorna' en funciones
+type NepaRetorno struct{ Valor interface{} }
+
 type Interpretador struct {
 	Entorno    map[string]interface{}
 	Modulos    map[string]*modulo.LibreriaNepa
@@ -519,7 +658,7 @@ func NuevoEntorno() *Interpretador {
 		Protegidos: make(map[string]bool),
 	}
 
-	// Registro de funciones nativas
+	// --- REGISTRO DE FUNCIONES NATIVAS ---
 	i.registrarNativa("imprime", func(args ...interface{}) interface{} {
 		for idx, arg := range args {
 			if s, ok := arg.(string); ok {
@@ -535,14 +674,7 @@ func NuevoEntorno() *Interpretador {
 		return nil
 	})
 
-	i.registrarNativa("formatear", func(args ...interface{}) interface{} {
-		if len(args) < 2 { return args[0] }
-		val, _ := toFloatSafe(args[0])
-		prec, _ := toFloatSafe(args[1])
-		return fmt.Sprintf("%.*f", int(prec), val)
-	})
-
-	// Carga automática del SDK
+	// Carga de SDK Matemáticas por defecto
 	sdk, err := modulo.Cargar("matematicas")
 	if err == nil {
 		for nombre, fn := range sdk.Funciones { i.registrarNativa(nombre, fn) }
@@ -558,6 +690,7 @@ func (i *Interpretador) registrarNativa(nombre string, valor interface{}) {
 }
 
 func toFloatSafe(v interface{}) (float64, bool) {
+	if r, ok := v.(NepaRetorno); ok { v = r.Valor }
 	switch t := v.(type) {
 	case float64: return t, true
 	case int: return float64(t), true
@@ -579,23 +712,31 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
 
 	switch n := nodo.(type) {
 
-	case *ast.Importar, ast.Importar:
+	case *ast.FuncionDef, ast.FuncionDef:
 		var nombre string
-		if v, ok := n.(*ast.Importar); ok { nombre = v.Nombre } else { nombre = n.(ast.Importar).Nombre }
-		mod, err := modulo.Cargar(nombre)
-		if err != nil { panic(fmt.Sprintf("Error al cargar módulo '%s': %v", nombre, err)) }
-		i.Modulos[nombre] = mod
+		var fDef *ast.FuncionDef
+		if v, ok := n.(*ast.FuncionDef); ok { 
+			nombre = v.Nombre
+			fDef = v 
+		} else { 
+			d := n.(ast.FuncionDef)
+			nombre = d.Nombre
+			fDef = &d
+		}
+		i.Entorno[nombre] = fDef
+		return nil
+
+	case *ast.Identificador, ast.Identificador:
+		var nombre string
+		if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
+		if val, ok := i.Entorno[nombre]; ok {
+			return val
+		}
 		return nil
 
 	case *ast.Literal, ast.Literal:
 		if v, ok := n.(*ast.Literal); ok { return v.Valor }
 		return n.(ast.Literal).Valor
-
-	case *ast.Identificador, ast.Identificador:
-		var nombre string
-		if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
-		if val, ok := i.Entorno[nombre]; ok { return val }
-		return nombre
 
 	case *ast.Asignacion, ast.Asignacion:
 		var nombre string
@@ -603,13 +744,9 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
 		if v, ok := n.(*ast.Asignacion); ok { nombre, valorNodo = v.Nombre, v.Valor } else { 
 			nombre, valorNodo = n.(ast.Asignacion).Nombre, n.(ast.Asignacion).Valor 
 		}
-
-		if i.Protegidos[nombre] {
-			panic(fmt.Sprintf("Error: No puedes reasignar la función o constante nativa '%s'", nombre))
-		}
-
 		valor := i.Evaluar(valorNodo)
-		if f, ok := toFloatSafe(valor); ok { i.Entorno[nombre] = f } else { i.Entorno[nombre] = valor }
+		if r, ok := valor.(NepaRetorno); ok { valor = r.Valor }
+		i.Entorno[nombre] = valor
 		return valor
 
 	case *ast.OperacionBinaria, ast.OperacionBinaria:
@@ -619,59 +756,28 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
 			op, izqN, derN = n.(ast.OperacionBinaria).Operador, n.(ast.OperacionBinaria).Izquierda, n.(ast.OperacionBinaria).Derecha
 		}
 
-		if op == "." {
-			modNombre := ""
-			if id, ok := izqN.(*ast.Identificador); ok { modNombre = id.Nombre } else if id, ok := izqN.(ast.Identificador); ok { modNombre = id.Nombre }
-			if mod, existe := i.Modulos[modNombre]; existe {
-				miembro := ""
-				switch m := derN.(type) {
-				case *ast.Identificador: miembro = m.Nombre
-				case ast.Identificador: miembro = m.Nombre
-				}
-				if fn, ok := mod.Funciones[miembro]; ok { return fn }
-				if val, ok := mod.Variables[miembro]; ok { return val }
-			}
-			return nil
-		}
+		resIzq := i.Evaluar(izqN)
+		resDer := i.Evaluar(derN)
 
-		izq, der := i.Evaluar(izqN), i.Evaluar(derN)
-		v1, ok1 := toFloatSafe(izq)
-		v2, ok2 := toFloatSafe(der)
+		// IMPORTANTE: Extraer valores reales de retornos para operaciones matemáticas
+		if r, ok := resIzq.(NepaRetorno); ok { resIzq = r.Valor }
+		if r, ok := resDer.(NepaRetorno); ok { resDer = r.Valor }
+
+		v1, ok1 := toFloatSafe(resIzq)
+		v2, ok2 := toFloatSafe(resDer)
 
 		if ok1 && ok2 {
 			switch op {
 			case "+": return v1 + v2
 			case "-": return v1 - v2
 			case "*": return v1 * v2
-			case "/": 
-				if v2 == 0 { return 0.0 }
-				return v1 / v2
+			case "/": if v2 != 0 { return v1 / v2 }; return 0.0
 			case "==": return v1 == v2
-			case "!=": return v1 != v2
-			case ">":  return v1 > v2
-			case "<":  return v1 < v2
-			case ">=": return v1 >= v2
 			case "<=": return v1 <= v2
+			case ">=": return v1 >= v2
+			case "<": return v1 < v2
+			case ">": return v1 > v2
 			}
-		}
-		if op == "+" { return fmt.Sprintf("%v%v", izq, der) }
-		return nil
-
-	case *ast.Si, ast.Si:
-		var c, cuerpo, sino ast.Nodo
-		if v, ok := n.(*ast.Si); ok { c, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino } else {
-			c, cuerpo, sino = n.(ast.Si).Condicion, n.(ast.Si).Cuerpo, n.(ast.Si).Sino
-		}
-		if val := i.Evaluar(c); val == true || val == 1.0 { return i.Evaluar(cuerpo) } else if sino != nil { return i.Evaluar(sino) }
-		return nil
-
-	case *ast.Mientras, ast.Mientras:
-		var c, cuerpo ast.Nodo
-		if v, ok := n.(*ast.Mientras); ok { c, cuerpo = v.Condicion, v.Cuerpo } else { c, cuerpo = n.(ast.Mientras).Condicion, n.(ast.Mientras).Cuerpo }
-		for {
-			val := i.Evaluar(c)
-			if val != true && val != 1.0 { break }
-			i.Evaluar(cuerpo)
 		}
 		return nil
 
@@ -679,31 +785,318 @@ func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
 		var nombre string
 		var argsN []ast.Nodo
 		if v, ok := n.(*ast.LlamadaFuncion); ok { nombre, argsN = v.Nombre, v.Args } else { nombre, argsN = n.(ast.LlamadaFuncion).Nombre, n.(ast.LlamadaFuncion).Args }
-
+		
 		obj := i.Entorno[nombre]
-		if fn, ok := obj.(func(...interface{}) interface{}); ok {
-			args := make([]interface{}, len(argsN))
-			for idx, arg := range argsN { args[idx] = i.Evaluar(arg) }
-			return fn(args...)
+		argsValores := make([]interface{}, len(argsN))
+		for idx, arg := range argsN {
+			val := i.Evaluar(arg)
+			if r, ok := val.(NepaRetorno); ok { val = r.Valor }
+			argsValores[idx] = val
 		}
-		if fDef, ok := obj.(*ast.FuncionDef); ok { return i.Evaluar(fDef.Cuerpo) }
-		panic(fmt.Sprintf("'%s' no es una función invocable", nombre))
 
-	case *ast.FuncionDef, ast.FuncionDef:
-		var nombre string
-		if v, ok := n.(*ast.FuncionDef); ok { nombre = v.Nombre } else { nombre = n.(ast.FuncionDef).Nombre }
-		if i.Protegidos[nombre] { panic(fmt.Sprintf("Error: No puedes usar el nombre nativo '%s'", nombre)) }
-		i.Entorno[nombre] = n
+		if fDef, ok := obj.(*ast.FuncionDef); ok {
+			respaldo := make(map[string]interface{})
+			for k, v := range i.Entorno { respaldo[k] = v }
+			
+			for idx, param := range fDef.Parametros {
+				if idx < len(argsValores) { i.Entorno[param] = argsValores[idx] }
+			}
+			
+			resultado := i.Evaluar(fDef.Cuerpo)
+			i.Entorno = respaldo
+			
+			if r, ok := resultado.(NepaRetorno); ok { return r.Valor }
+			return resultado
+		}
+
+		if fn, ok := obj.(func(...interface{}) interface{}); ok {
+			return fn(argsValores...)
+		}
 		return nil
 
+	case *ast.Si, ast.Si:
+		var cond, cuerpo, sino ast.Nodo
+		if v, ok := n.(*ast.Si); ok { cond, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino } else {
+			cond, cuerpo, sino = n.(ast.Si).Condicion, n.(ast.Si).Cuerpo, n.(ast.Si).Sino
+		}
+		valCond := i.Evaluar(cond)
+		if r, ok := valCond.(NepaRetorno); ok { valCond = r.Valor }
+
+		esVerdad := false
+		if b, ok := valCond.(bool); ok { esVerdad = b } else if f, ok := toFloatSafe(valCond); ok { esVerdad = f != 0 }
+
+		if esVerdad { 
+			return i.Evaluar(cuerpo) 
+		} else if sino != nil { 
+			return i.Evaluar(sino) 
+		}
+		return nil
+
+	case *ast.Retornar, ast.Retornar:
+		var valNodo ast.Nodo
+		if v, ok := n.(*ast.Retornar); ok { valNodo = v.Valor } else { valNodo = n.(ast.Retornar).Valor }
+		return NepaRetorno{ Valor: i.Evaluar(valNodo) }
+
 	case []ast.Nodo:
-		var last interface{}
-		for _, sn := range n { last = i.Evaluar(sn) }
-		return last
+		var ultimo interface{}
+		for _, sn := range n {
+			ultimo = i.Evaluar(sn)
+			if _, ok := ultimo.(NepaRetorno); ok { return ultimo }
+		}
+		return ultimo
+
+	case *ast.Para:
+		return i.EjecutarPara(*n)
 
 	default:
 		return nil
 	}
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/para.go:
+package evaluador
+
+import (
+	"fmt"
+	"nepa/desarrollo/interno/ast"
+	"reflect"
+)
+
+// EjecutarPara es el motor universal de iteración de Nepa.
+// Soporta: Rangos (C++), Colecciones (Python), Cadenas (Bash) y Objetos.
+func (i *Interpretador) EjecutarPara(p ast.Para) interface{} {
+	
+	// CASO 1: Rango Numérico (Desde/Hasta/Incremento) - Estilo C++/Fortran
+	if p.Fin != nil {
+		return i.ejecutarRangoUniversal(p)
+	}
+
+	// CASO 2: Iteración de Contenido (En) - Estilo Python/Bash
+	origen := i.Evaluar(p.Origen)
+	if origen == nil {
+		return nil
+	}
+
+	// --- NUEVO: SOPORTE PARA CORE_PARA (Iteradores de Archivos/Sistemas) ---
+	if it, ok := origen.(Iterador); ok {
+		// defer it.Cerrar() // Opcional: Descomenta si quieres cierre automático
+		for {
+			valor, siguiente := it.Siguiente()
+			if !siguiente {
+				break
+			}
+			i.Entorno[p.Variable] = valor
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			// Solo propagamos si es un NepaRetorno real
+			if _, ok := res.(NepaRetorno); ok { return res } 
+		}
+		return nil
+	}
+
+	// ROBUSTEZ: Indirect resuelve punteros o interfaces para llegar al valor real
+	val := reflect.Indirect(reflect.ValueOf(origen))
+
+	switch val.Kind() {
+	case reflect.String:
+		// Itera letra por letra
+		for _, char := range val.String() {
+			i.Entorno[p.Variable] = string(char)
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
+		}
+
+	case reflect.Slice, reflect.Array:
+		// Itera matrices de cualquier tipo [1, 2, 3] o ["a", "b"]
+		for idx := 0; idx < val.Len(); idx++ {
+			i.Entorno[p.Variable] = val.Index(idx).Interface()
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
+		}
+
+	case reflect.Map:
+		// Itera sobre llaves de un diccionario/objeto
+		iter := val.MapRange()
+		for iter.Next() {
+			// Por defecto entregamos la llave (estilo Python/JS)
+			i.Entorno[p.Variable] = iter.Key().Interface()
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
+		}
+
+	default:
+		// ROBUSTEZ TOTAL: Si es un objeto único (Int, Bool, etc), se procesa una vez
+		i.Entorno[p.Variable] = origen
+		res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+		if _, ok := res.(NepaRetorno); ok { return res }
+		return nil
+	}
+
+	return nil
+}
+
+// ejecutarRangoUniversal maneja cálculos complejos y saltos dinámicos
+func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
+	// Evaluación de expresiones complejas iniciales
+	inicio, ok1 := toFloatSafe(i.Evaluar(p.Origen))
+	fin, ok2 := toFloatSafe(i.Evaluar(p.Fin))
+
+	if !ok1 || !ok2 {
+		fmt.Println("❌ Error Nepa: Los límites 'desde/hasta' deben dar un resultado numérico.")
+		return nil
+	}
+
+	actual := inicio
+	paso := 1.0 // Paso por defecto
+	if inicio > fin { paso = -1.0 } // Auto-detección de dirección regresiva
+
+	for {
+		// 1. Recalcular paso y meta (Dinamismo Total en cada vuelta)
+		if vFin, okF := toFloatSafe(i.Evaluar(p.Fin)); okF {
+			fin = vFin
+		}
+		if p.Incremento != nil {
+			if vPaso, okP := toFloatSafe(i.Evaluar(p.Incremento)); okP {
+				paso = vPaso
+			}
+		}
+
+		// 2. Protección contra bucle infinito (paso cero)
+		if paso == 0 {
+			fmt.Println("⚠️ Advertencia: Incremento cero detectado, saliendo del bucle para evitar bloqueo.")
+			break
+		}
+
+		// 3. Verificación de límite UNIVERSAL (Bidireccional)
+		if (paso > 0 && actual > fin) || (paso < 0 && actual < fin) {
+			break
+		}
+
+		// 4. Inyectar valor en el entorno del intérprete
+		// PARCHE: Aseguramos la inyección directa en el mapa de entorno actual
+		i.Entorno[p.Variable] = actual
+
+		// 5. Ejecutar cuerpo del bucle usando el evaluador universal
+		res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+		
+		// Solo retornamos si es un NepaRetorno real de una función
+		if _, ok := res.(NepaRetorno); ok {
+			return res
+		}
+
+		// 6. Aplicar incremento para la siguiente iteración
+		actual += paso
+	}
+	
+	return nil
+}
+
+// ejecutarCuerpoUniversal es una función de apoyo para manejar cualquier tipo de nodo en el cuerpo
+func (i *Interpretador) ejecutarCuerpoUniversal(cuerpo interface{}) interface{} {
+	switch c := cuerpo.(type) {
+	case []ast.Nodo:
+		return i.ejecutarBloque(c)
+	case ast.Nodo:
+		return i.Evaluar(c)
+	default:
+		return nil
+	}
+}
+
+// ejecutarBloque procesa la lista de instrucciones internas del bucle
+func (i *Interpretador) ejecutarBloque(nodos []ast.Nodo) interface{} {
+	var ultimo interface{}
+	for _, nodo := range nodos {
+		// Evaluación secuencial de cada nodo del AST
+		ultimo = i.Evaluar(nodo)
+		
+		// Manejo de sentencias de interrupción o retorno (Propagación)
+		if _, ok := ultimo.(NepaRetorno); ok {
+			return ultimo
+		}
+	}
+	return ultimo
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/core_para.go:
+package evaluador
+
+import (
+	"bufio"
+	"os"
+)
+
+// Iterador representa la interfaz que cualquier objeto complejo 
+// (archivos, sockets, bases de datos) debe cumplir para ser usado en un 'para'
+type Iterador interface {
+	Siguiente() (interface{}, bool)
+	Cerrar() error
+}
+
+// --- Soporte para Archivos ---
+
+type ArchivoIterador struct {
+	file    *os.File
+	scanner *bufio.Scanner
+}
+
+func (ai *ArchivoIterador) Siguiente() (interface{}, bool) {
+	if ai.scanner.Scan() {
+		return ai.scanner.Text(), true
+	}
+	return nil, false
+}
+
+func (ai *ArchivoIterador) Cerrar() error {
+	return ai.file.Close()
+}
+
+// --- Soporte para Rangos Infinitos o Generadores ---
+
+type GeneradorRango struct {
+	Actual float64
+	Paso   float64
+}
+
+func (gr *GeneradorRango) Siguiente() (interface{}, bool) {
+	val := gr.Actual
+	gr.Actual += gr.Paso
+	return val, true // Siempre hay un siguiente valor
+}
+
+// Para que GeneradorRango cumpla con la interfaz Iterador y no rompa el 'para'
+func (gr *GeneradorRango) Cerrar() error {
+	return nil
+}
+
+// --- Funciones de Utilidad Core ---
+
+// ConvertirAIterador ahora usa *Interpretador para coincidir con tu evaluador.go
+func (i *Interpretador) ConvertirAIterador(objeto interface{}) Iterador {
+	switch v := objeto.(type) {
+	case *os.File:
+		return &ArchivoIterador{
+			file:    v,
+			scanner: bufio.NewScanner(v),
+		}
+	case Iterador:
+		return v
+	}
+	return nil
+}
+
+// EsIterable verifica si el dato requiere un tratamiento especial de core
+func EsIterable(objeto interface{}) bool {
+	switch objeto.(type) {
+	case string, []interface{}, map[string]interface{}, Iterador, *os.File:
+		return true
+	}
+	return false
 }
 
 
@@ -979,6 +1372,10 @@ func InyectarMatematicas(lib *LibreriaNepa) {
 
 
 
+
+
+
+
 /home/deb/nepa/desarrollo/interno/modulo/modulo.go:
 package modulo
 
@@ -1015,6 +1412,10 @@ func (l *LibreriaNepa) Exportar(ruta string) error { return nil }
 
 
 
+
+
+
+
 /home/deb/nepa/desarrollo/interno/parser/parser.go:
 package parser
 
@@ -1022,6 +1423,8 @@ import (
 	"nepa/desarrollo/interno/ast"
 	"nepa/desarrollo/interno/lexer"
 	"strconv"
+	"fmt"
+	"os"
 )
 
 type Parser struct {
@@ -1076,6 +1479,7 @@ func (p *Parser) parsearInstruccion() ast.Nodo {
 			return p.parsearLlamada("imprime")
 		case "si":       return p.parsearSi()
 		case "mientras": return p.parsearMientras()
+		case "para":     return p.parsearPara()
 		case "funcion":  return p.parsearDefFuncion()
 		case "retorna":
 			pos := p.getPos(); p.avanzar()
@@ -1101,23 +1505,49 @@ func (p *Parser) parsearMientras() ast.Nodo {
 }
 
 func (p *Parser) parsearBloque() []ast.Nodo {
-	if p.actual().Tipo == lexer.T_LINEA { p.avanzar() }
-	p.consumir(lexer.T_INDENT)
-	var nodos []ast.Nodo
-	for !p.esFin() && p.actual().Tipo != lexer.T_DEDENT {
-		if p.actual().Tipo == lexer.T_LINEA {
-			p.avanzar()
-			continue
-		}
-		nodo := p.parsearInstruccion()
-		if nodo != nil {
-			nodos = append(nodos, nodo)
-		} else {
-			p.avanzar()
-		}
-	}
-	p.consumir(lexer.T_DEDENT)
-	return nodos
+    var nodos []ast.Nodo
+    
+    // Limpiar saltos de línea después de ':'
+    for p.actual().Tipo == lexer.T_LINEA {
+        p.avanzar()
+    }
+    
+    // EXIGENCIA: Debe haber un T_INDENT ahora mismo
+    if p.actual().Tipo != lexer.T_INDENT {
+        t := p.actual()
+        fmt.Printf("❌ Error de Sintaxis Nepa (%s:%d): Se esperaba indentación profunda tras ':'. Encontrado: %s (%s)\n", p.archivo, t.Linea, t.Tipo, t.Literal)
+        os.Exit(1)
+    }
+
+    p.avanzar() // Consumir T_INDENT
+    for !p.esFin() && p.actual().Tipo != lexer.T_DEDENT {
+        if p.actual().Tipo == lexer.T_LINEA {
+            p.avanzar()
+            continue
+        }
+        nodo := p.parsearInstruccion()
+        if nodo != nil {
+            nodos = append(nodos, nodo)
+        } else {
+            p.avanzar()
+        }
+    }
+
+    // Si el bloque está vacío tras la indentación, es un error
+    if len(nodos) == 0 {
+        fmt.Printf("❌ Error de Sintaxis Nepa (%s): Bloque indentado vacío ilegal.\n", p.archivo)
+        os.Exit(1)
+    }
+
+    // Consumir T_DEDENT obligatoriamente
+    if p.actual().Tipo == lexer.T_DEDENT {
+        p.avanzar()
+    } else if !p.esFin() {
+        fmt.Printf("❌ Error de Sintaxis Nepa (%s): Se esperaba dedentación al finalizar el bloque.\n", p.archivo)
+        os.Exit(1)
+    }
+    
+    return nodos
 }
 
 // --- JERARQUÍA DE EXPRESIONES (Para evitar 1 + 2 * 3 = 0) ---
@@ -1181,7 +1611,6 @@ func (p *Parser) parsearPrimario() ast.Nodo {
 		return ast.Literal{Base: ast.Base{Pos: pos}, Valor: v}
 	case lexer.T_IDENT:
 		nombre := t.Literal; p.avanzar()
-		// Caso: modulo.funcion(...)
 		if p.actual().Tipo == lexer.T_PUNTO {
 			p.avanzar()
 			prop := p.consumir(lexer.T_IDENT).Literal
@@ -1190,7 +1619,6 @@ func (p *Parser) parsearPrimario() ast.Nodo {
 			}
 			return ast.LlamadaModulo{Base: ast.Base{Pos: pos}, Modulo: nombre, Funcion: prop}
 		}
-		// Caso: funcion(...)
 		if p.actual().Tipo == lexer.T_PARENT_A {
 			return p.parsearLlamada(nombre)
 		}
@@ -1200,6 +1628,13 @@ func (p *Parser) parsearPrimario() ast.Nodo {
 		exp := p.parsearExpresion()
 		p.consumir(lexer.T_PARENT_C)
 		return exp
+
+	// --- PARCHE DE SINTAXIS NEPA (ESTRICTO) ---
+	case lexer.T_OP:
+		if t.Literal == "{" || t.Literal == "}" {
+			fmt.Printf("❌ Error de Sintaxis Nepa (%s:%d): Carácter prohibido '%s'. Use indentación para bloques.\n", p.archivo, t.Linea, t.Literal)
+			os.Exit(1)
+		}
 	}
 	return nil
 }
@@ -1282,6 +1717,191 @@ func (p *Parser) consumir(t lexer.TipoToken) lexer.Token {
 	return tok 
 }
 
+func (p *Parser) parsearPara() ast.Nodo {
+	pos := p.getPos()
+	p.avanzar() // saltar 'para'
+	variable := p.consumir(lexer.T_IDENT).Literal
+	
+	var origen, fin, incremento ast.Nodo
+	
+	if p.actual().Literal == "desde" {
+		p.avanzar()
+		origen = p.parsearExpresion()
+		if p.actual().Literal == "hasta" {
+			p.avanzar()
+			fin = p.parsearExpresion()
+		}
+		if p.actual().Literal == "incremento" {
+			p.avanzar()
+			incremento = p.parsearExpresion()
+		}
+	} else if p.actual().Literal == "en" {
+		p.avanzar()
+		origen = p.parsearExpresion()
+	}
+
+	p.consumir(lexer.T_DOSPUNTOS)
+	cuerpo := p.parsearBloque()
+	
+	return ast.Para{
+		Base: ast.Base{Pos: pos},
+		Variable: variable,
+		Origen: origen,
+		Fin: fin,
+		Incremento: incremento,
+		Cuerpo: cuerpo,
+	}
+}
+
+
+
+
+/home/deb/nepa/subir_nepa.sh:
+#!/bin/bash
+
+# 1. Cargar el secreto desde el archivo .env
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+else
+    echo "Error: No se encontró el archivo .env con el token."
+    exit 1
+fi
+
+# Define las rutas
+PROJECT_DIR="$HOME/nepa"
+HIST_DIR="$PROJECT_DIR/history"
+HIST_FILE="$HIST_DIR/last-100-history.txt"
+
+# Usamos la variable $NEPA_TOKEN cargada desde .env
+REPO_URL="https://${NEPA_TOKEN}@github.com/nepamuceno/nepa.git"
+
+# Configuración de Tags
+BASE_TAG="stable-$(date +'%d_%m_%Y_%H_%M')"
+mkdir -p "$HIST_DIR"
+tail -n 100 "$HOME/.bash_history" > "$HIST_FILE"
+
+echo "--- Subiendo cambios a GitHub (Nepa - Modo Seguro) ---"
+read -p "Ingresa mensaje del commit: " COMMIT_MSG
+read -p "Nota extra para el tag (opcional): " EXTRA_NOTE
+
+[ -n "$EXTRA_NOTE" ] && TAG_MSG="${BASE_TAG}-${EXTRA_NOTE}" || TAG_MSG="$BASE_TAG"
+
+cd "$PROJECT_DIR" || exit 1
+
+git add -A
+git commit -m "$COMMIT_MSG"
+git tag "$TAG_MSG"
+
+# Push usando la URL con la variable enmascarada
+git push "$REPO_URL" main --tags
+
+echo "✅ Subida completada con éxito."
+
+
+
+
+/home/deb/nepa/history/last-100-history.txt:
+bash probar.sh 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+ls desarrollo/interno/modulo/
+nano desarrollo/interno/modulo/core_math.go
+bash probar.sh 
+cat inicio.nepa 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+./dist/bin/nepa inicio.nepa
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+ash probar.sh 
+bash probar.sh 
+cat inicio.nepa 
+bash probar.sh 
+nano inicio.nepa
+./dist/bin/nepa inicio.nepa
+cat inicio.nepa
+bash probar.sh 
+cat desarrollo/interno/modulo/core_math.go
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+cat desarrollo/interno/modulo/core_math.go
+cat desarrollo/interno/modulo/modulo.go
+cat inicio.nepa
+bash probar.sh 
+nano gist.sh
+bash gist.sh
+ls
+cat gist.txt
+no en binario, solo los text files
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+nano gist.sh
+bash gist.sh
+cat gist.txt
+sudo apt update && sudo apt install xclip -y
+nano gist.sh
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+go mod init nepa 2>/dev/null || go mod tidy
+bash probar.sh 
+go mod tidy
+bash probar.sh 
+export GO111MODULE=on
+go mod edit -module nepa
+bash probar.sh 
+# Borrar archivos de módulos viejos si existen
+rm -f go.mod go.sum
+# Reiniciar el módulo con el nombre correcto
+go mod init nepa
+# Forzar a Go a encontrar las dependencias locales
+go mod tidy
+tree .
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+cat inicio.nepa
+bash gist.sh
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+cat inicio.nepa
+bash probar.sh 
+bash gist.sh
+bash probar.sh 
+
 
 
 
@@ -1289,6 +1909,10 @@ func (p *Parser) consumir(t lexer.TipoToken) lexer.Token {
 module nepa
 
 go 1.23.2
+
+
+
+
 
 
 
@@ -1318,6 +1942,10 @@ else
     echo -e "${ROJO}❌ Error en la compilación.${NC}"
     exit 1
 fi
+
+
+
+
 
 
 
@@ -1357,91 +1985,731 @@ clean:
 
 
 
+
+
+
+
+/home/deb/nepa/LICENSE:
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+  The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.  We, the Free Software Foundation, use the
+GNU General Public License for most of our software; it applies also to
+any other work released this way by its authors.  You can apply it to
+your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+
+  To protect your rights, we need to prevent others from denying you
+these rights or asking you to surrender the rights.  Therefore, you have
+certain responsibilities if you distribute copies of the software, or if
+you modify it: responsibilities to respect the freedom of others.
+
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must pass on to the recipients the same
+freedoms that you received.  You must make sure that they, too, receive
+or can get the source code.  And you must show them these terms so they
+know their rights.
+
+  Developers that use the GNU GPL protect your rights with two steps:
+(1) assert copyright on the software, and (2) offer you this License
+giving you legal permission to copy, distribute and/or modify it.
+
+  For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software.  For both users' and
+authors' sake, the GPL requires that modified versions be marked as
+changed, so that their problems will not be attributed erroneously to
+authors of previous versions.
+
+  Some devices are designed to deny users access to install or run
+modified versions of the software inside them, although the manufacturer
+can do so.  This is fundamentally incompatible with the aim of
+protecting users' freedom to change the software.  The systematic
+pattern of such abuse occurs in the area of products for individuals to
+use, which is precisely where it is most unacceptable.  Therefore, we
+have designed this version of the GPL to prohibit the practice for those
+products.  If such problems arise substantially in other domains, we
+stand ready to extend this provision to those domains in future versions
+of the GPL, as needed to protect the freedom of users.
+
+  Finally, every program is threatened constantly by software patents.
+States should not allow patents to restrict development and use of
+software on general-purpose computers, but in those that do, we wish to
+avoid the special danger that patents applied to a free program could
+make it effectively proprietary.  To prevent this, the GPL assures that
+patents cannot be used to render the program non-free.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+                       TERMS AND CONDITIONS
+
+  0. Definitions.
+
+  "This License" refers to version 3 of the GNU General Public License.
+
+  "Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
+
+  "The Program" refers to any copyrightable work licensed under this
+License.  Each licensee is addressed as "you".  "Licensees" and
+"recipients" may be individuals or organizations.
+
+  To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy.  The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
+
+  A "covered work" means either the unmodified Program or a work based
+on the Program.
+
+  To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy.  Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
+
+  To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies.  Mere interaction with a user through
+a computer network, with no transfer of a copy, is not conveying.
+
+  An interactive user interface displays "Appropriate Legal Notices"
+to the extent that it includes a convenient and prominently visible
+feature that (1) displays an appropriate copyright notice, and (2)
+tells the user that there is no warranty for the work (except to the
+extent that warranties are provided), that licensees may convey the
+work under this License, and how to view a copy of this License.  If
+the interface presents a list of user commands or options, such as a
+menu, a prominent item in the list meets this criterion.
+
+  1. Source Code.
+
+  The "source code" for a work means the preferred form of the work
+for making modifications to it.  "Object code" means any non-source
+form of a work.
+
+  A "Standard Interface" means an interface that either is an official
+standard defined by a recognized standards body, or, in the case of
+interfaces specified for a particular programming language, one that
+is widely used among developers working in that language.
+
+  The "System Libraries" of an executable work include anything, other
+than the work as a whole, that (a) is included in the normal form of
+packaging a Major Component, but which is not part of that Major
+Component, and (b) serves only to enable use of the work with that
+Major Component, or to implement a Standard Interface for which an
+implementation is available to the public in source code form.  A
+"Major Component", in this context, means a major essential component
+(kernel, window system, and so on) of the specific operating system
+(if any) on which the executable work runs, or a compiler used to
+produce the work, or an object code interpreter used to run it.
+
+  The "Corresponding Source" for a work in object code form means all
+the source code needed to generate, install, and (for an executable
+work) run the object code and to modify the work, including scripts to
+control those activities.  However, it does not include the work's
+System Libraries, or general-purpose tools or generally available free
+programs which are used unmodified in performing those activities but
+which are not part of the work.  For example, Corresponding Source
+includes interface definition files associated with source files for
+the work, and the source code for shared libraries and dynamically
+linked subprograms that the work is specifically designed to require,
+such as by intimate data communication or control flow between those
+subprograms and other parts of the work.
+
+  The Corresponding Source need not include anything that users
+can regenerate automatically from other parts of the Corresponding
+Source.
+
+  The Corresponding Source for a work in source code form is that
+same work.
+
+  2. Basic Permissions.
+
+  All rights granted under this License are granted for the term of
+copyright on the Program, and are irrevocable provided the stated
+conditions are met.  This License explicitly affirms your unlimited
+permission to run the unmodified Program.  The output from running a
+covered work is covered by this License only if the output, given its
+content, constitutes a covered work.  This License acknowledges your
+rights of fair use or other equivalent, as provided by copyright law.
+
+  You may make, run and propagate covered works that you do not
+convey, without conditions so long as your license otherwise remains
+in force.  You may convey covered works to others for the sole purpose
+of having them make modifications exclusively for you, or provide you
+with facilities for running those works, provided that you comply with
+the terms of this License in conveying all material for which you do
+not control copyright.  Those thus making or running the covered works
+for you must do so exclusively on your behalf, under your direction
+and control, on terms that prohibit them from making any copies of
+your copyrighted material outside their relationship with you.
+
+  Conveying under any other circumstances is permitted solely under
+the conditions stated below.  Sublicensing is not allowed; section 10
+makes it unnecessary.
+
+  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+  No covered work shall be deemed part of an effective technological
+measure under any applicable law fulfilling obligations under article
+11 of the WIPO copyright treaty adopted on 20 December 1996, or
+similar laws prohibiting or restricting circumvention of such
+measures.
+
+  When you convey a covered work, you waive any legal power to forbid
+circumvention of technological measures to the extent such circumvention
+is effected by exercising rights under this License with respect to
+the covered work, and you disclaim any intention to limit operation or
+modification of the work as a means of enforcing, against the work's
+users, your or third parties' legal rights to forbid circumvention of
+technological measures.
+
+  4. Conveying Verbatim Copies.
+
+  You may convey verbatim copies of the Program's source code as you
+receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice;
+keep intact all notices stating that this License and any
+non-permissive terms added in accord with section 7 apply to the code;
+keep intact all notices of the absence of any warranty; and give all
+recipients a copy of this License along with the Program.
+
+  You may charge any price or no price for each copy that you convey,
+and you may offer support or warranty protection for a fee.
+
+  5. Conveying Modified Source Versions.
+
+  You may convey a work based on the Program, or the modifications to
+produce it from the Program, in the form of source code under the
+terms of section 4, provided that you also meet all of these conditions:
+
+    a) The work must carry prominent notices stating that you modified
+    it, and giving a relevant date.
+
+    b) The work must carry prominent notices stating that it is
+    released under this License and any conditions added under section
+    7.  This requirement modifies the requirement in section 4 to
+    "keep intact all notices".
+
+    c) You must license the entire work, as a whole, under this
+    License to anyone who comes into possession of a copy.  This
+    License will therefore apply, along with any applicable section 7
+    additional terms, to the whole of the work, and all its parts,
+    regardless of how they are packaged.  This License gives no
+    permission to license the work in any other way, but it does not
+    invalidate such permission if you have separately received it.
+
+    d) If the work has interactive user interfaces, each must display
+    Appropriate Legal Notices; however, if the Program has interactive
+    interfaces that do not display Appropriate Legal Notices, your
+    work need not make them do so.
+
+  A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit.  Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate.
+
+  6. Conveying Non-Source Forms.
+
+  You may convey a covered work in object code form under the terms
+of sections 4 and 5, provided that you also convey the
+machine-readable Corresponding Source under the terms of this License,
+in one of these ways:
+
+    a) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by the
+    Corresponding Source fixed on a durable physical medium
+    customarily used for software interchange.
+
+    b) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
+    copy of the Corresponding Source for all the software in the
+    product that is covered by this License, on a durable physical
+    medium customarily used for software interchange, for a price no
+    more than your reasonable cost of physically performing this
+    conveying of source, or (2) access to copy the
+    Corresponding Source from a network server at no charge.
+
+    c) Convey individual copies of the object code with a copy of the
+    written offer to provide the Corresponding Source.  This
+    alternative is allowed only occasionally and noncommercially, and
+    only if you received the object code with such an offer, in accord
+    with subsection 6b.
+
+    d) Convey the object code by offering access from a designated
+    place (gratis or for a charge), and offer equivalent access to the
+    Corresponding Source in the same way through the same place at no
+    further charge.  You need not require recipients to copy the
+    Corresponding Source along with the object code.  If the place to
+    copy the object code is a network server, the Corresponding Source
+    may be on a different server (operated by you or a third party)
+    that supports equivalent copying facilities, provided you maintain
+    clear directions next to the object code saying where to find the
+    Corresponding Source.  Regardless of what server hosts the
+    Corresponding Source, you remain obligated to ensure that it is
+    available for as long as needed to satisfy these requirements.
+
+    e) Convey the object code using peer-to-peer transmission, provided
+    you inform other peers where the object code and Corresponding
+    Source of the work are being offered to the general public at no
+    charge under subsection 6d.
+
+  A separable portion of the object code, whose source code is excluded
+from the Corresponding Source as a System Library, need not be
+included in conveying the object code work.
+
+  A "User Product" is either (1) a "consumer product", which means any
+tangible personal property which is normally used for personal, family,
+or household purposes, or (2) anything designed or sold for incorporation
+into a dwelling.  In determining whether a product is a consumer product,
+doubtful cases shall be resolved in favor of coverage.  For a particular
+product received by a particular user, "normally used" refers to a
+typical or common use of that class of product, regardless of the status
+of the particular user or of the way in which the particular user
+actually uses, or expects or is expected to use, the product.  A product
+is a consumer product regardless of whether the product has substantial
+commercial, industrial or non-consumer uses, unless such uses represent
+the only significant mode of use of the product.
+
+  "Installation Information" for a User Product means any methods,
+procedures, authorization keys, or other information required to install
+and execute modified versions of a covered work in that User Product from
+a modified version of its Corresponding Source.  The information must
+suffice to ensure that the continued functioning of the modified object
+code is in no case prevented or interfered with solely because
+modification has been made.
+
+  If you convey an object code work under this section in, or with, or
+specifically for use in, a User Product, and the conveying occurs as
+part of a transaction in which the right of possession and use of the
+User Product is transferred to the recipient in perpetuity or for a
+fixed term (regardless of how the transaction is characterized), the
+Corresponding Source conveyed under this section must be accompanied
+by the Installation Information.  But this requirement does not apply
+if neither you nor any third party retains the ability to install
+modified object code on the User Product (for example, the work has
+been installed in ROM).
+
+  The requirement to provide Installation Information does not include a
+requirement to continue to provide support service, warranty, or updates
+for a work that has been modified or installed by the recipient, or for
+the User Product in which it has been modified or installed.  Access to a
+network may be denied when the modification itself materially and
+adversely affects the operation of the network or violates the rules and
+protocols for communication across the network.
+
+  Corresponding Source conveyed, and Installation Information provided,
+in accord with this section must be in a format that is publicly
+documented (and with an implementation available to the public in
+source code form), and must require no special password or key for
+unpacking, reading or copying.
+
+  7. Additional Terms.
+
+  "Additional permissions" are terms that supplement the terms of this
+License by making exceptions from one or more of its conditions.
+Additional permissions that are applicable to the entire Program shall
+be treated as though they were included in this License, to the extent
+that they are valid under applicable law.  If additional permissions
+apply only to part of the Program, that part may be used separately
+under those permissions, but the entire Program remains governed by
+this License without regard to the additional permissions.
+
+  When you convey a copy of a covered work, you may at your option
+remove any additional permissions from that copy, or from any part of
+it.  (Additional permissions may be written to require their own
+removal in certain cases when you modify the work.)  You may place
+additional permissions on material, added by you to a covered work,
+for which you have or can give appropriate copyright permission.
+
+  Notwithstanding any other provision of this License, for material you
+add to a covered work, you may (if authorized by the copyright holders of
+that material) supplement the terms of this License with terms:
+
+    a) Disclaiming warranty or limiting liability differently from the
+    terms of sections 15 and 16 of this License; or
+
+    b) Requiring preservation of specified reasonable legal notices or
+    author attributions in that material or in the Appropriate Legal
+    Notices displayed by works containing it; or
+
+    c) Prohibiting misrepresentation of the origin of that material, or
+    requiring that modified versions of such material be marked in
+    reasonable ways as different from the original version; or
+
+    d) Limiting the use for publicity purposes of names of licensors or
+    authors of the material; or
+
+    e) Declining to grant rights under trademark law for use of some
+    trade names, trademarks, or service marks; or
+
+    f) Requiring indemnification of licensors and authors of that
+    material by anyone who conveys the material (or modified versions of
+    it) with contractual assumptions of liability to the recipient, for
+    any liability that these contractual assumptions directly impose on
+    those licensors and authors.
+
+  All other non-permissive additional terms are considered "further
+restrictions" within the meaning of section 10.  If the Program as you
+received it, or any part of it, contains a notice stating that it is
+governed by this License along with a term that is a further
+restriction, you may remove that term.  If a license document contains
+a further restriction but permits relicensing or conveying under this
+License, you may add to a covered work material governed by the terms
+of that license document, provided that the further restriction does
+not survive such relicensing or conveying.
+
+  If you add terms to a covered work in accord with this section, you
+must place, in the relevant source files, a statement of the
+additional terms that apply to those files, or a notice indicating
+where to find the applicable terms.
+
+  Additional terms, permissive or non-permissive, may be stated in the
+form of a separately written license, or stated as exceptions;
+the above requirements apply either way.
+
+  8. Termination.
+
+  You may not propagate or modify a covered work except as expressly
+provided under this License.  Any attempt otherwise to propagate or
+modify it is void, and will automatically terminate your rights under
+this License (including any patent licenses granted under the third
+paragraph of section 11).
+
+  However, if you cease all violation of this License, then your
+license from a particular copyright holder is reinstated (a)
+provisionally, unless and until the copyright holder explicitly and
+finally terminates your license, and (b) permanently, if the copyright
+holder fails to notify you of the violation by some reasonable means
+prior to 60 days after the cessation.
+
+  Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
+
+  Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License.  If your rights have been terminated and not permanently
+reinstated, you do not qualify to receive new licenses for the same
+material under section 10.
+
+  9. Acceptance Not Required for Having Copies.
+
+  You are not required to accept this License in order to receive or
+run a copy of the Program.  Ancillary propagation of a covered work
+occurring solely as a consequence of using peer-to-peer transmission
+to receive a copy likewise does not require acceptance.  However,
+nothing other than this License grants you permission to propagate or
+modify any covered work.  These actions infringe copyright if you do
+not accept this License.  Therefore, by modifying or propagating a
+covered work, you indicate your acceptance of this License to do so.
+
+  10. Automatic Licensing of Downstream Recipients.
+
+  Each time you convey a covered work, the recipient automatically
+receives a license from the original licensors, to run, modify and
+propagate that work, subject to this License.  You are not responsible
+for enforcing compliance by third parties with this License.
+
+  An "entity transaction" is a transaction transferring control of an
+organization, or substantially all assets of one, or subdividing an
+organization, or merging organizations.  If propagation of a covered
+work results from an entity transaction, each party to that
+transaction who receives a copy of the work also receives whatever
+licenses to the work the party's predecessor in interest had or could
+give under the previous paragraph, plus a right to possession of the
+Corresponding Source of the work from the predecessor in interest, if
+the predecessor has it or can get it with reasonable efforts.
+
+  You may not impose any further restrictions on the exercise of the
+rights granted or affirmed under this License.  For example, you may
+not impose a license fee, royalty, or other charge for exercise of
+rights granted under this License, and you may not initiate litigation
+(including a cross-claim or counterclaim in a lawsuit) alleging that
+any patent claim is infringed by making, using, selling, offering for
+sale, or importing the Program or any portion of it.
+
+  11. Patents.
+
+  A "contributor" is a copyright holder who authorizes use under this
+License of the Program or a work on which the Program is based.  The
+work thus licensed is called the contributor's "contributor version".
+
+  A contributor's "essential patent claims" are all patent claims
+owned or controlled by the contributor, whether already acquired or
+hereafter acquired, that would be infringed by some manner, permitted
+by this License, of making, using, or selling its contributor version,
+but do not include claims that would be infringed only as a
+consequence of further modification of the contributor version.  For
+purposes of this definition, "control" includes the right to grant
+patent sublicenses in a manner consistent with the requirements of
+this License.
+
+  Each contributor grants you a non-exclusive, worldwide, royalty-free
+patent license under the contributor's essential patent claims, to
+make, use, sell, offer for sale, import and otherwise run, modify and
+propagate the contents of its contributor version.
+
+  In the following three paragraphs, a "patent license" is any express
+agreement or commitment, however denominated, not to enforce a patent
+(such as an express permission to practice a patent or covenant not to
+sue for patent infringement).  To "grant" such a patent license to a
+party means to make such an agreement or commitment not to enforce a
+patent against the party.
+
+  If you convey a covered work, knowingly relying on a patent license,
+and the Corresponding Source of the work is not available for anyone
+to copy, free of charge and under the terms of this License, through a
+publicly available network server or other readily accessible means,
+then you must either (1) cause the Corresponding Source to be so
+available, or (2) arrange to deprive yourself of the benefit of the
+patent license for this particular work, or (3) arrange, in a manner
+consistent with the requirements of this License, to extend the patent
+license to downstream recipients.  "Knowingly relying" means you have
+actual knowledge that, but for the patent license, your conveying the
+covered work in a country, or your recipient's use of the covered work
+in a country, would infringe one or more identifiable patents in that
+country that you have reason to believe are valid.
+
+  If, pursuant to or in connection with a single transaction or
+arrangement, you convey, or propagate by procuring conveyance of, a
+covered work, and grant a patent license to some of the parties
+receiving the covered work authorizing them to use, propagate, modify
+or convey a specific copy of the covered work, then the patent license
+you grant is automatically extended to all recipients of the covered
+work and works based on it.
+
+  A patent license is "discriminatory" if it does not include within
+the scope of its coverage, prohibits the exercise of, or is
+conditioned on the non-exercise of one or more of the rights that are
+specifically granted under this License.  You may not convey a covered
+work if you are a party to an arrangement with a third party that is
+in the business of distributing software, under which you make payment
+to the third party based on the extent of your activity of conveying
+the work, and under which the third party grants, to any of the
+parties who would receive the covered work from you, a discriminatory
+patent license (a) in connection with copies of the covered work
+conveyed by you (or copies made from those copies), or (b) primarily
+for and in connection with specific products or compilations that
+contain the covered work, unless you entered into that arrangement,
+or that patent license was granted, prior to 28 March 2007.
+
+  Nothing in this License shall be construed as excluding or limiting
+any implied license or other defenses to infringement that may
+otherwise be available to you under applicable patent law.
+
+  12. No Surrender of Others' Freedom.
+
+  If conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot convey a
+covered work so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you may
+not convey it at all.  For example, if you agree to terms that obligate you
+to collect a royalty for further conveying from those to whom you convey
+the Program, the only way you could satisfy both those terms and this
+License would be to refrain entirely from conveying the Program.
+
+  13. Use with the GNU Affero General Public License.
+
+  Notwithstanding any other provision of this License, you have
+permission to link or combine any covered work with a work licensed
+under version 3 of the GNU Affero General Public License into a single
+combined work, and to convey the resulting work.  The terms of this
+License will continue to apply to the part which is the covered work,
+but the special requirements of the GNU Affero General Public License,
+section 13, concerning interaction through a network will apply to the
+combination as such.
+
+  14. Revised Versions of this License.
+
+  The Free Software Foundation may publish revised and/or new versions of
+the GNU General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+
+  Each version is given a distinguishing version number.  If the
+Program specifies that a certain numbered version of the GNU General
+Public License "or any later version" applies to it, you have the
+option of following the terms and conditions either of that numbered
+version or of any later version published by the Free Software
+Foundation.  If the Program does not specify a version number of the
+GNU General Public License, you may choose any version ever published
+by the Free Software Foundation.
+
+  If the Program specifies that a proxy can decide which future
+versions of the GNU General Public License can be used, that proxy's
+public statement of acceptance of a version permanently authorizes you
+to choose that version for the Program.
+
+  Later license versions may give you additional or different
+permissions.  However, no additional obligations are imposed on any
+author or copyright holder as a result of your choosing to follow a
+later version.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+                     END OF TERMS AND CONDITIONS
+
+            How to Apply These Terms to Your New Programs
+
+  If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these terms.
+
+  To do so, attach the following notices to the program.  It is safest
+to attach them to the start of each source file to most effectively
+state the exclusion of warranty; and each file should have at least
+the "copyright" line and a pointer to where the full notice is found.
+
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) <year>  <name of author>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Also add information on how to contact you by electronic and paper mail.
+
+  If the program does terminal interaction, make it output a short
+notice like this when it starts in an interactive mode:
+
+    <program>  Copyright (C) <year>  <name of author>
+    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; type `show c' for details.
+
+The hypothetical commands `show w' and `show c' should show the appropriate
+parts of the General Public License.  Of course, your program's commands
+might be different; for a GUI interface, you would use an "about box".
+
+  You should also get your employer (if you work as a programmer) or school,
+if any, to sign a "copyright disclaimer" for the program, if necessary.
+For more information on this, and how to apply and follow the GNU GPL, see
+<https://www.gnu.org/licenses/>.
+
+  The GNU General Public License does not permit incorporating your program
+into proprietary programs.  If your program is a subroutine library, you
+may consider it more useful to permit linking proprietary applications with
+the library.  If this is what you want to do, use the GNU Lesser General
+Public License instead of this License.  But first, please read
+<https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+
+
+
 /home/deb/nepa/inicio.nepa:
-// =========================================================
-// TEST DE ESTRÉS INTEGRAL: SDK MATEMÁTICAS NEPA
-// =========================================================
+# --- 🌀 TEST DE RECURSIVIDAD: NEPA CORE ---
 
-imprime("--- INICIANDO DIAGNÓSTICO DEL SISTEMA ---")
+func factorial(n):
+    si n == 0:
+        retorna 1
+    retorna n * factorial(n - 1)
 
-// 1. TEST DEL SISTEMA DE AUTO-AYUDA
-imprime("\n[1] Verificando Sistema de Ayuda...")
-imprime(ayuda("vol_cono"))
-imprime(ayuda("proyectil_pos"))
-imprime(ayuda("es_primo"))
+func fibonacci(n):
+    si n <= 1:
+        retorna n
+    retorna fibonacci(n - 1) + fibonacci(n - 2)
 
-// 2. TEST DE CONSTANTES UNIVERSALES
-imprime("\n[2] Validando Constantes...")
-imprime("PI: " + pi)
-imprime("E: " + e)
-imprime("Gravedad: " + gravedad)
-imprime("PHI: " + phi)
-imprime("Velocidad de la Luz: " + luz)
+# [EJECUCIÓN]
+variable num = 5
+imprime("Factorial de", num, "es:", factorial(num))
 
-// 3. TEST DE GEOMETRÍA 3D (VOLÚMENES)
-imprime("\n[3] Calculando Volúmenes Complejos...")
-radio = 5.5
-altura = 12.0
-v_esfera = vol_esfera(radio)
-v_cono = vol_cono(radio, altura)
-v_cil = vol_cilindro(radio, altura)
+imprime("Serie Fibonacci (primeros 7):")
+para i desde 0 hasta 6:
+    imprime("F(", i, ") =", fibonacci(i))
 
-imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
-imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
-imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+# --- ✅ FIN DEL TEST ---
 
-// 4. TEST DE TEORÍA DE NÚMEROS (BÚSQUEDA DE PRIMOS)
-imprime("\n[4] Stress de Teoría de Números (Buscando Primos hasta 50)...")
-n = 1
-mientras n <= 50 {
-    si es_primo(n) {
-        imprime("Encontrado primo: " + n)
-    }
-    n = n + 1
+
+
+
+/home/deb/nepa/test.nepa:
+# Cálculo de área y condicional en Nepa
+radio = 5
+area = pi * radio * radio
+
+si (area > 50) {
+    imprime("El área es grande:", area)
+} sino {
+    imprime("El área es pequeña:", area)
 }
 
-// 5. TEST DE ESTADÍSTICA (CONJUNTOS DINÁMICOS)
-imprime("\n[5] Stress de Estadística...")
-avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-
-imprime("Media de 10-100: " + avg)
-imprime("Varianza de 1-10: " + formatear(var_val, 2))
-imprime("Desviación Estándar: " + formatear(desv, 4))
-
-// 6. TEST DE FÍSICA CINEMÁTICA (SIMULACIÓN DE TIRO)
-imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45°)...")
-t = 0.0
-mientras t <= 5.0 {
-    pos = proyectil_pos(50, 45, t)
-    imprime("Tiempo " + t + "s -> Posición [x,y]: " + pos)
-    t = t + 1.0
+x = 0
+mientras (x < 3) {
+    imprime("Contador:", x)
+    x = x + 1
 }
-
-// 7. TEST DE BITWISE Y BASES NUMÉRICAS
-imprime("\n[7] Operaciones de Bajo Nivel...")
-num = 255
-imprime("Decimal: " + num)
-imprime("Binario: " + binario(num))
-imprime("Hexadecimal: " + hex(num))
-imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
-
-// 8. TEST DE FINANZAS Y CÁLCULO
-imprime("\n[8] Test de Interés y Potencia...")
-capital = 1000
-tasa = 0.05
-tiempo = 10
-total = interes_compuesto(capital, tasa, tiempo)
-imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
-
-// 9. TEST DE TRIGONOMETRÍA HIPERBÓLICA
-imprime("\n[9] Funciones Hiperbólicas...")
-val = 1.0
-imprime("senoh(1.0): " + formatear(senoh(val), 6))
-imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
-
-imprime("\n--- TEST DE ESTRÉS FINALIZADO CON ÉXITO ---")
 
 
 
@@ -1508,6 +2776,52 @@ func main() {
 
 	fmt.Println("\n✅ Estructura creada con éxito.")
 }
+
+
+
+
+
+
+
+
+/home/deb/nepa/restore_gist.sh:
+#!/bin/bash
+
+GIST_INPUT="gist.txt"
+
+if [ ! -f "$GIST_INPUT" ]; then
+    echo "Error: No se encuentra $GIST_INPUT"
+    exit 1
+fi
+
+# Usamos AWK para segmentar el archivo de forma precisa
+awk '
+/^(\/.*):$/ {
+    # Cuando encontramos una nueva ruta de archivo
+    if (file != "") {
+        close(file);
+    }
+    
+    # Limpiamos los dos puntos de la ruta
+    file = $0;
+    sub(/:$/, "", file);
+    
+    # Creamos el directorio si no existe (llamada al sistema)
+    system("mkdir -p \"$(dirname \""file"\")\"");
+    
+    print "Restaurando: " file;
+    next;
+}
+
+{
+    # Si tenemos un archivo abierto, escribimos la línea actual
+    if (file != "") {
+        print $0 > file;
+    }
+}
+' "$GIST_INPUT"
+
+echo "--- Restauración finalizada ---"
 
 
 

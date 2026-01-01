@@ -2,6 +2,7 @@ package evaluador
 
 import (
 	"fmt"
+	"os"
 	"nepa/desarrollo/interno/ast"
 	"reflect"
 )
@@ -30,7 +31,9 @@ func (i *Interpretador) EjecutarPara(p ast.Para) interface{} {
 				break
 			}
 			i.Entorno[p.Variable] = valor
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			// Solo propagamos si es un NepaRetorno real
+			if _, ok := res.(NepaRetorno); ok { return res } 
 		}
 		return nil
 	}
@@ -43,14 +46,16 @@ func (i *Interpretador) EjecutarPara(p ast.Para) interface{} {
 		// Itera letra por letra
 		for _, char := range val.String() {
 			i.Entorno[p.Variable] = string(char)
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
 		}
 
 	case reflect.Slice, reflect.Array:
 		// Itera matrices de cualquier tipo [1, 2, 3] o ["a", "b"]
 		for idx := 0; idx < val.Len(); idx++ {
 			i.Entorno[p.Variable] = val.Index(idx).Interface()
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
 		}
 
 	case reflect.Map:
@@ -59,13 +64,16 @@ func (i *Interpretador) EjecutarPara(p ast.Para) interface{} {
 		for iter.Next() {
 			// Por defecto entregamos la llave (estilo Python/JS)
 			i.Entorno[p.Variable] = iter.Key().Interface()
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
+			res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+			if _, ok := res.(NepaRetorno); ok { return res } 
 		}
 
 	default:
 		// ROBUSTEZ TOTAL: Si es un objeto único (Int, Bool, etc), se procesa una vez
 		i.Entorno[p.Variable] = origen
-		i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
+		res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+		if _, ok := res.(NepaRetorno); ok { return res }
+		return nil
 	}
 
 	return nil
@@ -77,9 +85,10 @@ func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
 	inicio, ok1 := toFloatSafe(i.Evaluar(p.Origen))
 	fin, ok2 := toFloatSafe(i.Evaluar(p.Fin))
 
+	// ESTRICTO: Si los límites no son números, abortamos inmediatamente
 	if !ok1 || !ok2 {
-		fmt.Println("❌ Error Nepa: Los límites 'desde/hasta' deben dar un resultado numérico.")
-		return nil
+		fmt.Printf("❌ Error de Ejecución Nepa: Los límites 'desde/hasta' deben ser numéricos. (Línea aproximada: %d)\n", i.Entorno["__linea__"])
+		os.Exit(1)
 	}
 
 	actual := inicio
@@ -91,16 +100,21 @@ func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
 		if vFin, okF := toFloatSafe(i.Evaluar(p.Fin)); okF {
 			fin = vFin
 		}
+		
 		if p.Incremento != nil {
-			if vPaso, okP := toFloatSafe(i.Evaluar(p.Incremento)); okP {
-				paso = vPaso
+			vPaso, okP := toFloatSafe(i.Evaluar(p.Incremento))
+			if !okP {
+				fmt.Println("❌ Error de Ejecución Nepa: El incremento del bucle 'para' debe ser un número.")
+				os.Exit(1)
 			}
+			paso = vPaso
 		}
 
 		// 2. Protección contra bucle infinito (paso cero)
+		// ESTRICTO: En Nepa, un incremento de cero es un error fatal, no una advertencia.
 		if paso == 0 {
-			fmt.Println("⚠️ Advertencia: Incremento cero detectado, saliendo del bucle para evitar bloqueo.")
-			break
+			fmt.Println("❌ Error de Ejecución Nepa: Incremento cero detectado. Bucle infinito prohibido.")
+			os.Exit(1)
 		}
 
 		// 3. Verificación de límite UNIVERSAL (Bidireccional)
@@ -109,11 +123,14 @@ func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
 		}
 
 		// 4. Inyectar valor en el entorno del intérprete
+		// Importante: p.Variable debe existir y ser un identificador válido
 		i.Entorno[p.Variable] = actual
 
 		// 5. Ejecutar cuerpo del bucle
-		res := i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		if res != nil {
+		res := i.ejecutarCuerpoUniversal(p.Cuerpo)
+		
+		// Propagación estricta de retornos
+		if _, ok := res.(NepaRetorno); ok {
 			return res
 		}
 
@@ -124,23 +141,31 @@ func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
 	return nil
 }
 
-// ejecutarBloque procesa la lista de instrucciones internas del bucle
-func (i *Interpretador) ejecutarBloque(nodos []ast.Nodo) interface{} {
-	for _, nodo := range nodos {
-		// Evaluación secuencial de cada nodo del AST
-		res := i.Evaluar(nodo)
-		
-		// Manejo de sentencias de interrupción o retorno (Propagación)
-		if res != nil {
-			return res
-		}
+// ejecutarCuerpoUniversal es una función de apoyo para manejar cualquier tipo de nodo en el cuerpo
+func (i *Interpretador) ejecutarCuerpoUniversal(cuerpo interface{}) interface{} {
+	switch c := cuerpo.(type) {
+	case []ast.Nodo:
+		return i.ejecutarBloque(c)
+	case ast.Nodo:
+		// En Nepa con indentación, el cuerpo suele ser []ast.Nodo, 
+		// pero mantenemos esto por compatibilidad con expresiones simples.
+		return i.Evaluar(c)
+	default:
+		return nil
 	}
-	return nil
 }
 
-// Bloque de relleno para mantener integridad de 147 líneas
-// 143
-// 144
-// 145
-// 146
-// 147
+// ejecutarBloque procesa la lista de instrucciones internas del bucle
+func (i *Interpretador) ejecutarBloque(nodos []ast.Nodo) interface{} {
+	var ultimo interface{}
+	for _, nodo := range nodos {
+		// Evaluación secuencial de cada nodo del AST
+		ultimo = i.Evaluar(nodo)
+		
+		// Manejo de sentencias de interrupción o retorno (Propagación)
+		if _, ok := ultimo.(NepaRetorno); ok {
+			return ultimo
+		}
+	}
+	return ultimo
+}

@@ -1,9 +1,21 @@
---- 🎯 TEST DE ALCANCE ---
+# --- 🌀 TEST DE RECURSIVIDAD: NEPA CORE ---
 
-var prueba = "GLOBAL"
-para x en 500 {
-    imprime("  Valor inyectado:", x)
-    imprime("  Variable global:", prueba)
-}
+func factorial(n):
+    si n == 0:
+        retorna 1
+    retorna n * factorial(n - 1)
 
---- ✅ FIN ---
+func fibonacci(n):
+    si n <= 1:
+        retorna n
+    retorna fibonacci(n - 1) + fibonacci(n - 2)
+
+# [EJECUCIÓN]
+variable num = 5
+imprime("Factorial de", num, "es:", factorial(num))
+
+imprime("Serie Fibonacci (primeros 7):")
+para i desde 0 hasta 6:
+    imprime("F(", i, ") =", fibonacci(i))
+
+# --- ✅ FIN DEL TEST ---
