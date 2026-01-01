@@ -1,0 +1,15 @@
+# Cálculo de área y condicional en Nepa
+radio = 5
+area = pi * radio * radio
+
+si (area > 50) {
+    imprime("El área es grande:", area)
+} sino {
+    imprime("El área es pequeña:", area)
+}
+
+x = 0
+mientras (x < 3) {
+    imprime("Contador:", x)
+    x = x + 1
+}

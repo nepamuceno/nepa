@@ -1,86 +1,99 @@
-# 🚀 Nepa: Lenguaje de Programación en Español (Científico)
-
-**Nepa** es un lenguaje de programación de sintaxis nativa en español, desarrollado íntegramente en **Go**. Su objetivo es eliminar la barrera del idioma en el desarrollo lógico y científico, permitiendo la ejecución de cálculos complejos, fórmulas físicas y algoritmos mediante comandos intuitivos en nuestro propio idioma.
-
----
-
-## 🔬 ¿Qué es Nepa?
-Nepa es un intérprete diseñado para el ámbito científico y académico. Proporciona un entorno donde las expresiones matemáticas y las constantes universales se manejan de forma natural, ofreciendo una estructura clara para el análisis de datos y simulaciones físicas.
-
----
-
-## 📖 Sintaxis del Lenguaje
-El lenguaje utiliza palabras clave en español que facilitan la comprensión de la lógica del programa:
-
-* **Estructuras de Control:** `si`, `sino`, `mientras`, `para`.
-* **Definiciones:** `funcion`, `retornar`.
-* **Salida de Datos:** `imprimir`.
-* **Constantes Integradas:** `PI`, `E`, `GRAVEDAD`, `LUZ`, `PHI`.
-* **Funciones Científicas:** `seno`, `coseno`, `raiz`, `es_primo`, `vol_cono`, `proyectil_pos`.
-
-
-## 📖 Compilación y Uso
-
-El flujo de trabajo en Nepa está optimizado mediante scripts de automatización.
-Ejecución con probar.sh
-
-Para compilar y probar el sistema rápidamente, ejecuta:
-Bash
-
-###
-bash probar.sh
-
-## 📖 ¿Qué hace este script?
-
-    Limpia: Ejecuta make clean para eliminar binarios obsoletos.
-
-    Compila: Construye el motor mediante el Makefile.
-
-    Genera SDK: Invoca a nepa_lib para regenerar las librerías matemáticas dinámicas.
-
-    Ejecuta: Lanza el intérprete con el archivo de prueba inicio.nepa.
-
-## 📖  Configuración de Seguridad (.env)
-
-Este proyecto utiliza un archivo de configuración local para manejar credenciales de forma segura:
-
-    Archivo .env: Debe existir en la raíz (ignorado por Git).
-
-    Contenido: Debe incluir la variable NEPA_TOKEN="tu_token_de_github".
-
-    Despliegue: El script subir_nepa.sh lee este token para realizar subidas seguras y etiquetado (tags) automático de versiones sin exponer claves en el historial público.
-
-## 📖 Estructura del Proyecto
-
-    desarrollo/: Núcleo del lenguaje (Lexer, Parser, Evaluador y AST).
-
-    dist/bin/: Binarios finales (nepa, nepa_lib).
-
-    history/: Registro de comandos utilizados en el desarrollo.
-
-    gist.txt: Respaldo maestro del código fuente.
-
-    probar.sh: Automatización de pruebas y compilación.
-
-    subir_nepa.sh: Sincronización segura con el repositorio.
-
-### Ejemplo de Código
-```nepa
-# Cálculo de área y condicional en Nepa
+// =========================================================
+// TEST DE ESTRES INTEGRAL: SDK MATEMATICAS NEPA
+// =========================================================
+# Calculo de area y condicional en Nepa
 radio = 5
-area = PI * radio * radio
+area = pi * radio * radio
 
 si (area > 50) {
-    imprimir("El área es grande:", area)
+    imprime("El area es grande:", area)
 } sino {
-    imprimir("El área es pequeña:", area)
+    imprime("El area es pequeña:", area)
 }
 
 x = 0
 mientras (x < 3) {
-    imprimir("Contador:", x)
+    imprime("Contador:", x)
     x = x + 1
 }
 
-## 📖 Hecho con ❤️ para la comunidad de programación científica.
+imprime("--- INICIANDO DIAGNOSTICO DEL SISTEMA ---")
 
+// TEST 1 SISTEMA DE AYUDA
+imprime("\n[1] Verificando Sistema de Ayuda...")
+imprime(ayuda("vol_cono"))
+imprime(ayuda("proyectil_pos"))
+imprime(ayuda("es_primo"))
+
+// TEST 2 CONSTANTES
+imprime("\n[2] Validando Constantes...")
+imprime("PI: " + pi)
+imprime("E: " + e)
+imprime("Gravedad: " + gravedad)
+imprime("PHI: " + phi)
+imprime("Velocidad de la Luz: " + luz)
+
+// TEST 3 GEOMETRIA 3D
+imprime("\n[3] Calculando Volumenes Complejos...")
+radio = 5.5
+altura = 12.0
+v_esfera = vol_esfera(radio)
+v_cono = vol_cono(radio, altura)
+v_cil = vol_cilindro(radio, altura)
+
+imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
+imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
+imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+
+// TEST 4 TEORIA DE NUMEROS
+imprime("\n[4] Stress de Teoria de Numeros (Buscando Primos hasta 50)...")
+n = 1
+mientras n <= 50 {
+    si es_primo(n) {
+        imprime("Encontrado primo: " + n)
+    }
+    n = n + 1
+}
+
+// TEST 5 ESTADISTICA
+imprime("\n[5] Stress de Estadistica...")
+avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+imprime("Media de 10-100: " + avg)
+imprime("Varianza de 1-10: " + formatear(var_val, 2))
+imprime("Desviacion Estandar: " + formatear(desv, 4))
+
+// TEST 6 FISICA CINEMATICA
+imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45)...")
+t = 0.0
+mientras t <= 5.0 {
+    pos = proyectil_pos(50, 45, t)
+    imprime("Tiempo " + t + "s -> Posicion [x,y]: " + pos)
+    t = t + 1.0
+}
+
+// TEST 7 BITWISE Y BASES
+imprime("\n[7] Operaciones de Bajo Nivel...")
+num = 255
+imprime("Decimal: " + num)
+imprime("Binario: " + binario(num))
+imprime("Hexadecimal: " + hex(num))
+imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
+
+// TEST 8 FINANZAS
+imprime("\n[8] Test de Interes y Potencia...")
+capital = 1000
+tasa = 0.05
+tiempo = 10
+total = interes_compuesto(capital, tasa, tiempo)
+imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
+
+// TEST 9 TRIGONOMETRIA
+imprime("\n[9] Funciones Hiperbolicas...")
+val = 1.0
+imprime("senoh(1.0): " + formatear(senoh(val), 6))
+imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
+
+imprime("\n--- TEST DE ESTRES FINALIZADO CON EXITO ---")
