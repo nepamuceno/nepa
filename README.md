@@ -1,99 +1,41 @@
-// =========================================================
-// TEST DE ESTRES INTEGRAL: SDK MATEMATICAS NEPA
-// =========================================================
-# Calculo de area y condicional en Nepa
-radio = 5
-area = pi * radio * radio
+# Nepa
 
-si (area > 50) {
-    imprime("El area es grande:", area)
-} sino {
-    imprime("El area es pequeña:", area)
-}
+**Nepa** es un lenguaje de programación **nuevo y experimental**, acompañado de su propio intérprete escrito en **Go**.  
+Su diseño se inspira en la claridad estructurada de lenguajes modernos como Python, pero con una identidad única: utiliza **acrónimos y palabras reservadas en español** en lugar de inglés, creando una experiencia más cercana y accesible.
 
-x = 0
-mientras (x < 3) {
-    imprime("Contador:", x)
-    x = x + 1
-}
+---
 
-imprime("--- INICIANDO DIAGNOSTICO DEL SISTEMA ---")
+## ✨ Características principales
+- **Lenguaje original**: no es un clon, sino una propuesta propia y experimental.
+- **Sintaxis estructurada**: bloques y reglas claras, sin numeración de líneas.
+- **Arquitectura modular**: cada tipo de variable, bloque y función vive en su propio paquete.
+- **Soporte matemático amplio**: álgebra, estadísticas, finanzas y física.
+- **Palabras reservadas en español**: pensado para ser más intuitivo y culturalmente relevante.
+- **Extensible**: se dejan hooks para futuros módulos externos y nuevas funcionalidades.
 
-// TEST 1 SISTEMA DE AYUDA
-imprime("\n[1] Verificando Sistema de Ayuda...")
-imprime(ayuda("vol_cono"))
-imprime(ayuda("proyectil_pos"))
-imprime(ayuda("es_primo"))
+---
 
-// TEST 2 CONSTANTES
-imprime("\n[2] Validando Constantes...")
-imprime("PI: " + pi)
-imprime("E: " + e)
-imprime("Gravedad: " + gravedad)
-imprime("PHI: " + phi)
-imprime("Velocidad de la Luz: " + luz)
+## 📂 Estructura del proyecto
+- `variables/` → Tipos básicos y complejos (entero, real, texto, lista, matriz, objeto, etc.)
+- `matematicas/` → Funciones de álgebra, estadísticas, finanzas y física.
+- `bloque/` → Palabras y bloques reservados del lenguaje.
+- `sintaxis/` → Reglas de interpretación y validación.
+- `core/` → Utilidades y funciones centrales del sistema.
 
-// TEST 3 GEOMETRIA 3D
-imprime("\n[3] Calculando Volumenes Complejos...")
-radio = 5.5
-altura = 12.0
-v_esfera = vol_esfera(radio)
-v_cono = vol_cono(radio, altura)
-v_cil = vol_cilindro(radio, altura)
+---
 
-imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
-imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
-imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+## 🚀 Objetivo
+El objetivo de Nepa es servir como base para un **lenguaje modular en español**, fácil de extender y mantener, que permita experimentar con nuevas ideas de sintaxis y ejecución.  
+Es un proyecto en evolución, pensado para crecer paso a paso y dejar siempre espacio para futuras expansiones.
 
-// TEST 4 TEORIA DE NUMEROS
-imprime("\n[4] Stress de Teoria de Numeros (Buscando Primos hasta 50)...")
-n = 1
-mientras n <= 50 {
-    si es_primo(n) {
-        imprime("Encontrado primo: " + n)
-    }
-    n = n + 1
-}
+---
 
-// TEST 5 ESTADISTICA
-imprime("\n[5] Stress de Estadistica...")
-avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+## 🌱 Filosofía
+Nepa busca ser un **laboratorio de ideas**:  
+- Simple en el presente, para que cualquiera pueda probarlo.  
+- Modular y estructurado, para que sea mantenible.  
+- Con identidad propia en español, para demostrar que los lenguajes de programación también pueden hablar nuestro idioma.  
 
-imprime("Media de 10-100: " + avg)
-imprime("Varianza de 1-10: " + formatear(var_val, 2))
-imprime("Desviacion Estandar: " + formatear(desv, 4))
+---
 
-// TEST 6 FISICA CINEMATICA
-imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45)...")
-t = 0.0
-mientras t <= 5.0 {
-    pos = proyectil_pos(50, 45, t)
-    imprime("Tiempo " + t + "s -> Posicion [x,y]: " + pos)
-    t = t + 1.0
-}
-
-// TEST 7 BITWISE Y BASES
-imprime("\n[7] Operaciones de Bajo Nivel...")
-num = 255
-imprime("Decimal: " + num)
-imprime("Binario: " + binario(num))
-imprime("Hexadecimal: " + hex(num))
-imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
-
-// TEST 8 FINANZAS
-imprime("\n[8] Test de Interes y Potencia...")
-capital = 1000
-tasa = 0.05
-tiempo = 10
-total = interes_compuesto(capital, tasa, tiempo)
-imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
-
-// TEST 9 TRIGONOMETRIA
-imprime("\n[9] Funciones Hiperbolicas...")
-val = 1.0
-imprime("senoh(1.0): " + formatear(senoh(val), 6))
-imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
-
-imprime("\n--- TEST DE ESTRES FINALIZADO CON EXITO ---")
+💡 *Nepa es más que un intérprete: es una propuesta experimental para imaginar cómo podrían ser los lenguajes del futuro, diseñados desde nuestra lengua y cultura.*
