@@ -1,34 +1,24 @@
 # Nombres de los binarios
 INTERPRETE=nepa
-GENERADOR=nepa_lib
 
 # Rutas de origen
-SRC_MAIN=./desarrollo/cmd/nepa/main.go
-SRC_LIB=./desarrollo/cmd/nepa_lib/main.go
+SRC_MAIN=./desarrollo/cmd/nepa
 
 # Ruta de destino
 DEST=./dist/bin
 
+.PHONY: all build install clean
+
 all: clean build install
 
 build:
-	@echo "🔨 Compilando Nepa (Intérprete)..."
-	@go build -o $(INTERPRETE) $(SRC_MAIN)
-	@echo "🔨 Compilando Generador de Librerías..."
-	@go build -o $(GENERADOR) $(SRC_LIB)
+	@echo "Compilando Nepa (Intérprete)..."
+	@mkdir -p $(DEST)
+	@go build -o $(DEST)/$(INTERPRETE) $(SRC_MAIN)
 
 install:
-	@mkdir -p $(DEST)
-	@mkdir -p ./dist/lib
-	@mv $(INTERPRETE) $(DEST)/
-	@mv $(GENERADOR) $(DEST)/
-	@echo "✅ Binarios instalados en $(DEST)/"
+	@echo "Binarios instalados en $(DEST)/"
 
 clean:
-	@rm -f $(INTERPRETE) $(GENERADOR)
-	@rm -rf ./dist/bin/*
-	@echo "🧹 Limpieza completada."
-
-
-
-
+	@rm -rf $(DEST)/*
+	@echo "Limpieza completada."

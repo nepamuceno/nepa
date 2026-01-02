@@ -1,100 +1,100 @@
-bash probar.sh 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
-ls desarrollo/interno/modulo/
-nano desarrollo/interno/modulo/core_math.go
-bash probar.sh 
 cat inicio.nepa 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
+bash probar.sh
 cat inicio.nepa 
-bash probar.sh 
+bash probar.sh && cat inicio.nepa 
 cat inicio.nepa 
-bash probar.sh 
-ash probar.sh 
-bash probar.sh 
+bash probar.sh && cat inicio.nepa 
 cat inicio.nepa 
-bash probar.sh 
-nano inicio.nepa
-./dist/bin/nepa inicio.nepa
-cat inicio.nepa
-bash probar.sh 
-cat desarrollo/interno/modulo/core_math.go
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-cat desarrollo/interno/modulo/core_math.go
-cat desarrollo/interno/modulo/modulo.go
-cat inicio.nepa
-bash probar.sh 
-nano gist.sh
-bash gist.sh
+bash probar.sh && cat inicio.nepa 
 ls
-cat gist.txt
-no en binario, solo los text files
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-sudo apt update && sudo apt install xclip -y
-nano gist.sh
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-go mod init nepa 2>/dev/null || go mod tidy
-bash probar.sh 
-go mod tidy
-bash probar.sh 
-export GO111MODULE=on
-go mod edit -module nepa
-bash probar.sh 
-# Borrar archivos de módulos viejos si existen
-rm -f go.mod go.sum
-# Reiniciar el módulo con el nombre correcto
-go mod init nepa
-# Forzar a Go a encontrar las dependencias locales
-go mod tidy
+bash subir_nepa.sh 
+bash probar.sh && cat inicio.nepa 
+bash probar.sh
+cat inicio.nepa 
+bash probar.sh
+cat inicio.nepa 
+bash probar.sh
 tree .
-bash probar.sh 
+bash probar.sh
+git log --oneline
+git checkout 0174db3
+git checkout -b recover-third 0174db3
+git reset --hard
+git checkout -b recover-third 0174db3
+git log --oneline --decorate --graph -n 5
+git checkout recover-third
+git pull origin recover-third
+git checkout main
+git fetch origin
+git reset --hard origin/main
+clear
+git reset --hard
+git checkout stable-31_12_2025_21_36-v0.0004
+ls -l
+git status
+bash probar.sh && cat inicio.nepa 
+ls
+ls desarrollo/
+ls dist
+ls dist/bin
+rm dist/bin/*
+bash probar.sh
+bash probar.sh && cat inicio.nepa 
+ls
+cat subir_nepa.sh 
+tree .
+sudo apt install kvantum
+sudo apt update
+sudo apt install qt5-style-kvantum qt5-style-kvantum-themes
+sudo apt install geany
+sudo apt install geany-themes
+cd ~
+git clone https://github.com/geany/geany-themes.git
+mkdir -p ~/.config/geany/colorschemes
+cp geany-themes/colorschemes/* ~/.config/geany/colorschemes/
+cp nepa nepa-bk
+cp -R nepa nepa-bk
+tree nepa-bk/
+cd nepa
+ls
+ls dist
+mkdir -p dist/bin dist/man dist/docs
+tree
+mkdir -p dist/man/nepa.1
+tree
+cat compila.sh 
+cat Makefile 
+nano Makefile 
+bash compila.sh 
+cat Makefile 
+nano Makefile 
+bash compila.sh 
+cat -A Makefile 
+nano Makefile
+cat -A Makefile 
+nano Makefile
+cat -A Makefile 
+bash compila.sh 
+cd nepa
+sed -i 's/^default=.*/default=0;0;0;255;255;255/' ~/.config/geany/colorschemes/Monokai.conf
+ls /home/deb/.config/geany/colorschemes/
+touch /home/deb/.config/geany/colorschemes/negro.conf
+cp /home/deb/.config/geany/colorschemes/evg-ega-dark.conf /home/deb/.config/geany/colorschemes/negro.conf
+sed -i 's/^default=.*/default=0;0;0;255;255;255/' ~/.config/geany/colorschemes/negro.conf
+cat ~/.config/geany/colorschemes/negro.conf
+ls
 bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-cat inicio.nepa
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
+tree .
+mkdir -p desarrollo/interno/sintaxis
+touch desarrollo/interno/sintaxis/sintaxis.go
+touch desarrollo/interno/evaluador/evaluador.go
+tree desarrollo
+tree -h desarrollo
+tree desarrollo
+ls
+mv probar.sh compila.sh
+bash compila.sh 
+cat -A Makefile 
+cd nepa
+cat -A Makefile 
+bash compila.sh 

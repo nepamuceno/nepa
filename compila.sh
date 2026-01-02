@@ -12,17 +12,10 @@ make clean && make
 if [ $? -eq 0 ]; then
     echo -e "${VERDE}✅ Compilación exitosa.${NC}"
     
-    echo -e "${AZUL}📚 Generando librerías...${NC}"
-    ./dist/bin/nepa_lib
-    
     echo -e "${AZUL}🚀 Ejecutando inicio.nepa...${NC}"
     echo "--------------------------"
-    ./dist/bin/nepa inicio.nepa
+    ./dist/bin/nepa test.nepa
 else
     echo -e "${ROJO}❌ Error en la compilación.${NC}"
     exit 1
 fi
-
-
-
-
