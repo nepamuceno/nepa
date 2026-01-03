@@ -20,41 +20,41 @@ var PalabrasReservadas = []string{
     "hasta",
     "incremento",
 
-    // --- Operadores lógicos ---
-    "and",
-    "or",
-    "not",
+    // --- Operadores lógicos (en español) ---
+    "y",     // and
+    "o",     // or
+    "no",    // not
 
     // --- Constantes matemáticas y físicas nativas ---
-    "pi",       // π
-    "e",        // número de Euler
-    "phi",      // número áureo
-    "gravedad", // aceleración de la gravedad
-    "c",        // velocidad de la luz
-    "h",        // constante de Planck
-    "k",        // constante de Boltzmann
+    "pi",        // π
+    "e",         // número de Euler
+    "phi",       // número áureo
+    "gravedad",  // aceleración de la gravedad
+    "c",         // velocidad de la luz
+    "h",         // constante de Planck
+    "k",         // constante de Boltzmann
 
     // --- Literales especiales ---
-    "true",
-    "false",
+    "verdadero",
+    "falso",
     "nulo",
 
-    // --- Funciones matemáticas básicas (core_math.go) ---
+    // --- Funciones matemáticas básicas ---
     "abs",
-    "sqrt",
-    "pow",
+    "raiz",       // sqrt
+    "potencia",   // pow
     "exp",
     "log",
     "log10",
-    "sin",
-    "cos",
-    "tan",
-    "asin",
-    "acos",
-    "atan",
-    "sinh",
-    "cosh",
-    "tanh",
+    "seno",       // sin
+    "coseno",     // cos
+    "tangente",   // tan
+    "arcseno",    // asin
+    "arccoseno",  // acos
+    "arctan",     // atan
+    "senh",       // sinh
+    "cosh",       // cosh
+    "tanh",       // tanh
 
     // --- Estadística ---
     "media",
@@ -62,8 +62,8 @@ var PalabrasReservadas = []string{
     "moda",
     "varianza",
     "desviacion",
-    "max",
-    "min",
+    "maximo",
+    "minimo",
 
     // --- Física ---
     "energia",
@@ -81,18 +81,20 @@ var PalabrasReservadas = []string{
     "valor_presente",
     "valor_futuro",
 
-    // --- Bitwise ---
-    "bit_and",
-    "bit_or",
+    // --- Operaciones bit a bit ---
+    "bit_y",          // and
+    "bit_o",          // or
     "bit_xor",
-    "bit_not",
-    "bit_shift_left",
-    "bit_shift_right",
+    "bit_no",         // not
+    "bit_desplazar_izq",
+    "bit_desplazar_der",
 
     // --- Primitivas del lenguaje ---
     "imprimir", // salida estándar
     "ejecutar", // invocar otro programa .nepa
     "ayuda",    // sistema de ayuda/documentación
+    "asignar",  // asignación de variables
+    "variable", // declaración de variables
 
     // --- Definiciones de espacio ---
     "global",   // variables compartidas

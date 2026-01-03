@@ -127,9 +127,18 @@ func parseValor(raw string) interface{} {
         return f
     }
 
-    // Strings con comillas
+    // Strings con comillas dobles
     if strings.HasPrefix(raw, "\"") && strings.HasSuffix(raw, "\"") {
         return strings.Trim(raw, "\"")
+    }
+
+    // Strings o caracteres con comillas simples
+    if strings.HasPrefix(raw, "'") && strings.HasSuffix(raw, "'") {
+        contenido := strings.Trim(raw, "'")
+        if len(contenido) == 1 {
+            return rune(contenido[0]) // literal de carácter
+        }
+        return contenido // cadena con comillas simples
     }
 
     // Listas/matrices simples: [1,2,3]

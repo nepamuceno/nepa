@@ -1,242 +1,45 @@
 /home/deb/nepa/README.md:
-// =========================================================
-// TEST DE ESTRES INTEGRAL: SDK MATEMATICAS NEPA
-// =========================================================
-# Calculo de area y condicional en Nepa
-radio = 5
-area = pi * radio * radio
+# Nepa
 
-si (area > 50) {
-    imprime("El area es grande:", area)
-} sino {
-    imprime("El area es pequeña:", area)
-}
+**Nepa** es un lenguaje de programación **nuevo y experimental**, acompañado de su propio intérprete escrito en **Go**.  
+Su diseño se inspira en la claridad estructurada de lenguajes modernos como Python, pero con una identidad única: utiliza **acrónimos y palabras reservadas en español** en lugar de inglés, creando una experiencia más cercana y accesible.
 
-x = 0
-mientras (x < 3) {
-    imprime("Contador:", x)
-    x = x + 1
-}
+---
 
-imprime("--- INICIANDO DIAGNOSTICO DEL SISTEMA ---")
+## ✨ Características principales
+- **Lenguaje original**: no es un clon, sino una propuesta propia y experimental.
+- **Sintaxis estructurada**: bloques y reglas claras, sin numeración de líneas.
+- **Arquitectura modular**: cada tipo de variable, bloque y función vive en su propio paquete.
+- **Soporte matemático amplio**: álgebra, estadísticas, finanzas y física.
+- **Palabras reservadas en español**: pensado para ser más intuitivo y culturalmente relevante.
+- **Extensible**: se dejan hooks para futuros módulos externos y nuevas funcionalidades.
 
-// TEST 1 SISTEMA DE AYUDA
-imprime("\n[1] Verificando Sistema de Ayuda...")
-imprime(ayuda("vol_cono"))
-imprime(ayuda("proyectil_pos"))
-imprime(ayuda("es_primo"))
+---
 
-// TEST 2 CONSTANTES
-imprime("\n[2] Validando Constantes...")
-imprime("PI: " + pi)
-imprime("E: " + e)
-imprime("Gravedad: " + gravedad)
-imprime("PHI: " + phi)
-imprime("Velocidad de la Luz: " + luz)
+## 📂 Estructura del proyecto
+- `variables/` → Tipos básicos y complejos (entero, real, texto, lista, matriz, objeto, etc.)
+- `matematicas/` → Funciones de álgebra, estadísticas, finanzas y física.
+- `bloque/` → Palabras y bloques reservados del lenguaje.
+- `sintaxis/` → Reglas de interpretación y validación.
+- `core/` → Utilidades y funciones centrales del sistema.
 
-// TEST 3 GEOMETRIA 3D
-imprime("\n[3] Calculando Volumenes Complejos...")
-radio = 5.5
-altura = 12.0
-v_esfera = vol_esfera(radio)
-v_cono = vol_cono(radio, altura)
-v_cil = vol_cilindro(radio, altura)
+---
 
-imprime("Esfera (r=5.5): " + formatear(v_esfera, 4))
-imprime("Cono (r=5.5, h=12): " + formatear(v_cono, 4))
-imprime("Cilindro (r=5.5, h=12): " + formatear(v_cil, 4))
+## 🚀 Objetivo
+El objetivo de Nepa es servir como base para un **lenguaje modular en español**, fácil de extender y mantener, que permita experimentar con nuevas ideas de sintaxis y ejecución.  
+Es un proyecto en evolución, pensado para crecer paso a paso y dejar siempre espacio para futuras expansiones.
 
-// TEST 4 TEORIA DE NUMEROS
-imprime("\n[4] Stress de Teoria de Numeros (Buscando Primos hasta 50)...")
-n = 1
-mientras n <= 50 {
-    si es_primo(n) {
-        imprime("Encontrado primo: " + n)
-    }
-    n = n + 1
-}
+---
 
-// TEST 5 ESTADISTICA
-imprime("\n[5] Stress de Estadistica...")
-avg = media(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
-var_val = varianza(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-desv = desviacion_est(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+## 🌱 Filosofía
+Nepa busca ser un **laboratorio de ideas**:  
+- Simple en el presente, para que cualquiera pueda probarlo.  
+- Modular y estructurado, para que sea mantenible.  
+- Con identidad propia en español, para demostrar que los lenguajes de programación también pueden hablar nuestro idioma.  
 
-imprime("Media de 10-100: " + avg)
-imprime("Varianza de 1-10: " + formatear(var_val, 2))
-imprime("Desviacion Estandar: " + formatear(desv, 4))
+---
 
-// TEST 6 FISICA CINEMATICA
-imprime("\n[6] Simulando Trayectoria de Proyectil (V0=50m/s, Ang=45)...")
-t = 0.0
-mientras t <= 5.0 {
-    pos = proyectil_pos(50, 45, t)
-    imprime("Tiempo " + t + "s -> Posicion [x,y]: " + pos)
-    t = t + 1.0
-}
-
-// TEST 7 BITWISE Y BASES
-imprime("\n[7] Operaciones de Bajo Nivel...")
-num = 255
-imprime("Decimal: " + num)
-imprime("Binario: " + binario(num))
-imprime("Hexadecimal: " + hex(num))
-imprime("Bit XOR (255, 170): " + bit_xor(255, 170))
-
-// TEST 8 FINANZAS
-imprime("\n[8] Test de Interes y Potencia...")
-capital = 1000
-tasa = 0.05
-tiempo = 10
-total = interes_compuesto(capital, tasa, tiempo)
-imprime("Capital Final (1000 al 5% x 10 años): " + formatear(total, 2))
-
-// TEST 9 TRIGONOMETRIA
-imprime("\n[9] Funciones Hiperbolicas...")
-val = 1.0
-imprime("senoh(1.0): " + formatear(senoh(val), 6))
-imprime("cosenoh(1.0): " + formatear(cosenoh(val), 6))
-
-imprime("\n--- TEST DE ESTRES FINALIZADO CON EXITO ---")
-
-
-
-
-/home/deb/nepa/desarrollo/cmd/nepa_lib/main.go:
-package main
-
-import (
-	"fmt"
-	"math"
-	"math/rand"
-	"nepa/desarrollo/interno/modulo"
-	"strconv"
-	"time"
-)
-
-func main() {
-	// CORRECCIÓN: lib, _ para recibir los dos valores que devuelve Cargar
-	lib, _ := modulo.Cargar("matematicas")
-
-	// --- 1. CONSTANTES (Matemáticas, Física y Astronomía) ---
-	lib.Variables["pi"] = math.Pi
-	lib.Variables["e"] = math.E
-	lib.Variables["phi"] = 1.618033988749895
-	lib.Variables["luz"] = 299792458.0
-	lib.Variables["gravedad"] = 9.80665
-	lib.Variables["planck"] = 6.62607015e-34
-	lib.Variables["avogadro"] = 6.02214076e23
-	lib.Variables["boltzmann"] = 1.380649e-23
-	lib.Variables["raiz2"] = math.Sqrt(2)
-	lib.Variables["inf"] = math.Inf(1)
-	lib.Variables["nan"] = math.NaN()
-
-	// --- 2. TRIGONOMETRÍA Y GEOMETRÍA (Básica, Inversa e Hiperbólica) ---
-	lib.Funciones["seno"] = func(args ...interface{}) interface{} { return math.Sin(args[0].(float64)) }
-	lib.Funciones["coseno"] = func(args ...interface{}) interface{} { return math.Cos(args[0].(float64)) }
-	lib.Funciones["tangente"] = func(args ...interface{}) interface{} { return math.Tan(args[0].(float64)) }
-	lib.Funciones["asen"] = func(args ...interface{}) interface{} { return math.Asin(args[0].(float64)) }
-	lib.Funciones["acos"] = func(args ...interface{}) interface{} { return math.Asin(args[0].(float64)) } // Nota: podrías cambiar a Acos si gustas
-	lib.Funciones["atan"] = func(args ...interface{}) interface{} { return math.Atan(args[0].(float64)) }
-	lib.Funciones["atan2"] = func(args ...interface{}) interface{} { return math.Atan2(args[0].(float64), args[1].(float64)) }
-	lib.Funciones["senh"] = func(args ...interface{}) interface{} { return math.Sinh(args[0].(float64)) }
-	lib.Funciones["cosh"] = func(args ...interface{}) interface{} { return math.Cosh(args[0].(float64)) }
-	lib.Funciones["tanh"] = func(args ...interface{}) interface{} { return math.Tanh(args[0].(float64)) }
-	lib.Funciones["grados"] = func(args ...interface{}) interface{} { return args[0].(float64) * (180 / math.Pi) }
-	lib.Funciones["radianes"] = func(args ...interface{}) interface{} { return args[0].(float64) * (math.Pi / 180) }
-	lib.Funciones["hipotenusa"] = func(args ...interface{}) interface{} { return math.Hypot(args[0].(float64), args[1].(float64)) }
-
-	// --- 3. ÁLGEBRA, POTENCIAS Y LOGARITMOS ---
-	lib.Funciones["raiz"] = func(args ...interface{}) interface{} { return math.Sqrt(args[0].(float64)) }
-	lib.Funciones["raiz_c"] = func(args ...interface{}) interface{} { return math.Cbrt(args[0].(float64)) }
-	lib.Funciones["raiz_n"] = func(args ...interface{}) interface{} { return math.Pow(args[0].(float64), 1/args[1].(float64)) }
-	lib.Funciones["potencia"] = func(args ...interface{}) interface{} { return math.Pow(args[0].(float64), args[1].(float64)) }
-	lib.Funciones["exp"] = func(args ...interface{}) interface{} { return math.Exp(args[0].(float64)) }
-	lib.Funciones["log"] = func(args ...interface{}) interface{} { return math.Log(args[0].(float64)) }
-	lib.Funciones["log10"] = func(args ...interface{}) interface{} { return math.Log10(args[0].(float64)) }
-	lib.Funciones["log2"] = func(args ...interface{}) interface{} { return math.Log2(args[0].(float64)) }
-	lib.Funciones["log_n"] = func(args ...interface{}) interface{} { return math.Log(args[1].(float64)) / math.Log(args[0].(float64)) }
-
-	// --- 4. TEORÍA DE NÚMEROS Y ARITMÉTICA ---
-	lib.Funciones["abs"] = func(args ...interface{}) interface{} { return math.Abs(args[0].(float64)) }
-	lib.Funciones["mod"] = func(args ...interface{}) interface{} { return math.Mod(args[0].(float64), args[1].(float64)) }
-	lib.Funciones["mcd"] = func(args ...interface{}) interface{} {
-		a, b := int(args[0].(float64)), int(args[1].(float64))
-		for b != 0 { a, b = b, a%b }; return float64(a)
-	}
-	lib.Funciones["es_primo"] = func(args ...interface{}) interface{} {
-		n := int(args[0].(float64))
-		if n <= 1 { return 0.0 }
-		for i := 2; i*i <= n; i++ { if n%i == 0 { return 0.0 } }; return 1.0
-	}
-	lib.Funciones["factorial"] = func(args ...interface{}) interface{} {
-		n, res := args[0].(float64), 1.0
-		for i := 2.0; i <= n; i++ { res *= i }; return res
-	}
-
-	// --- 5. REDONDEO Y CLASIFICACIÓN ---
-	lib.Funciones["piso"] = func(args ...interface{}) interface{} { return math.Floor(args[0].(float64)) }
-	lib.Funciones["techo"] = func(args ...interface{}) interface{} { return math.Ceil(args[0].(float64)) }
-	lib.Funciones["redondear"] = func(args ...interface{}) interface{} { return math.Round(args[0].(float64)) }
-	lib.Funciones["es_nan"] = func(args ...interface{}) interface{} { if math.IsNaN(args[0].(float64)) { return 1.0 }; return 0.0 }
-
-	// --- 6. SISTEMAS DIGITALES (Bases y Bits) ---
-	lib.Funciones["a_binario"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 2) }
-	lib.Funciones["a_octal"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 8) }
-	lib.Funciones["a_hex"] = func(args ...interface{}) interface{} { return strconv.FormatInt(int64(args[0].(float64)), 16) }
-	lib.Funciones["desde_base"] = func(args ...interface{}) interface{} {
-		val, _ := strconv.ParseInt(args[0].(string), int(args[1].(float64)), 64); return float64(val)
-	}
-	lib.Funciones["bit_y"] = func(args ...interface{}) interface{} { return float64(int64(args[0].(float64)) & int64(args[1].(float64))) }
-	lib.Funciones["bit_o"] = func(args ...interface{}) interface{} { return float64(int64(args[0].(float64)) | int64(args[1].(float64))) }
-
-	// --- 7. CÁLCULO NUMÉRICO ---
-	lib.Funciones["derivada_x2"] = func(args ...interface{}) interface{} {
-		x, h := args[0].(float64), 0.000001
-		f := func(v float64) float64 { return v * v }
-		return (f(x+h) - f(x)) / h
-	}
-	lib.Funciones["integral_x2"] = func(args ...interface{}) interface{} {
-		a, b, n := args[0].(float64), args[1].(float64), 1000.0
-		h, suma := (b-a)/n, 0.0
-		for i := 0.0; i < n; i++ { x := a + i*h; suma += (x*x + (x+h)*(x+h)) * h / 2 }
-		return suma
-	}
-
-	// --- 8. AZAR Y ESTADÍSTICA ---
-	rand.Seed(time.Now().UnixNano())
-	lib.Funciones["azar"] = func(args ...interface{}) interface{} {
-		if len(args) == 2 { return args[0].(float64) + rand.Float64()*(args[1].(float64)-args[0].(float64)) }
-		return rand.Float64()
-	}
-	lib.Funciones["azar_normal"] = func(args ...interface{}) interface{} { return rand.NormFloat64() }
-
-	// --- 9. UTILIDADES DE SISTEMA ---
-	lib.Funciones["esperar"] = func(args ...interface{}) interface{} {
-		time.Sleep(time.Duration(args[0].(float64)) * time.Millisecond); return nil
-	}
-	lib.Funciones["limpiar"] = func(args ...interface{}) interface{} { fmt.Print("\033[H\033[2J"); return nil }
-
-	// --- 10. DOCUMENTACIÓN ---
-	ayuda := `
---- NEPA MATH SDK v3.0 (COMPLETO) ---
-[Trig]: seno, coseno, tangente, asen, acos, atan, atan2, senh, cosh, tanh, grados, radianes
-[Algebra]: raiz, raiz_c, raiz_n, potencia, exp, log, log10, log2, log_n, hipotenusa
-[Teoria]: abs, mod, mcd, es_primo, factorial, redondear, piso, techo, es_nan
-[Digital]: a_binario, a_octal, a_hex, desde_base, bit_y, bit_o
-[Calculo]: derivada_x2(x), integral_x2(a,b)
-[Azar]: azar, azar_normal
-[Const]: pi, e, phi, luz, gravedad, planck, avogadro, boltzmann
-`
-	lib.Funciones["ayuda"] = func(args ...interface{}) interface{} { fmt.Println(ayuda); return nil }
-
-	lib.Exportar("./dist/lib/matematicas.ndll")
-	fmt.Println("🪐 Nepa Math SDK Universal generado correctamente.")
-}
-
-
-
-
+💡 *Nepa es más que un intérprete: es una propuesta experimental para imaginar cómo podrían ser los lenguajes del futuro, diseñados desde nuestra lengua y cultura.*
 
 
 
@@ -245,381 +48,208 @@ func main() {
 package main
 
 import (
+    "bufio"
     "fmt"
-    "io/ioutil"
-    "nepa/desarrollo/interno/evaluador"
-    "nepa/desarrollo/interno/lexer"
-    "nepa/desarrollo/interno/parser"
     "os"
+
+    "nepa/desarrollo/interno/core"
+    "nepa/desarrollo/interno/sintaxis"
+    "nepa/desarrollo/interno/parser"
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/modulos"
 )
+
+// Mapas globales y constantes compartidos por todos los programas
+var Globales = map[string]interface{}{}
+var Constantes = map[string]interface{}{}
+
+// EjecutarPrograma abre un archivo .nepa, valida, ejecuta y devuelve resultados o error
+func EjecutarPrograma(archivo string, args map[string]interface{}) (map[string]interface{}, error) {
+    f, err := os.Open(archivo)
+    if err != nil {
+        return nil, core.NewError(archivo, 0, fmt.Sprintf("No se pudo abrir archivo: %v", err))
+    }
+    defer f.Close()
+
+    scanner := bufio.NewScanner(f)
+    buf := make([]byte, 0, 64*1024)
+    scanner.Buffer(buf, 1024*1024)
+
+    var lineas []string
+    lineaNum := 0
+
+    for scanner.Scan() {
+        lineaNum++
+        linea := scanner.Text()
+
+        if lineaNum == 1 {
+            linea = core.StripBOM(linea)
+        }
+
+        if err := sintaxis.ValidarLinea(linea, lineaNum, archivo); err != nil {
+            return nil, core.NewError(archivo, lineaNum, err.Error())
+        }
+
+        lineas = append(lineas, linea)
+    }
+
+    if err := scanner.Err(); err != nil {
+        return nil, core.NewError(archivo, 0, fmt.Sprintf("Error leyendo archivo: %v", err))
+    }
+
+    ast := parser.Parse(lineas)
+
+    resultados, err := evaluador.EjecutarConContexto(ast, args, Globales, Constantes)
+    if err != nil {
+        if solicitud, ok := err.(evaluador.SolicitudEjecutar); ok {
+            subArgs := map[string]interface{}{}
+            for i, arg := range solicitud.Argumentos {
+                clave := fmt.Sprintf("arg%d", i+1)
+                subArgs[clave] = arg
+            }
+            return EjecutarPrograma(solicitud.Archivo, subArgs)
+        }
+        return nil, core.NewError(archivo, 0, err.Error())
+    }
+
+    for k, v := range resultados {
+        Globales[k] = v
+    }
+
+    return resultados, nil
+}
 
 func main() {
     if len(os.Args) < 2 {
-        fmt.Println("❌ Uso: nepa <archivo.nepa>")
-        return
+        fmt.Println("Uso: nepa archivo.nepa [argumentos]")
+        fmt.Println("Ejemplo: nepa programa1.nepa 45 matriz.json")
+        fmt.Println("Opciones: -v/--version muestra versión, -a/--ayuda muestra ayuda")
+        os.Exit(1)
     }
 
-    nombre := os.Args[1]
-    contenido, err := ioutil.ReadFile(nombre)
-    if err != nil { 
-        fmt.Printf("Error: %v\n", err)
-        return 
+    switch os.Args[1] {
+    case "-v", "--v", "-version", "--version":
+        fmt.Println("Nepa - Intérprete modular y orquestador de programas .nepa")
+        fmt.Printf("Versión: %s\n", core.Version)
+        os.Exit(0)
+    case "-a", "--a", "-ayuda", "--ayuda":
+        fmt.Println("Ayuda: Uso básico → nepa archivo.nepa [argumentos]")
+        fmt.Println("Ejemplo: nepa programa1.nepa 45 matriz.json")
+        fmt.Println("Opciones disponibles: -v/--version muestra versión, -a/--ayuda muestra esta ayuda")
+        os.Exit(0)
     }
 
-    // --- PREPARACIÓN DEL CÓDIGO ---
-    codigo := string(contenido)
-    if len(codigo) > 0 && codigo[len(codigo)-1] != '\n' {
-        codigo += "\n"
+    archivo := os.Args[1]
+
+    args := map[string]interface{}{}
+    if len(os.Args) > 2 {
+        for i, arg := range os.Args[2:] {
+            clave := fmt.Sprintf("arg%d", i+1)
+            args[clave] = arg
+        }
     }
 
-    // 1. Lexer: Generación de Tokens
-    l := lexer.Nuevo(codigo)
-    tokens := l.Tokenizar()
+    // --- Cargar todo el core al inicio ---
+    ctx := evaluador.Contexto{
+        Variables:  map[string]interface{}{},
+        Globales:   Globales,
+        Constantes: Constantes,
+        Funciones:  map[string]func(...interface{}) interface{}{},
+    }
+    modulos.CargarCore(&ctx)
 
-    // 2. Parser: Construcción del AST
-    p := parser.Nuevo(tokens, nombre)
-    nodos := p.Parsear()
+    // 🔑 pasar funciones al mapa global para que el evaluador las use
+    Globales["__funciones"] = ctx.Funciones
 
-    // 3. Evaluador: Ejecución
-    e := evaluador.NuevoEntorno()
-    
-    // Verificamos si se generaron nodos antes de imprimir el encabezado de ejecución
-    if len(nodos) > 0 {
-        fmt.Printf("🚀 Ejecutando: %s\n", nombre)
-        fmt.Println("--------------------------")
-        e.Ejecutar(nodos)
-    } else {
-        // COMENTARIO: Si llega aquí, el Parser no encontró instrucciones válidas 
-        // o hubo un error de sintaxis interno que impidió generar nodos.
-        fmt.Printf("⚠️  Aviso: No se generaron instrucciones para ejecutar en '%s'.\n", nombre)
-        fmt.Println("Verifica que la indentación sea de 4 espacios y el uso de ':'")
+    resultados, err := EjecutarPrograma(archivo, args)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // Mostrar resultados si existen
+    if resultados != nil && len(resultados) > 0 {
+        fmt.Println("Resultados:")
+        for k, v := range resultados {
+            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
+        }
+    }
+
+    // Mostrar globales y constantes solo si el usuario definió algo
+    if len(Globales) > 1 { // >1 porque siempre existe "__funciones"
+        fmt.Println("Globales:")
+        for k, v := range Globales {
+            if k == "__funciones" {
+                continue // no mostrar el mapa de funciones internas
+            }
+            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
+        }
+    }
+
+    if len(Constantes) > 0 {
+        fmt.Println("Constantes:")
+        for k, v := range Constantes {
+            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
+        }
     }
 }
 
 
 
 
-/home/deb/nepa/desarrollo/interno/ast/ast.go:
-package ast
-
-// Posicion representa la ubicación de un nodo en el código fuente
-type Posicion struct {
-	Linea   int
-	Columna int
-	Archivo string
-}
-
-// Base contiene la información común a todos los nodos
-type Base struct {
-	Pos Posicion
-}
-
-// Nodo es la interfaz base para todos los elementos del AST
-type Nodo interface{}
-
-// Importar representa la sentencia 'incluir' (Añadido para el motor de módulos)
-type Importar struct {
-	Base
-	Nombre string
-}
-
-// Identificador representa nombres de variables o funciones
-type Identificador struct {
-	Base
-	Nombre string
-}
-
-// Literal representa valores constantes (números, strings, booleanos)
-type Literal struct {
-	Base
-	Valor interface{}
-}
-
-// Asignacion representa la creación o actualización de una variable
-type Asignacion struct {
-	Base
-	Nombre string
-	Valor  Nodo
-}
-
-// OperacionBinaria representa cálculos como suma, resta, comparaciones
-type OperacionBinaria struct {
-	Base
-	Izquierda Nodo
-	Operador  string
-	Derecha   Nodo
-}
-
-// LlamadaFuncion representa la ejecución de una función nativa o de usuario
-type LlamadaFuncion struct {
-	Base
-	Nombre string
-	Args   []Nodo
-}
-
-// LlamadaModulo representa el acceso a funciones/variables de un SDK (ej. matematicas.raiz)
-type LlamadaModulo struct {
-	Base
-	Modulo  string
-	Funcion string
-	Args    []Nodo
-}
-
-// Si representa la estructura condicional
-type Si struct {
-	Base
-	Condicion Nodo
-	Cuerpo    Nodo
-	Sino      Nodo
-}
-
-// Mientras representa el bucle iterativo
-type Mientras struct {
-	Base
-	Condicion Nodo
-	Cuerpo    Nodo
-}
-
-// FuncionDef representa la declaración de una nueva función
-type FuncionDef struct {
-	Base
-	Nombre     string
-	Parametros []string
-	Cuerpo     Nodo
-}
-
-// Retornar representa la sentencia de salida de una función
-type Retornar struct {
-	Base
-	Valor Nodo
-}
-
-// Para representa el bucle universal (rangos, cadenas, matrices, archivos)
-type Para struct {
-    Base
-    Variable   string // Nombre de la variable iteradora
-    Origen     Nodo   // Inicio del rango o la colección a recorrer
-    Fin        Nodo   // Límite final (opcional, usado en rangos)
-    Incremento Nodo   // Salto dinámico (opcional)
-    Cuerpo     Nodo   // Bloque de código a ejecutar
-}
-
-
-
-
-/home/deb/nepa/desarrollo/interno/lexer/lexer.go:
-package lexer
+/home/deb/nepa/desarrollo/interno/sintaxis/sintaxis.go:
+package sintaxis
 
 import (
-    "unicode"
+    "fmt"
+    "strings"
+
+    "nepa/desarrollo/interno/bloque"
 )
 
-type TipoToken int
+// ValidarLinea revisa una línea de código y devuelve error si hay problema
+func ValidarLinea(linea string, num int, archivo string) error {
+    l := strings.TrimSpace(linea)
+    if l == "" {
+        return nil
+    }
 
-const (
-    T_EOF TipoToken = iota
-    T_IDENT
-    T_NUMERO
-    T_CADENA
-    T_OP
-    T_IGUAL
-    T_PARENT_A
-    T_PARENT_C
-    T_COMA
-    T_PUNTO
-    T_DOSPUNTOS
-    T_KEYWORD
-    T_LINEA
-    T_INDENT
-    T_DEDENT
-)
+    // Validar que no use palabras reservadas como variables
+    for _, palabra := range bloque.PalabrasReservadas {
+        if strings.HasPrefix(l, palabra+" ") || strings.HasPrefix(l, palabra+"=") {
+            return fmt.Errorf("Uso inválido de palabra reservada '%s' en %s línea %d", palabra, archivo, num)
+        }
+    }
 
-type Token struct {
-    Tipo    TipoToken
-    Literal string
-    Linea   int
+    // Validar bloques reservados (ejemplo: "si", "para", etc.)
+    for _, b := range bloque.BloquesReservados {
+        if strings.HasPrefix(l, b) && !strings.HasSuffix(l, ":") {
+            return fmt.Errorf("Bloque '%s' en %s línea %d requiere ':' al final", b, archivo, num)
+        }
+    }
+
+    // Validar paréntesis balanceados
+    if strings.Count(l, "(") != strings.Count(l, ")") {
+        return fmt.Errorf("Paréntesis desbalanceados en %s línea %d", archivo, num)
+    }
+
+    // Validar comillas balanceadas
+    if strings.Count(l, "\"")%2 != 0 {
+        return fmt.Errorf("Comillas desbalanceadas en %s línea %d", archivo, num)
+    }
+
+    return nil
 }
 
-type Lexer struct {
-    entrada     string
-    pos         int
-    linea       int
-    indents     []int
-    pendientes  []Token
-}
-
-func Nuevo(entrada string) *Lexer {
-    return &Lexer{
-        entrada: entrada,
-        linea:   1,
-        indents: []int{0},
-    }
-}
-
-func (l *Lexer) Tokenizar() []Token {
-    var tokens []Token
-    for {
-        t := l.SiguienteToken()
-        tokens = append(tokens, t)
-        if t.Tipo == T_EOF {
-            break
+// EsReservada indica si una palabra es reservada en Nepa
+func EsReservada(p string) bool {
+    for _, r := range bloque.PalabrasReservadas {
+        if p == r {
+            return true
         }
     }
-    return tokens
-}
-
-func (l *Lexer) SiguienteToken() Token {
-    if len(l.pendientes) > 0 {
-        t := l.pendientes[0]
-        l.pendientes = l.pendientes[1:]
-        return t
-    }
-
-    l.saltarEspacios()
-
-    if l.pos >= len(l.entrada) {
-        // Al final, cerramos todos los niveles de indentación abiertos
-        if len(l.indents) > 1 {
-            l.indents = l.indents[:len(l.indents)-1]
-            return Token{T_DEDENT, "", l.linea}
-        }
-        return Token{T_EOF, "", l.linea}
-    }
-
-    char := l.entrada[l.pos]
-
-    // Soporte para comentarios (ignora hasta el final de la línea)
-    if char == '#' {
-        for l.pos < len(l.entrada) && l.entrada[l.pos] != '\n' {
-            l.pos++
-        }
-        return l.SiguienteToken()
-    }
-
-    // Manejo de nuevas líneas e indentación
-    if char == '\n' {
-        l.pos++
-        l.linea++
-        l.procesarIndentacion()
-        return Token{T_LINEA, "\n", l.linea - 1}
-    }
-
-    // Identificadores y Palabras Clave
-    if unicode.IsLetter(rune(char)) || char == '_' {
-        inicio := l.pos
-        for l.pos < len(l.entrada) && (unicode.IsLetter(rune(l.entrada[l.pos])) || unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '_') {
-            l.pos++
-        }
-        lit := l.entrada[inicio:l.pos]
-        if l.esKeyword(lit) {
-            return Token{T_KEYWORD, lit, l.linea}
-        }
-        return Token{T_IDENT, lit, l.linea}
-    }
-
-    // Números
-    if unicode.IsDigit(rune(char)) {
-        inicio := l.pos
-        for l.pos < len(l.entrada) && (unicode.IsDigit(rune(l.entrada[l.pos])) || l.entrada[l.pos] == '.') {
-            l.pos++
-        }
-        return Token{T_NUMERO, l.entrada[inicio:l.pos], l.linea}
-    }
-
-    // Cadenas
-    if char == '"' {
-        l.pos++
-        inicio := l.pos
-        for l.pos < len(l.entrada) && l.entrada[l.pos] != '"' {
-            l.pos++
-        }
-        lit := l.entrada[inicio:l.pos]
-        l.pos++
-        return Token{T_CADENA, lit, l.linea}
-    }
-
-    // Operadores y Símbolos
-    l.pos++
-    switch char {
-    case '=':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "==", l.linea}
-        }
-        return Token{T_IGUAL, "=", l.linea}
-    case '+': return Token{T_OP, "+", l.linea}
-    case '-': return Token{T_OP, "-", l.linea}
-    case '*': return Token{T_OP, "*", l.linea}
-    case '/': return Token{T_OP, "/", l.linea}
-    case '>':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, ">=", l.linea}
-        }
-        return Token{T_OP, ">", l.linea}
-    case '<':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "<=", l.linea}
-        }
-        return Token{T_OP, "<", l.linea}
-    case '!':
-        if l.pos < len(l.entrada) && l.entrada[l.pos] == '=' {
-            l.pos++
-            return Token{T_OP, "!=", l.linea}
-        }
-        // Si es solo !, lo tratamos como operador aunque falte el =
-        return Token{T_OP, "!", l.linea}
-    case '(': return Token{T_PARENT_A, "(", l.linea}
-    case ')': return Token{T_PARENT_C, ")", l.linea}
-    case ',': return Token{T_COMA, ",", l.linea}
-    case '.': return Token{T_PUNTO, ".", l.linea}
-    case ':': return Token{T_DOSPUNTOS, ":", l.linea}
-    }
-
-    return l.SiguienteToken()
-}
-
-func (l *Lexer) procesarIndentacion() {
-    espacios := 0
-    for l.pos < len(l.entrada) && (l.entrada[l.pos] == ' ' || l.entrada[l.pos] == '\t') {
-        if l.entrada[l.pos] == '\t' {
-            espacios += 4
-        } else {
-            espacios++
-        }
-        l.pos++
-    }
-
-    // Si la línea está vacía o es un comentario, ignorar procesamiento de indentación
-    if l.pos < len(l.entrada) && (l.entrada[l.pos] == '\n' || l.entrada[l.pos] == '#') {
-        return
-    }
-
-    ultimo := l.indents[len(l.indents)-1]
-    if espacios > ultimo {
-        l.indents = append(l.indents, espacios)
-        l.pendientes = append(l.pendientes, Token{T_INDENT, "", l.linea})
-    } else {
-        for espacios < ultimo {
-            l.indents = l.indents[:len(l.indents)-1]
-            ultimo = l.indents[len(l.indents)-1]
-            l.pendientes = append(l.pendientes, Token{T_DEDENT, "", l.linea})
-        }
-    }
-}
-
-func (l *Lexer) saltarEspacios() {
-    // Solo saltamos espacios si no estamos al inicio de una línea procesando indentación
-    for l.pos < len(l.entrada) && l.entrada[l.pos] == ' ' {
-        l.pos++
-    }
-}
-
-func (l *Lexer) esKeyword(lit string) bool {
-    ks := []string{"variable", "si", "entonces", "sino", "mientras", "funcion", "retorna", "imprime", "leer", "incluir", "y", "o", "no", "para", "desde", "hasta", "en", "incremento"}
-    for _, k := range ks {
-        if k == lit {
+    for _, r := range bloque.BloquesReservados {
+        if p == r {
             return true
         }
     }
@@ -629,774 +259,1518 @@ func (l *Lexer) esKeyword(lit string) bool {
 
 
 
+/home/deb/nepa/desarrollo/interno/administrador/variables_administrador.go:
+// desarrollo/interno/administrador/variables_administrador.go
+package administrador
+
+import (
+    "errors"
+    "fmt"
+    "sync"
+)
+
+// Interfaz común que todos los tipos deben implementar.
+// Ya la definimos en bit.go, pero lo ideal es centralizarla aquí
+// para que todos los tipos la importen desde este paquete.
+type Variable interface {
+    Nombre() string
+    Tipo() string
+    Mostrar() string
+    JSON() string
+
+    AsignarDesdeInterface(v interface{}) error
+    ValorComoInterface() interface{}
+
+    // Conversiones básicas
+    ABooleano() (bool, error)
+    AEntero() (int, error)
+    AReal() (float64, error)
+}
+
+// Errores comunes del administrador
+var (
+    ErrVariableNoEncontrada = errors.New("variable no encontrada")
+    ErrVariableYaExiste     = errors.New("ya existe una variable con ese nombre")
+    ErrConstructorNoExiste  = errors.New("no existe constructor para ese tipo")
+)
+
+// Tabla global de símbolos: nombre → Variable
+var tabla = make(map[string]Variable)
+
+// Mutex para concurrencia segura
+var mu sync.RWMutex
+
+// Registro de constructores: tipo → función(nombre, valor) → Variable
+var Constructores = make(map[string]func(string, interface{}) (Variable, error))
+
+// RegistrarConstructor permite añadir nuevos tipos al ecosistema.
+// Ejemplo: administrador.RegistrarConstructor("bit", bit.CrearBit)
+func RegistrarConstructor(tipo string, f func(string, interface{}) (Variable, error)) {
+    Constructores[tipo] = f
+}
+
+// RegistrarVariable guarda una variable en la tabla global.
+// Si ya existe una con el mismo nombre, retorna error.
+func RegistrarVariable(nombre string, v Variable) error {
+    mu.Lock()
+    defer mu.Unlock()
+    if _, existe := tabla[nombre]; existe {
+        return ErrVariableYaExiste
+    }
+    tabla[nombre] = v
+    return nil
+}
+
+// ObtenerVariable devuelve una variable por nombre.
+func ObtenerVariable(nombre string) (Variable, error) {
+    mu.RLock()
+    defer mu.RUnlock()
+    if v, ok := tabla[nombre]; ok {
+        return v, nil
+    }
+    return nil, ErrVariableNoEncontrada
+}
+
+// ModificarVariable reemplaza el valor de una variable existente.
+func ModificarVariable(nombre string, nuevoValor interface{}) error {
+    mu.Lock()
+    defer mu.Unlock()
+    v, ok := tabla[nombre]
+    if !ok {
+        return ErrVariableNoEncontrada
+    }
+    return v.AsignarDesdeInterface(nuevoValor)
+}
+
+// BorrarVariable elimina una variable de la tabla global.
+func BorrarVariable(nombre string) error {
+    mu.Lock()
+    defer mu.Unlock()
+    if _, ok := tabla[nombre]; !ok {
+        return ErrVariableNoEncontrada
+    }
+    delete(tabla, nombre)
+    return nil
+}
+
+// MostrarVariable imprime la representación textual de una variable.
+func MostrarVariable(nombre string) (string, error) {
+    mu.RLock()
+    defer mu.RUnlock()
+    if v, ok := tabla[nombre]; ok {
+        return v.Mostrar(), nil
+    }
+    return "", ErrVariableNoEncontrada
+}
+
+// ListarVariables devuelve todas las variables registradas.
+func ListarVariables() []Variable {
+    mu.RLock()
+    defer mu.RUnlock()
+    var lista []Variable
+    for _, v := range tabla {
+        lista = append(lista, v)
+    }
+    return lista
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/bloque/bloques-reservados.go:
+package bloque
+
+// BloquesReservados contiene todas las sentencias que abren bloques en Nepa.
+// Se usan en sintaxis.go para validar que terminen con ":" y tengan indentación correcta.
+var BloquesReservados = []string{
+    // --- Control de flujo ---
+    "si",        // bloque condicional
+    "sino",      // bloque alternativo
+
+    // --- Bucles ---
+    "mientras",  // loop mientras condición sea verdadera
+    "para",      // loop universal (rangos, listas, strings, mapas, iteradores)
+
+    // --- Definiciones ---
+    "funcion",   // definición de funciones
+    "modulo",    // definición de módulos / librerías
+
+    // --- Manejo de errores / excepciones ---
+    "intentar",   // bloque de manejo de excepciones (antes try)
+    "capturar",   // bloque para capturar errores (antes catch)
+    "finalmente", // bloque de limpieza tras intentar/capturar (antes finally)
+
+    // --- Otros bloques previstos ---
+    "clase",      // definición de clases (futuro)
+    "estructura", // definición de estructuras (futuro)
+    "ayuda",      // bloque/llamada especial para sistema de ayuda
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/bloque/palabras-reservados.go:
+package bloque
+
+// PalabrasReservadas contiene todas las palabras reservadas globales del lenguaje Nepa.
+// Se usan en sintaxis.go para validar que no se asignen ni se redefinan.
+var PalabrasReservadas = []string{
+    // --- Control de flujo ---
+    "si",
+    "sino",
+    "mientras",
+    "para",
+
+    // --- Definiciones y módulos ---
+    "funcion",
+    "modulo",
+    "retornar",
+    "importar",
+
+    // --- Sintaxis de bucles ---
+    "desde",
+    "hasta",
+    "incremento",
+
+    // --- Operadores lógicos ---
+    "and",
+    "or",
+    "not",
+
+    // --- Constantes matemáticas y físicas nativas ---
+    "pi",       // π
+    "e",        // número de Euler
+    "phi",      // número áureo
+    "gravedad", // aceleración de la gravedad
+    "c",        // velocidad de la luz
+    "h",        // constante de Planck
+    "k",        // constante de Boltzmann
+
+    // --- Literales especiales ---
+    "true",
+    "false",
+    "nulo",
+
+    // --- Funciones matemáticas básicas (core_math.go) ---
+    "abs",
+    "sqrt",
+    "pow",
+    "exp",
+    "log",
+    "log10",
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "sinh",
+    "cosh",
+    "tanh",
+
+    // --- Estadística ---
+    "media",
+    "mediana",
+    "moda",
+    "varianza",
+    "desviacion",
+    "max",
+    "min",
+
+    // --- Física ---
+    "energia",
+    "trabajo",
+    "potencia",
+    "densidad",
+    "presion",
+    "fuerza",
+    "momento",
+    "impulso",
+
+    // --- Finanzas ---
+    "interes_simple",
+    "interes_compuesto",
+    "valor_presente",
+    "valor_futuro",
+
+    // --- Bitwise ---
+    "bit_and",
+    "bit_or",
+    "bit_xor",
+    "bit_not",
+    "bit_shift_left",
+    "bit_shift_right",
+
+    // --- Primitivas del lenguaje ---
+    "imprimir", // salida estándar
+    "ejecutar", // invocar otro programa .nepa
+    "ayuda",    // sistema de ayuda/documentación
+
+    // --- Definiciones de espacio ---
+    "global",   // variables compartidas
+    "const",    // constantes inmutables
+}
+
+
+
+
 /home/deb/nepa/desarrollo/interno/evaluador/evaluador.go:
 package evaluador
 
 import (
+    "errors"
     "fmt"
-    "nepa/desarrollo/interno/ast"
-    "nepa/desarrollo/interno/modulo"
+    "go/ast"
+    "go/parser"
+    "strings"
+)
+
+var (
+    ErrExpresionInvalida = errors.New("expresión inválida")
+    ErrFuncionNoExiste   = errors.New("función no registrada")
+    ErrTipoNoSoportado   = errors.New("tipo no soportado en evaluación")
+    ErrConcatenacion     = errors.New("error de tipo en concatenación")
+)
+
+// Eval evalúa una expresión textual y devuelve un resultado como interface{}.
+func Eval(expr string) (interface{}, error) {
+    expr = strings.TrimSpace(expr)
+    if expr == "" {
+        return nil, ErrExpresionInvalida
+    }
+    node, err := parser.ParseExpr(expr)
+    if err != nil {
+        return nil, fmt.Errorf("%w: %v", ErrExpresionInvalida, err)
+    }
+    return evalNode(node)
+}
+
+// Dispatcher central: delega según el tipo de nodo AST
+func evalNode(node ast.Expr) (interface{}, error) {
+    switch n := node.(type) {
+    case *ast.BasicLit:
+        return evalLiteral(n)
+    case *ast.Ident:
+        return evalIdent(n)
+    case *ast.UnaryExpr:
+        return evalUnario(n)   // antes evalUnary
+    case *ast.BinaryExpr:
+        return evalBinario(n)  // antes evalBinary
+    case *ast.CallExpr:
+        return evalLlamada(n)  // antes evalCall
+    default:
+        return nil, ErrExpresionInvalida
+    }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/funciones.go:
+package evaluador
+
+import (
+    "errors"
+    "strings"
+)
+
+// Funciones internas y externas registradas.
+// La clave es el nombre en minúsculas de la función o "tipo.metodo" para métodos.
+var Funciones = map[string]func(args ...interface{}) (interface{}, error){
+    // --- Funciones matemáticas ---
+    "suma": func(args ...interface{}) (interface{}, error) {
+        var total float64
+        for _, a := range args {
+            f, err := ConvertirAReal(a)
+            if err != nil {
+                return nil, err
+            }
+            total += f
+        }
+        return total, nil
+    },
+
+    "max": func(args ...interface{}) (interface{}, error) {
+        if len(args) == 0 {
+            return nil, errors.New("max requiere al menos un argumento")
+        }
+        m, err := ConvertirAReal(args[0])
+        if err != nil {
+            return nil, err
+        }
+        for _, a := range args[1:] {
+            f, err := ConvertirAReal(a)
+            if err != nil {
+                return nil, err
+            }
+            if f > m {
+                m = f
+            }
+        }
+        return m, nil
+    },
+
+    "seno": func(args ...interface{}) (interface{}, error) {
+        if len(args) != 1 {
+            return nil, errors.New("seno(x) requiere 1 argumento")
+        }
+        f, err := ConvertirAReal(args[0])
+        if err != nil {
+            return nil, err
+        }
+        return AproximarSeno(f), nil
+    },
+
+    // --- Métodos sobre cadenas ---
+    "cadena.convertir_caracter": func(args ...interface{}) (interface{}, error) {
+        if len(args) < 1 {
+            return nil, errors.New("convertir_caracter requiere al menos una cadena")
+        }
+        s, ok := args[0].(string)
+        if !ok {
+            return nil, errors.New("primer argumento no es una cadena")
+        }
+        // Ejemplo simple: convertir a mayúsculas
+        return strings.ToUpper(s), nil
+    },
+
+    "cadena.longitud": func(args ...interface{}) (interface{}, error) {
+        if len(args) < 1 {
+            return nil, errors.New("longitud requiere al menos una cadena")
+        }
+        s, ok := args[0].(string)
+        if !ok {
+            return nil, errors.New("primer argumento no es una cadena")
+        }
+        return len(s), nil
+    },
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador_literal.go:
+package evaluador
+
+import (
+    "go/ast"
+    "go/token"
     "strconv"
     "strings"
 )
 
-type Interpretador struct {
-    Entorno    map[string]interface{}
-    Modulos    map[string]*modulo.LibreriaNepa
-    Protegidos map[string]bool 
-}
+// evalLiteral maneja literales básicos: enteros, reales, cadenas y caracteres.
+// Se invoca desde el dispatcher en evaluador.go cuando el nodo es *ast.BasicLit.
+func evalLiteral(n *ast.BasicLit) (interface{}, error) {
+    switch n.Kind {
+    case token.INT:
+        // Ejemplo: 42
+        return strconv.Atoi(n.Value)
 
-func NuevoEntorno() *Interpretador {
-    i := &Interpretador{
-        Entorno:    make(map[string]interface{}),
-        Modulos:    make(map[string]*modulo.LibreriaNepa),
-        Protegidos: make(map[string]bool),
-    }
+    case token.FLOAT:
+        // Ejemplo: 3.14
+        return strconv.ParseFloat(n.Value, 64)
 
-    // Registro de funciones nativas
-    i.registrarNativa("imprime", func(args ...interface{}) interface{} {
-        for idx, arg := range args {
-            if s, ok := arg.(string); ok {
-                args[idx] = strings.ReplaceAll(s, "\\n", "\n")
-            }
-        }
-        fmt.Println(args...)
-        return nil
-    })
+    case token.STRING:
+        // Ejemplo: "hola mundo"
+        // Se eliminan las comillas y se procesan escapes básicos (\n, \t, \", etc.)
+        raw := strings.Trim(n.Value, `"`)
+        return desescaparCadena(raw), nil
 
-    i.registrarNativa("ayuda", func(args ...interface{}) interface{} {
-        fmt.Println("--- SISTEMA DE AYUDA NEPA ---")
-        return nil
-    })
-
-    i.registrarNativa("formatear", func(args ...interface{}) interface{} {
-        if len(args) < 2 { return args[0] }
-        val, _ := toFloatSafe(args[0])
-        prec, _ := toFloatSafe(args[1])
-        return fmt.Sprintf("%.*f", int(prec), val)
-    })
-
-    // Carga automática del SDK
-    sdk, err := modulo.Cargar("matematicas")
-    if err == nil {
-        for nombre, fn := range sdk.Funciones { i.registrarNativa(nombre, fn) }
-        for nombre, val := range sdk.Variables { i.registrarNativa(nombre, val) }
-    }
-
-    return i
-}
-
-func (i *Interpretador) registrarNativa(nombre string, valor interface{}) {
-    i.Entorno[nombre] = valor
-    i.Protegidos[nombre] = true
-}
-
-func toFloatSafe(v interface{}) (float64, bool) {
-    switch t := v.(type) {
-    case float64: return t, true
-    case int: return float64(t), true
-    case int64: return float64(t), true
-    case string:
-        if f, err := strconv.ParseFloat(t, 64); err == nil { return f, true }
-    }
-    return 0, false
-}
-
-func (i *Interpretador) Ejecutar(nodos []ast.Nodo) {
-    for _, nodo := range nodos {
-        i.Evaluar(nodo)
-    }
-}
-
-func (i *Interpretador) Evaluar(nodo ast.Nodo) interface{} {
-    if nodo == nil { return nil }
-
-    switch n := nodo.(type) {
-
-    case *ast.Importar, ast.Importar:
-        var nombre string
-        if v, ok := n.(*ast.Importar); ok { nombre = v.Nombre } else { nombre = n.(ast.Importar).Nombre }
-        mod, err := modulo.Cargar(nombre)
-        if err != nil { panic(fmt.Sprintf("Error al cargar módulo '%s': %v", nombre, err)) }
-        i.Modulos[nombre] = mod
-        return nil
-
-    case *ast.Literal, ast.Literal:
-        if v, ok := n.(*ast.Literal); ok { return v.Valor }
-        return n.(ast.Literal).Valor
-
-    case *ast.Identificador, ast.Identificador:
-        var nombre string
-        if v, ok := n.(*ast.Identificador); ok { nombre = v.Nombre } else { nombre = n.(ast.Identificador).Nombre }
-        if val, ok := i.Entorno[nombre]; ok { return val }
-        return nombre
-
-    case *ast.Asignacion, ast.Asignacion:
-        var nombre string
-        var valorNodo ast.Nodo
-        if v, ok := n.(*ast.Asignacion); ok { nombre, valorNodo = v.Nombre, v.Valor } else { 
-            nombre, valorNodo = n.(ast.Asignacion).Nombre, n.(ast.Asignacion).Valor 
-        }
-
-        if i.Protegidos[nombre] {
-            panic(fmt.Sprintf("Error: No puedes reasignar la función o constante nativa '%s'", nombre))
-        }
-
-        valor := i.Evaluar(valorNodo)
-        if f, ok := toFloatSafe(valor); ok { i.Entorno[nombre] = f } else { i.Entorno[nombre] = valor }
-        return valor
-
-    case *ast.OperacionBinaria, ast.OperacionBinaria:
-        var op string
-        var izqN, derN ast.Nodo
-        if v, ok := n.(*ast.OperacionBinaria); ok { op, izqN, derN = v.Operador, v.Izquierda, v.Derecha } else {
-            op, izqN, derN = n.(ast.OperacionBinaria).Operador, n.(ast.OperacionBinaria).Izquierda, n.(ast.OperacionBinaria).Derecha
-        }
-
-        if op == "." {
-            modNombre := ""
-            if id, ok := izqN.(*ast.Identificador); ok { modNombre = id.Nombre } else if id, ok := izqN.(ast.Identificador); ok { modNombre = id.Nombre }
-            if mod, existe := i.Modulos[modNombre]; existe {
-                miembro := ""
-                switch m := derN.(type) {
-                case *ast.Identificador: miembro = m.Nombre
-                case ast.Identificador: miembro = m.Nombre
-                }
-                if fn, ok := mod.Funciones[miembro]; ok { return fn }
-                if val, ok := mod.Variables[miembro]; ok { return val }
-            }
-            return nil
-        }
-
-        izq, der := i.Evaluar(izqN), i.Evaluar(derN)
-        
-        if op == "+" {
-            _, ok1 := toFloatSafe(izq)
-            _, ok2 := toFloatSafe(der)
-            if !ok1 || !ok2 {
-                return fmt.Sprintf("%v%v", izq, der)
-            }
-        }
-
-        v1, ok1 := toFloatSafe(izq)
-        v2, ok2 := toFloatSafe(der)
-
-        if ok1 && ok2 {
-            switch op {
-            case "+": return v1 + v2
-            case "-": return v1 - v2
-            case "*": return v1 * v2
-            case "/": 
-                if v2 == 0 { return 0.0 }
-                return v1 / v2
-            case "==": return v1 == v2
-            case "!=": return v1 != v2
-            case ">":  return v1 > v2
-            case "<":  return v1 < v2
-            case ">=": return v1 >= v2
-            case "<=": return v1 <= v2
-            }
-        }
-        return nil
-
-    case *ast.Si, ast.Si:
-        var c, cuerpo, sino ast.Nodo
-        if v, ok := n.(*ast.Si); ok { c, cuerpo, sino = v.Condicion, v.Cuerpo, v.Sino } else {
-            c, cuerpo, sino = n.(ast.Si).Condicion, n.(ast.Si).Cuerpo, n.(ast.Si).Sino
-        }
-        if val := i.Evaluar(c); val == true || val == 1.0 { return i.Evaluar(cuerpo) } else if sino != nil { return i.Evaluar(sino) }
-        return nil
-
-    case *ast.Mientras, ast.Mientras:
-        var c, cuerpo ast.Nodo
-        if v, ok := n.(*ast.Mientras); ok { c, cuerpo = v.Condicion, v.Cuerpo } else { c, cuerpo = n.(ast.Mientras).Condicion, n.(ast.Mientras).Cuerpo }
-        for {
-            val := i.Evaluar(c)
-            if val != true && val != 1.0 { break }
-            i.Evaluar(cuerpo)
-        }
-        return nil
-
-    // --- BLOQUE AÑADIDO PARA EL PARA UNIVERSAL ---
-    case *ast.Para, ast.Para:
-        var p ast.Para
-        if v, ok := n.(*ast.Para); ok { p = *v } else { p = n.(ast.Para) }
-        return i.EjecutarPara(p)
-
-    case *ast.LlamadaFuncion, ast.LlamadaFuncion:
-        var nombre string
-        var argsN []ast.Nodo
-        if v, ok := n.(*ast.LlamadaFuncion); ok { 
-            nombre, argsN = v.Nombre, v.Args 
-        } else { 
-            nombre, argsN = n.(ast.LlamadaFuncion).Nombre, n.(ast.LlamadaFuncion).Args 
-        }
-
-        obj := i.Entorno[nombre]
-        if obj == nil { return nil }
-
-        if fn, ok := obj.(func(...interface{}) interface{}); ok {
-            args := make([]interface{}, len(argsN))
-            for idx, arg := range argsN { args[idx] = i.Evaluar(arg) }
-            return fn(args...)
-        }
-        if fDef, ok := obj.(*ast.FuncionDef); ok { return i.Evaluar(fDef.Cuerpo) }
-        
-        return nil
-
-    case *ast.FuncionDef, ast.FuncionDef:
-        var nombre string
-        if v, ok := n.(*ast.FuncionDef); ok { nombre = v.Nombre } else { nombre = n.(ast.FuncionDef).Nombre }
-        if i.Protegidos[nombre] { panic(fmt.Sprintf("Error: No puedes usar el nombre nativo '%s'", nombre)) }
-        i.Entorno[nombre] = n
-        return nil
-
-    case []ast.Nodo:
-        var last interface{}
-        for _, sn := range n { last = i.Evaluar(sn) }
-        return last
+    case token.CHAR:
+        // Ejemplo: 'a'
+        raw := strings.Trim(n.Value, `'`)
+        return raw, nil
 
     default:
-        return nil
+        return nil, ErrTipoNoSoportado
     }
 }
 
 
 
 
-/home/deb/nepa/desarrollo/interno/evaluador/para.go:
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador_ident.go:
 package evaluador
 
 import (
-	"fmt"
-	"nepa/desarrollo/interno/ast"
-	"reflect"
+    "fmt"
+    "go/ast"
+    "strings"
+
+    "nepa/interno/administrador"
 )
 
-// EjecutarPara es el motor universal de iteración de Nepa.
-// Soporta: Rangos (C++), Colecciones (Python), Cadenas (Bash) y Objetos.
-func (i *Interpretador) EjecutarPara(p ast.Para) interface{} {
-	
-	// CASO 1: Rango Numérico (Desde/Hasta/Incremento) - Estilo C++/Fortran
-	if p.Fin != nil {
-		return i.ejecutarRangoUniversal(p)
-	}
+var ErrIdentificadorNoExiste = fmt.Errorf("identificador no existe")
 
-	// CASO 2: Iteración de Contenido (En) - Estilo Python/Bash
-	origen := i.Evaluar(p.Origen)
-	if origen == nil {
-		return nil
-	}
+// evalIdent maneja identificadores:
+// - verdadero / falso → booleanos
+// - nombres de variables registrados en el administrador
+func evalIdent(n *ast.Ident) (interface{}, error) {
+    nombre := strings.ToLower(n.Name)
 
-	// --- NUEVO: SOPORTE PARA CORE_PARA (Iteradores de Archivos/Sistemas) ---
-	if it, ok := origen.(Iterador); ok {
-		// defer it.Cerrar() // Opcional: Descomenta si quieres cierre automático
-		for {
-			valor, siguiente := it.Siguiente()
-			if !siguiente {
-				break
-			}
-			i.Entorno[p.Variable] = valor
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		}
-		return nil
-	}
-
-	// ROBUSTEZ: Indirect resuelve punteros o interfaces para llegar al valor real
-	val := reflect.Indirect(reflect.ValueOf(origen))
-
-	switch val.Kind() {
-	case reflect.String:
-		// Itera letra por letra
-		for _, char := range val.String() {
-			i.Entorno[p.Variable] = string(char)
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		}
-
-	case reflect.Slice, reflect.Array:
-		// Itera matrices de cualquier tipo [1, 2, 3] o ["a", "b"]
-		for idx := 0; idx < val.Len(); idx++ {
-			i.Entorno[p.Variable] = val.Index(idx).Interface()
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		}
-
-	case reflect.Map:
-		// Itera sobre llaves de un diccionario/objeto
-		iter := val.MapRange()
-		for iter.Next() {
-			// Por defecto entregamos la llave (estilo Python/JS)
-			i.Entorno[p.Variable] = iter.Key().Interface()
-			i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		}
-
-	default:
-		// ROBUSTEZ TOTAL: Si es un objeto único (Int, Bool, etc), se procesa una vez
-		i.Entorno[p.Variable] = origen
-		i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-	}
-
-	return nil
-}
-
-// ejecutarRangoUniversal maneja cálculos complejos y saltos dinámicos
-func (i *Interpretador) ejecutarRangoUniversal(p ast.Para) interface{} {
-	// Evaluación de expresiones complejas iniciales
-	inicio, ok1 := toFloatSafe(i.Evaluar(p.Origen))
-	fin, ok2 := toFloatSafe(i.Evaluar(p.Fin))
-
-	if !ok1 || !ok2 {
-		fmt.Println("❌ Error Nepa: Los límites 'desde/hasta' deben dar un resultado numérico.")
-		return nil
-	}
-
-	actual := inicio
-	paso := 1.0 // Paso por defecto
-	if inicio > fin { paso = -1.0 } // Auto-detección de dirección regresiva
-
-	for {
-		// 1. Recalcular paso y meta (Dinamismo Total en cada vuelta)
-		if vFin, okF := toFloatSafe(i.Evaluar(p.Fin)); okF {
-			fin = vFin
-		}
-		if p.Incremento != nil {
-			if vPaso, okP := toFloatSafe(i.Evaluar(p.Incremento)); okP {
-				paso = vPaso
-			}
-		}
-
-		// 2. Protección contra bucle infinito (paso cero)
-		if paso == 0 {
-			fmt.Println("⚠️ Advertencia: Incremento cero detectado, saliendo del bucle para evitar bloqueo.")
-			break
-		}
-
-		// 3. Verificación de límite UNIVERSAL (Bidireccional)
-		if (paso > 0 && actual > fin) || (paso < 0 && actual < fin) {
-			break
-		}
-
-		// 4. Inyectar valor en el entorno del intérprete
-		i.Entorno[p.Variable] = actual
-
-		// 5. Ejecutar cuerpo del bucle
-		res := i.ejecutarBloque(p.Cuerpo.([]ast.Nodo))
-		if res != nil {
-			return res
-		}
-
-		// 6. Aplicar incremento para la siguiente iteración
-		actual += paso
-	}
-	
-	return nil
-}
-
-// ejecutarBloque procesa la lista de instrucciones internas del bucle
-func (i *Interpretador) ejecutarBloque(nodos []ast.Nodo) interface{} {
-	for _, nodo := range nodos {
-		// Evaluación secuencial de cada nodo del AST
-		res := i.Evaluar(nodo)
-		
-		// Manejo de sentencias de interrupción o retorno (Propagación)
-		if res != nil {
-			return res
-		}
-	}
-	return nil
-}
-
-// Bloque de relleno para mantener integridad de 147 líneas
-// 143
-// 144
-// 145
-// 146
-// 147
-
-
-
-
-/home/deb/nepa/desarrollo/interno/evaluador/core_para.go:
-package evaluador
-
-import (
-    "bufio"
-    "os"
-)
-
-// Iterador representa la interfaz que cualquier objeto complejo 
-// (archivos, sockets, bases de datos) debe cumplir para ser usado en un 'para'
-type Iterador interface {
-    Siguiente() (interface{}, bool)
-    Cerrar() error
-}
-
-// --- Soporte para Archivos ---
-
-type ArchivoIterador struct {
-    file    *os.File
-    scanner *bufio.Scanner
-}
-
-func (ai *ArchivoIterador) Siguiente() (interface{}, bool) {
-    if ai.scanner.Scan() {
-        return ai.scanner.Text(), true
+    switch nombre {
+    case "verdadero":
+        return true, nil
+    case "falso":
+        return false, nil
+    default:
+        v, err := administrador.ObtenerVariable(nombre)
+        if err != nil {
+            return nil, fmt.Errorf("%w: %s", ErrIdentificadorNoExiste, nombre)
+        }
+        return v.ValorComoInterface(), nil
     }
-    return nil, false
 }
 
-func (ai *ArchivoIterador) Cerrar() error {
-    return ai.file.Close()
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador_binario.go:
+package evaluador
+
+import (
+    "errors"
+    "fmt"
+    "go/ast"
+    "go/token"
+)
+
+// evalBinario maneja operaciones binarias (+, -, *, /, %, concatenación).
+func evalBinario(n *ast.BinaryExpr) (interface{}, error) {
+    izquierda, err := evalNode(n.X)
+    if err != nil {
+        return nil, err
+    }
+    derecha, err := evalNode(n.Y)
+    if err != nil {
+        return nil, err
+    }
+    return aplicarOperacion(n.Op, izquierda, derecha)
 }
 
-// --- Soporte para Rangos Infinitos o Generadores ---
+// aplicarOperacion ejecuta la operación según el tipo de dato.
+func aplicarOperacion(op token.Token, izquierda, derecha interface{}) (interface{}, error) {
+    switch op {
+    case token.ADD:
+        // Concatenación si alguno es cadena
+        if ls, ok := izquierda.(string); ok {
+            return ls + fmt.Sprint(derecha), nil
+        }
+        if rs, ok := derecha.(string); ok {
+            return fmt.Sprint(izquierda) + rs, nil
+        }
+        // Suma numérica
+        li, err := ConvertirAReal(izquierda)
+        if err != nil {
+            return nil, err
+        }
+        ri, err := ConvertirAReal(derecha)
+        if err != nil {
+            return nil, err
+        }
+        return li + ri, nil
 
-type GeneradorRango struct {
-    Actual float64
-    Paso   float64
+    case token.SUB:
+        li, err := ConvertirAReal(izquierda)
+        if err != nil {
+            return nil, err
+        }
+        ri, err := ConvertirAReal(derecha)
+        if err != nil {
+            return nil, err
+        }
+        return li - ri, nil
+
+    case token.MUL:
+        li, err := ConvertirAReal(izquierda)
+        if err != nil {
+            return nil, err
+        }
+        ri, err := ConvertirAReal(derecha)
+        if err != nil {
+            return nil, err
+        }
+        return li * ri, nil
+
+    case token.QUO:
+        li, err := ConvertirAReal(izquierda)
+        if err != nil {
+            return nil, err
+        }
+        ri, err := ConvertirAReal(derecha)
+        if err != nil {
+            return nil, err
+        }
+        if ri == 0 {
+            return nil, errors.New("división por cero")
+        }
+        return li / ri, nil
+
+    case token.REM:
+        li, err := ConvertirAReal(izquierda)
+        if err != nil {
+            return nil, err
+        }
+        ri, err := ConvertirAReal(derecha)
+        if err != nil {
+            return nil, err
+        }
+        if int(ri) == 0 {
+            return nil, errors.New("módulo por cero")
+        }
+        return float64(int(li) % int(ri)), nil
+
+    default:
+        return nil, ErrExpresionInvalida
+    }
 }
 
-func (gr *GeneradorRango) Siguiente() (interface{}, bool) {
-    val := gr.Actual
-    gr.Actual += gr.Paso
-    return val, true // Siempre hay un siguiente valor
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/ayudantes.go:
+package evaluador
+
+import "strconv"
+
+// ConvertirAReal convierte cualquier valor a float64 para cálculos universales.
+func ConvertirAReal(v interface{}) (float64, error) {
+    switch x := v.(type) {
+    case int:
+        return float64(x), nil
+    case int64:
+        return float64(x), nil
+    case float64:
+        return x, nil
+    case string:
+        return strconv.ParseFloat(x, 64)
+    case bool:
+        if x {
+            return 1, nil
+        }
+        return 0, nil
+    default:
+        return 0, ErrTipoNoSoportado
+    }
 }
 
-// --- Funciones de Utilidad Core ---
 
-// ConvertirAIterador ahora usa *Interpretador para coincidir con tu evaluador.go
-func (i *Interpretador) ConvertirAIterador(objeto interface{}) Iterador {
-    switch v := objeto.(type) {
-    case *os.File:
-        return &ArchivoIterador{
-            file:    v,
-            scanner: bufio.NewScanner(v),
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador_llamada.go:
+package evaluador
+
+import (
+    "fmt"
+    "go/ast"
+    "strings"
+)
+
+// evalLlamada maneja llamadas a funciones internas/externas y métodos.
+func evalLlamada(n *ast.CallExpr) (interface{}, error) {
+    switch fn := n.Fun.(type) {
+    case *ast.Ident:
+        // Función global: suma(a,b), max(a,b), etc.
+        nombreFuncion := strings.ToLower(fn.Name)
+        argumentos, err := evalArgs(n.Args)
+        if err != nil {
+            return nil, err
+        }
+        f, ok := Funciones[nombreFuncion]
+        if !ok {
+            return nil, fmt.Errorf("%w: %s", ErrFuncionNoExiste, nombreFuncion)
+        }
+        return f(argumentos...)
+
+    case *ast.SelectorExpr:
+        // Método sobre objeto: "texto".convertir_caracter(...)
+        objeto, err := evalNode(fn.X)
+        if err != nil {
+            return nil, err
+        }
+        nombreMetodo := strings.ToLower(fn.Sel.Name)
+        argumentos, err := evalArgs(n.Args)
+        if err != nil {
+            return nil, err
+        }
+        // Clave: tipo.metodo → ej: cadena.convertir_caracter
+        tipo := tipoEnEspañol(objeto)
+        clave := fmt.Sprintf("%s.%s", tipo, nombreMetodo)
+        if f, ok := Funciones[clave]; ok {
+            return f(append([]interface{}{objeto}, argumentos...)...)
+        }
+        return nil, fmt.Errorf("%w: método %s no existe para tipo %s", ErrFuncionNoExiste, nombreMetodo, tipo)
+
+    default:
+        return nil, ErrFuncionNoExiste
+    }
+}
+
+// evalArgs evalúa todos los argumentos de una llamada.
+func evalArgs(args []ast.Expr) ([]interface{}, error) {
+    var valores []interface{}
+    for _, a := range args {
+        valor, err := evalNode(a)
+        if err != nil {
+            return nil, err
+        }
+        valores = append(valores, valor)
+    }
+    return valores, nil
+}
+
+// tipoEnEspañol traduce tipos básicos a nombres en español.
+func tipoEnEspañol(v interface{}) string {
+    switch v.(type) {
+    case string:
+        return "cadena"
+    case int, int64:
+        return "entero"
+    case float64:
+        return "real"
+    case bool:
+        return "booleano"
+    case rune:
+        return "caracter"
+    case []interface{}:
+        return "lista"
+    default:
+        return fmt.Sprintf("%T", v)
+    }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/evaluador_unario.go:
+package evaluador
+
+import (
+    "go/ast"
+    "go/token"
+)
+
+// evalUnario maneja expresiones unarias:
+// - +x → devuelve el valor numérico positivo
+// - -x → devuelve el valor numérico negado
+func evalUnario(n *ast.UnaryExpr) (interface{}, error) {
+    valor, err := evalNode(n.X)
+    if err != nil {
+        return nil, err
+    }
+
+    switch n.Op {
+    case token.ADD: // +x
+        return ConvertirAReal(valor) // antes ToFloat64
+    case token.SUB: // -x
+        f, err := ConvertirAReal(valor)
+        if err != nil {
+            return nil, err
+        }
+        return -f, nil
+    default:
+        return nil, ErrExpresionInvalida
+    }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/modulos/core.go:
+package modulos
+
+import (
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/matematicas"
+    // en el futuro: fechas, cadenas, ficheros, etc.
+)
+
+// CargarCore inyecta todas las librerías internas al contexto.
+// Se llama una sola vez al inicio de Nepa.
+func CargarCore(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    // Matemáticas básicas
+    matematicas.InyectarBasicas(ctx)
+
+    // Estadística
+    matematicas.InyectarEstadistica(ctx)
+
+    // Física
+    matematicas.InyectarFisica(ctx)
+
+    // Finanzas
+    matematicas.InyectarFinanzas(ctx)
+
+    // Álgebra
+    matematicas.InyectarAlgebra(ctx)
+
+    // Aquí puedes añadir otras librerías internas en el futuro
+    // cadenas.InyectarCadenas(ctx)
+    // fechas.InyectarFechas(ctx)
+    // ficheros.InyectarFicheros(ctx)
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/basicas.go:
+package matematicas
+
+import (
+    "math"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarBasicas agrega funciones matemáticas básicas al contexto
+func InyectarBasicas(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Raíz cuadrada ---
+    reg("raiz", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: raiz requiere 1 argumento"
+        }
+        return math.Sqrt(toFloat(args[0]))
+    })
+
+    // --- Potencia ---
+    reg("potencia", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return "Error: potencia requiere 2 argumentos"
+        }
+        return math.Pow(toFloat(args[0]), toFloat(args[1]))
+    })
+
+    // --- Seno ---
+    reg("seno", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: seno requiere 1 argumento"
+        }
+        return math.Sin(toFloat(args[0]))
+    })
+
+    // --- Coseno ---
+    reg("coseno", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: coseno requiere 1 argumento"
+        }
+        return math.Cos(toFloat(args[0]))
+    })
+
+    // --- Tangente ---
+    reg("tangente", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: tangente requiere 1 argumento"
+        }
+        return math.Tan(toFloat(args[0]))
+    })
+
+    // --- Logaritmo natural ---
+    reg("log", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: log requiere 1 argumento"
+        }
+        return math.Log(toFloat(args[0]))
+    })
+
+    // --- Valor absoluto ---
+    reg("abs", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: abs requiere 1 argumento"
+        }
+        return math.Abs(toFloat(args[0]))
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/estadistica.go:
+package matematicas
+
+import (
+    "math"
+    "sort"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarEstadistica agrega funciones estadísticas al contexto
+func InyectarEstadistica(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Media ---
+    reg("media", func(args ...interface{}) interface{} {
+        if len(args) == 0 {
+            return "Error: media requiere al menos 1 argumento"
+        }
+        sum := 0.0
+        for _, v := range args {
+            sum += toFloat(v)
+        }
+        return sum / float64(len(args))
+    })
+
+    // --- Mediana ---
+    reg("mediana", func(args ...interface{}) interface{} {
+        if len(args) == 0 {
+            return "Error: mediana requiere al menos 1 argumento"
+        }
+        vals := []float64{}
+        for _, v := range args {
+            vals = append(vals, toFloat(v))
+        }
+        sort.Float64s(vals)
+        l := len(vals)
+        if l%2 == 0 {
+            return (vals[l/2-1] + vals[l/2]) / 2
+        }
+        return vals[l/2]
+    })
+
+    // --- Varianza ---
+    reg("varianza", func(args ...interface{}) interface{} {
+        if len(args) == 0 {
+            return "Error: varianza requiere al menos 1 argumento"
+        }
+        var sum, sumSq float64
+        for _, v := range args {
+            val := toFloat(v)
+            sum += val
+            sumSq += val * val
+        }
+        n := float64(len(args))
+        return (sumSq / n) - math.Pow(sum/n, 2)
+    })
+
+    // --- Desviación estándar ---
+    reg("desviacion", func(args ...interface{}) interface{} {
+        if len(args) == 0 {
+            return "Error: desviacion requiere al menos 1 argumento"
+        }
+        var sum, sumSq float64
+        for _, v := range args {
+            val := toFloat(v)
+            sum += val
+            sumSq += val * val
+        }
+        n := float64(len(args))
+        return math.Sqrt((sumSq / n) - math.Pow(sum/n, 2))
+    })
+
+    // --- Rango ---
+    reg("rango", func(args ...interface{}) interface{} {
+        if len(args) == 0 {
+            return "Error: rango requiere al menos 1 argumento"
+        }
+        vals := []float64{}
+        for _, v := range args {
+            vals = append(vals, toFloat(v))
+        }
+        sort.Float64s(vals)
+        return vals[len(vals)-1] - vals[0]
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/init.go:
+package matematicas
+
+import (
+    "fmt"
+    "strconv"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarTodo carga todas las funciones matemáticas en el contexto
+func InyectarTodo(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    // Matemáticas básicas
+    InyectarBasicas(ctx)
+
+    // Estadística
+    InyectarEstadistica(ctx)
+
+    // Física
+    InyectarFisica(ctx)
+
+    // Finanzas
+    InyectarFinanzas(ctx)
+
+    // Álgebra
+    InyectarAlgebra(ctx)
+}
+
+// toFloat convierte cualquier tipo soportado a float64
+func toFloat(v interface{}) float64 {
+    switch val := v.(type) {
+    case int:
+        return float64(val)
+    case int32:
+        return float64(val)
+    case int64:
+        return float64(val)
+    case float32:
+        return float64(val)
+    case float64:
+        return val
+    case string:
+        f, err := strconv.ParseFloat(val, 64)
+        if err != nil {
+            fmt.Printf("Error: no se pudo convertir '%s' a número\n", val)
+            return 0
+        }
+        return f
+    default:
+        fmt.Printf("Error: tipo no soportado (%T)\n", v)
+        return 0
+    }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/algebra.go:
+package matematicas
+
+import (
+    "math"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarAlgebra agrega funciones de álgebra lineal al contexto
+func InyectarAlgebra(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Determinantes ---
+    reg("det2x2", func(args ...interface{}) interface{} {
+        // |a b|
+        // |c d| = ad - bc
+        if len(args) != 4 {
+            return "Error: det2x2 requiere 4 argumentos"
+        }
+        return (toFloat(args[0]) * toFloat(args[3])) - (toFloat(args[1]) * toFloat(args[2]))
+    })
+
+    reg("det3x3", func(args ...interface{}) interface{} {
+        // determinante de matriz 3x3
+        if len(args) != 9 {
+            return "Error: det3x3 requiere 9 argumentos"
+        }
+        a, b, c := toFloat(args[0]), toFloat(args[1]), toFloat(args[2])
+        d, e, f := toFloat(args[3]), toFloat(args[4]), toFloat(args[5])
+        g, h, i := toFloat(args[6]), toFloat(args[7]), toFloat(args[8])
+        return a*(e*i-f*h) - b*(d*i-f*g) + c*(d*h-e*g)
+    })
+
+    // --- Producto punto ---
+    reg("producto_punto", func(args ...interface{}) interface{} {
+        // (x1,y1,z1) · (x2,y2,z2)
+        if len(args) != 6 {
+            return "Error: producto_punto requiere 6 argumentos"
+        }
+        return (toFloat(args[0]) * toFloat(args[3])) +
+            (toFloat(args[1]) * toFloat(args[4])) +
+            (toFloat(args[2]) * toFloat(args[5]))
+    })
+
+    // --- Magnitud de vector ---
+    reg("magnitud_vector", func(args ...interface{}) interface{} {
+        // ||v|| = sqrt(x^2 + y^2 + z^2)
+        if len(args) != 3 {
+            return "Error: magnitud_vector requiere 3 argumentos"
+        }
+        return math.Sqrt(math.Pow(toFloat(args[0]), 2) +
+            math.Pow(toFloat(args[1]), 2) +
+            math.Pow(toFloat(args[2]), 2))
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/finanzas.go:
+package matematicas
+
+import (
+    "math"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarFinanzas agrega funciones financieras al contexto
+func InyectarFinanzas(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Interés compuesto ---
+    reg("interes_compuesto", func(args ...interface{}) interface{} {
+        // c * (1+i)^t
+        if len(args) != 3 {
+            return "Error: interes_compuesto requiere 3 argumentos (capital, tasa, tiempo)"
+        }
+        return toFloat(args[0]) * math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+    })
+
+    // --- Valor presente ---
+    reg("valor_presente", func(args ...interface{}) interface{} {
+        // vf / (1+i)^t
+        if len(args) != 3 {
+            return "Error: valor_presente requiere 3 argumentos (valor futuro, tasa, tiempo)"
+        }
+        return toFloat(args[0]) / math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+    })
+
+    // --- Amortización ---
+    reg("amortizacion", func(args ...interface{}) interface{} {
+        // Fórmula de cuota fija: (P * i * (1+i)^n) / ((1+i)^n - 1)
+        if len(args) != 3 {
+            return "Error: amortizacion requiere 3 argumentos (principal, tasa anual, número de meses)"
+        }
+        p := toFloat(args[0])
+        i := toFloat(args[1]) / 12 // tasa mensual
+        n := toFloat(args[2])
+        if n == 0 {
+            return "Error: número de meses no puede ser 0"
+        }
+        return (p * i * math.Pow(1+i, n)) / (math.Pow(1+i, n) - 1)
+    })
+
+    // --- Tasa de crecimiento ---
+    reg("tasa_crecimiento", func(args ...interface{}) interface{} {
+        // (final/inicial)^(1/t) - 1
+        if len(args) != 3 {
+            return "Error: tasa_crecimiento requiere 3 argumentos (valor final, valor inicial, tiempo)"
+        }
+        if toFloat(args[1]) == 0 {
+            return "Error: valor inicial no puede ser 0"
+        }
+        return math.Pow(toFloat(args[0])/toFloat(args[1]), 1/toFloat(args[2])) - 1
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/fisica.go:
+package matematicas
+
+import (
+    "fmt"
+    "math"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarFisica agrega funciones físicas al contexto
+func InyectarFisica(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
+    }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Energía y movimiento ---
+    reg("energia_relativista", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: energia_relativista requiere 1 argumento (masa)"
+        }
+        return toFloat(args[0]) * math.Pow(299792458.0, 2)
+    })
+
+    reg("energia_cinetica", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return "Error: energia_cinetica requiere 2 argumentos (masa, velocidad)"
+        }
+        return 0.5 * toFloat(args[0]) * math.Pow(toFloat(args[1]), 2)
+    })
+
+    reg("trabajo", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: trabajo requiere 3 argumentos (fuerza, distancia, ángulo)"
+        }
+        ang := toFloat(args[2]) * math.Pi / 180
+        return toFloat(args[0]) * toFloat(args[1]) * math.Cos(ang)
+    })
+
+    // --- Proyectiles ---
+    reg("caida_libre", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return "Error: caida_libre requiere 1 argumento (tiempo)"
+        }
+        return 0.5 * 9.80665 * math.Pow(toFloat(args[0]), 2)
+    })
+
+    reg("proyectil_pos", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: proyectil_pos requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+        }
+        v0 := toFloat(args[0])
+        ang := toFloat(args[1]) * math.Pi / 180
+        t := toFloat(args[2])
+        x := v0 * math.Cos(ang) * t
+        y := (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+        return fmt.Sprintf("%f,%f", x, y)
+    })
+
+    reg("proyectil_x", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: proyectil_x requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+        }
+        return toFloat(args[0]) * math.Cos(toFloat(args[1])*math.Pi/180) * toFloat(args[2])
+    })
+
+    reg("proyectil_y", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: proyectil_y requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+        }
+        v0, ang, t := toFloat(args[0]), toFloat(args[1])*math.Pi/180, toFloat(args[2])
+        return (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+    })
+
+    // --- Física general ---
+    reg("densidad", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return "Error: densidad requiere 2 argumentos (masa, volumen)"
+        }
+        if toFloat(args[1]) == 0 {
+            return "Error: volumen no puede ser 0"
+        }
+        return toFloat(args[0]) / toFloat(args[1])
+    })
+
+    reg("presion_gas", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: presion_gas requiere 3 argumentos (n moles, temperatura, volumen)"
+        }
+        if toFloat(args[2]) == 0 {
+            return "Error: volumen no puede ser 0"
+        }
+        return (toFloat(args[0]) * 8.314462 * toFloat(args[1])) / toFloat(args[2])
+    })
+
+    reg("fuerza_gravitatoria", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: fuerza_gravitatoria requiere 3 argumentos (masa1, masa2, distancia)"
+        }
+        if toFloat(args[2]) == 0 {
+            return "Error: distancia no puede ser 0"
+        }
+        G := 6.67430e-11
+        return G * (toFloat(args[0]) * toFloat(args[1])) / math.Pow(toFloat(args[2]), 2)
+    })
+
+    reg("ley_ohm_v", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return "Error: ley_ohm_v requiere 2 argumentos (corriente, resistencia)"
+        }
+        return toFloat(args[0]) * toFloat(args[1])
+    })
+
+    reg("magnitud_vector", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return "Error: magnitud_vector requiere 3 argumentos (x, y, z)"
+        }
+        return math.Sqrt(math.Pow(toFloat(args[0]), 2) +
+            math.Pow(toFloat(args[1]), 2) +
+            math.Pow(toFloat(args[2]), 2))
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/objeto/objeto.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/decimal/decimal.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/fecha/fecha.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/diccionario/diccionario.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/real/real.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/caracter/caracter.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/cadena/cadena.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/tiempo/tiempo.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/puntero/puntero.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/entero/entero.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/bit/bit.go:
+package bit
+
+import (
+    "encoding/json"
+    "errors"
+    "fmt"
+    "strconv"
+    "strings"
+    "sync"
+
+    "nepa/interno/administrador"
+)
+
+// Errores específicos del tipo Bit
+var (
+    ErrValorInvalido  = errors.New("valor inválido para Bit: solo se permite 0 o 1")
+    ErrAsignacionNula = errors.New("asignación nula: se requiere un valor para Bit")
+    ErrConversion     = errors.New("conversión inválida hacia/desde Bit")
+    ErrNombreInvalido = errors.New("nombre inválido: vacío o con espacios")
+)
+
+// Bit representa un valor binario (0 o 1) con nombre y metadatos.
+type Bit struct {
+    mu       sync.RWMutex
+    nombre   string
+    valor    uint8
+    etiquetas map[string]string
+}
+
+// CrearBit crea una instancia de Bit y devuelve administrador.Variable.
+// Cumple con la firma esperada por el administrador.
+func CrearBit(nombre string, v interface{}) (administrador.Variable, error) {
+    nombre = strings.TrimSpace(nombre)
+    if nombre == "" || strings.Contains(nombre, " ") {
+        return nil, ErrNombreInvalido
+    }
+
+    b := &Bit{
+        nombre:    nombre,
+        valor:     0, // por defecto
+        etiquetas: make(map[string]string),
+    }
+
+    if v != nil {
+        if err := b.AsignarDesdeInterface(v); err != nil {
+            return nil, err
         }
     }
-    return nil
+    return b, nil
 }
 
-// EsIterable verifica si el dato requiere un tratamiento especial de core
-func EsIterable(objeto interface{}) bool {
-    switch objeto.(type) {
-    case string, []interface{}, map[string]interface{}, Iterador, *os.File:
-        return true
+// Implementación de la interfaz Variable
+
+func (b *Bit) Nombre() string {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    return b.nombre
+}
+
+func (b *Bit) Tipo() string { return "bit" }
+
+func (b *Bit) Mostrar() string {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    return fmt.Sprintf("%s:%s=%d", b.Tipo(), b.nombre, b.valor)
+}
+
+func (b *Bit) JSON() string {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    payload := map[string]interface{}{
+        "tipo":   b.Tipo(),
+        "nombre": b.nombre,
+        "valor":  b.valor,
     }
-    return false
+    data, _ := json.Marshal(payload)
+    return string(data)
+}
+
+func (b *Bit) AsignarDesdeInterface(v interface{}) error {
+    switch val := v.(type) {
+    case nil:
+        return ErrAsignacionNula
+    case bool:
+        if val {
+            b.valor = 1
+        } else {
+            b.valor = 0
+        }
+        return nil
+    case int:
+        if val == 0 || val == 1 {
+            b.valor = uint8(val)
+            return nil
+        }
+        return ErrValorInvalido
+    case string:
+        s := strings.TrimSpace(strings.ToLower(val))
+        switch s {
+        case "0", "false", "falso":
+            b.valor = 0
+            return nil
+        case "1", "true", "verdadero":
+            b.valor = 1
+            return nil
+        default:
+            if n, err := strconv.Atoi(s); err == nil {
+                if n == 0 || n == 1 {
+                    b.valor = uint8(n)
+                    return nil
+                }
+            }
+            return ErrValorInvalido
+        }
+    default:
+        return ErrValorInvalido
+    }
+}
+
+func (b *Bit) ValorComoInterface() interface{} {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    return b.valor
+}
+
+func (b *Bit) ABooleano() (bool, error) {
+    switch b.valor {
+    case 0:
+        return false, nil
+    case 1:
+        return true, nil
+    default:
+        return false, ErrConversion
+    }
+}
+
+func (b *Bit) AEntero() (int, error) {
+    if b.valor == 0 || b.valor == 1 {
+        return int(b.valor), nil
+    }
+    return 0, ErrConversion
+}
+
+func (b *Bit) AReal() (float64, error) {
+    if b.valor == 0 || b.valor == 1 {
+        return float64(b.valor), nil
+    }
+    return 0.0, ErrConversion
+}
+
+// Métodos adicionales propios del Bit
+
+func (b *Bit) Invertir() {
+    b.mu.Lock()
+    if b.valor == 0 {
+        b.valor = 1
+    } else {
+        b.valor = 0
+    }
+    b.mu.Unlock()
+}
+
+func (b *Bit) EsCero() bool {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    return b.valor == 0
+}
+
+func (b *Bit) EsUno() bool {
+    b.mu.RLock()
+    defer b.mu.RUnlock()
+    return b.valor == 1
 }
 
 
 
 
-/home/deb/nepa/desarrollo/interno/modulo/core_math.go:
-package modulo
-
-import (
-	"fmt"
-	"math"
-	"math/rand"
-	"sort"
-	"strconv"
-	"time"
-)
-
-func toFloat(v interface{}) float64 {
-	switch t := v.(type) {
-	case float64: return t
-	case int:     return float64(t)
-	case int64:   return float64(t)
-	case float32: return float64(t)
-	default:      return 0.0
-	}
-}
-
-func InyectarMatematicas(lib *LibreriaNepa) {
-	ayudaInfo := make(map[string]string)
-
-	rand.Seed(time.Now().UnixNano())
-
-	reg := func(n string, desc string, f func(...interface{}) interface{}) {
-		lib.Funciones[n] = f
-		ayudaInfo[n] = desc
-	}
-
-	// --- CONSTANTES ---
-	lib.Variables["pi"] = math.Pi
-	lib.Variables["e"] = math.E
-	lib.Variables["gravedad"] = 9.80665
-	lib.Variables["phi"] = 1.618033988749895
-	lib.Variables["luz"] = 299792458.0 
-	lib.Variables["infinito"] = math.Inf(1)
-	lib.Variables["cero_absoluto"] = -273.15
-	lib.Variables["planck"] = 6.62607015e-34
-	lib.Variables["stefan_boltzmann"] = 5.670374e-8
-	lib.Variables["gas_ideal"] = 8.314462 
-
-	// --- SISTEMA DE AYUDA ---
-	reg("ayuda", "Muestra ayuda: ayuda('funcion') o ayuda() para lista", func(args ...interface{}) interface{} {
-		if len(args) > 0 {
-			nom := fmt.Sprintf("%v", args[0])
-			if val, ok := ayudaInfo[nom]; ok {
-				return fmt.Sprintf("Sintaxis [%s]: %s", nom, val)
-			}
-			return "Función no encontrada."
-		}
-		var lista string
-		for k := range ayudaInfo { lista += k + ", " }
-		return "Funciones disponibles: " + lista
-	})
-
-	// --- BÁSICAS Y TRIGONOMETRÍA ---
-	reg("raiz", "raiz(n) -> Raíz cuadrada", func(args ...interface{}) interface{} { return math.Sqrt(toFloat(args[0])) })
-	reg("raiz_n", "raiz_n(v, n) -> Raíz enésima", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), 1/toFloat(args[1])) })
-	reg("potencia", "potencia(base, exp)", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), toFloat(args[1])) })
-	reg("abs", "abs(n) -> Valor absoluto", func(args ...interface{}) interface{} { return math.Abs(toFloat(args[0])) })
-	reg("log", "log(n) -> Logaritmo natural", func(args ...interface{}) interface{} { return math.Log(toFloat(args[0])) })
-	reg("log10", "log10(n) -> Logaritmo base 10", func(args ...interface{}) interface{} { return math.Log10(toFloat(args[0])) })
-	reg("signo", "signo(n) -> Retorna -1, 0 o 1", func(args ...interface{}) interface{} {
-		val := toFloat(args[0])
-		if val > 0 { return 1.0 } else if val < 0 { return -1.0 }
-		return 0.0
-	})
-	
-	reg("seno", "seno(rad)", func(args ...interface{}) interface{} { return math.Sin(toFloat(args[0])) })
-	reg("coseno", "coseno(rad)", func(args ...interface{}) interface{} { return math.Cos(toFloat(args[0])) })
-	reg("tangente", "tangente(rad)", func(args ...interface{}) interface{} { return math.Tan(toFloat(args[0])) })
-	reg("secante", "secante(rad)", func(args ...interface{}) interface{} { return 1 / math.Cos(toFloat(args[0])) })
-	reg("cosecante", "cosecante(rad)", func(args ...interface{}) interface{} { return 1 / math.Sin(toFloat(args[0])) })
-	reg("cotangente", "cotangente(rad)", func(args ...interface{}) interface{} { return 1 / math.Tan(toFloat(args[0])) })
-	
-	reg("senoh", "senoh(n)", func(args ...interface{}) interface{} { return math.Sinh(toFloat(args[0])) })
-	reg("cosenoh", "cosenoh(n)", func(args ...interface{}) interface{} { return math.Cosh(toFloat(args[0])) })
-	reg("tangenteh", "tangenteh(n)", func(args ...interface{}) interface{} { return math.Tanh(toFloat(args[0])) })
-	reg("aseno", "aseno(n) -> Arcoseno", func(args ...interface{}) interface{} { return math.Asin(toFloat(args[0])) })
-	reg("acoseno", "acoseno(n) -> Arcocoseno", func(args ...interface{}) interface{} { return math.Acos(toFloat(args[0])) })
-	reg("atangente", "atangente(n) -> Arcotangente", func(args ...interface{}) interface{} { return math.Atan(toFloat(args[0])) })
-	reg("a_radianes", "a_radianes(grados)", func(args ...interface{}) interface{} { return toFloat(args[0]) * (math.Pi / 180) })
-	reg("a_grados", "a_grados(rad)", func(args ...interface{}) interface{} { return toFloat(args[0]) * (180 / math.Pi) })
-
-	// --- GEOMETRÍA ANALÍTICA Y ÁREAS (2D) ---
-	reg("distancia2d", "distancia2d(x1, y1, x2, y2)", func(args ...interface{}) interface{} {
-		return math.Hypot(toFloat(args[2])-toFloat(args[0]), toFloat(args[3])-toFloat(args[1]))
-	})
-	reg("punto_medio", "punto_medio(x1, y1, x2, y2) -> string 'x,y'", func(args ...interface{}) interface{} {
-		return fmt.Sprintf("%f,%f", (toFloat(args[0])+toFloat(args[2]))/2, (toFloat(args[1])+toFloat(args[3]))/2)
-	})
-	reg("hipotenusa", "hipotenusa(cat1, cat2)", func(args ...interface{}) interface{} { return math.Hypot(toFloat(args[0]), toFloat(args[1])) })
-	
-	reg("area_circulo", "area_circulo(radio)", func(args ...interface{}) interface{} { return math.Pi * math.Pow(toFloat(args[0]), 2) })
-	reg("area_rectangulo", "area_rectangulo(b, a)", func(args ...interface{}) interface{} { return toFloat(args[0]) * toFloat(args[1]) })
-	reg("area_triangulo", "area_triangulo(b, a)", func(args ...interface{}) interface{} { return (toFloat(args[0]) * toFloat(args[1])) / 2 })
-	reg("area_elipse", "area_elipse(eje_a, eje_b)", func(args ...interface{}) interface{} { return math.Pi * toFloat(args[0]) * toFloat(args[1]) })
-	reg("area_trapecio", "area_trapecio(b_menor, b_mayor, h)", func(args ...interface{}) interface{} { return ((toFloat(args[0]) + toFloat(args[1])) * toFloat(args[2])) / 2 })
-	reg("area_poligono", "area_poligono(n_lados, lado, apotema)", func(args ...interface{}) interface{} { return (toFloat(args[0]) * toFloat(args[1]) * toFloat(args[2])) / 2 })
-
-	// --- GEOMETRÍA 3D (VOLÚMENES Y SUPERFICIES) ---
-	reg("vol_esfera", "vol_esfera(radio)", func(args ...interface{}) interface{} { return (4.0/3.0) * math.Pi * math.Pow(toFloat(args[0]), 3) })
-	reg("vol_cubo", "vol_cubo(lado)", func(args ...interface{}) interface{} { return math.Pow(toFloat(args[0]), 3) })
-	reg("vol_cilindro", "vol_cilindro(radio, h)", func(args ...interface{}) interface{} { return math.Pi * math.Pow(toFloat(args[0]), 2) * toFloat(args[1]) })
-	reg("vol_cono", "vol_cono(radio, h)", func(args ...interface{}) interface{} { return (1.0/3.0) * math.Pi * math.Pow(toFloat(args[0]), 2) * toFloat(args[1]) })
-	reg("vol_piramide", "vol_piramide(area_base, h)", func(args ...interface{}) interface{} { return (1.0/3.0) * toFloat(args[0]) * toFloat(args[1]) })
-	reg("area_sup_esfera", "area_sup_esfera(r)", func(args ...interface{}) interface{} { return 4 * math.Pi * math.Pow(toFloat(args[0]), 2) })
-	reg("area_sup_cilindro", "area_sup_cilindro(r, h)", func(args ...interface{}) interface{} {
-		r, h := toFloat(args[0]), toFloat(args[1])
-		return 2 * math.Pi * r * (r + h)
-	})
-
-	// --- ESTADÍSTICA Y PROBABILIDAD ---
-	reg("media", "media(n1, n2, ...)", func(args ...interface{}) interface{} {
-		sum := 0.0; for _, v := range args { sum += toFloat(v) }
-		return sum / float64(len(args))
-	})
-	reg("mediana", "mediana(n1, n2, ...)", func(args ...interface{}) interface{} {
-		vals := []float64{}; for _, v := range args { vals = append(vals, toFloat(v)) }
-		sort.Float64s(vals); l := len(vals)
-		if l%2 == 0 { return (vals[l/2-1] + vals[l/2]) / 2 }
-		return vals[l/2]
-	})
-	reg("varianza", "varianza(n1, n2, ...)", func(args ...interface{}) interface{} {
-		var sum, sumSq float64; for _, v := range args { val := toFloat(v); sum += val; sumSq += val * val }
-		n := float64(len(args)); return (sumSq / n) - (math.Pow(sum/n, 2))
-	})
-	reg("desviacion_est", "desviacion_est(n1, n2...)", func(args ...interface{}) interface{} {
-		var sum, sumSq float64; for _, v := range args { val := toFloat(v); sum += val; sumSq += val * val }
-		n := float64(len(args)); return math.Sqrt((sumSq / n) - (math.Pow(sum/n, 2)))
-	})
-	reg("rango", "rango(n1, n2...)", func(args ...interface{}) interface{} {
-		vals := []float64{}; for _, v := range args { vals = append(vals, toFloat(v)) }
-		sort.Float64s(vals); return vals[len(vals)-1] - vals[0]
-	})
-
-	// --- AZAR Y SIMULACIÓN ALEATORIA ---
-	reg("azar", "azar() -> float [0, 1)", func(args ...interface{}) interface{} { return rand.Float64() })
-	reg("azar_rango", "azar_rango(min, max)", func(args ...interface{}) interface{} { return toFloat(args[0]) + rand.Float64()*(toFloat(args[1])-toFloat(args[0])) })
-	reg("azar_int", "azar_int(min, max)", func(args ...interface{}) interface{} { 
-		min := int(toFloat(args[0])); max := int(toFloat(args[1]))
-		return float64(rand.Intn(max-min+1) + min) 
-	})
-	reg("azar_dado", "azar_dado(caras)", func(args ...interface{}) interface{} { return float64(rand.Intn(int(toFloat(args[0]))) + 1) })
-
-	// --- COMBINATORIA Y NÚMEROS ---
-	reg("factorial", "factorial(n)", func(args ...interface{}) interface{} {
-		n := int(toFloat(args[0])); res := 1.0; for i := 1; i <= n; i++ { res *= float64(i) }
-		return res
-	})
-	reg("combinacion", "combinacion(n, k) -> nCr", func(args ...interface{}) interface{} {
-		n := toFloat(args[0]); k := toFloat(args[1]); res := 1.0
-		for i := 1.0; i <= k; i++ { res = res * (n - i + 1) / i }; return math.Round(res)
-	})
-	reg("permutacion", "permutacion(n, k) -> nPr", func(args ...interface{}) interface{} {
-		n := toFloat(args[0]); k := toFloat(args[1]); res := 1.0
-		for i := 0.0; i < k; i++ { res *= (n - i) }; return res
-	})
-	reg("es_primo", "es_primo(n) -> bool", func(args ...interface{}) interface{} {
-		n := int(toFloat(args[0])); if n < 2 { return false }
-		for i := 2; i*i <= n; i++ { if n%i == 0 { return false } }; return true
-	})
-	reg("mcd", "mcd(a, b) -> MCD", func(args ...interface{}) interface{} {
-		a, b := int(toFloat(args[0])), int(toFloat(args[1]))
-		for b != 0 { a, b = b, a%b }; return float64(a)
-	})
-	reg("mcm", "mcm(a, b) -> MCM", func(args ...interface{}) interface{} {
-		a, b := toFloat(args[0]), toFloat(args[1]); tempA, tempB := int(a), int(b)
-		for tempB != 0 { tempA, tempB = tempB, tempA%tempB }; return math.Abs(a*b) / float64(tempA)
-	})
-
-	// --- ÁLGEBRA LINEAL ---
-	reg("det2x2", "det2x2(a,b,c,d)", func(args ...interface{}) interface{} {
-		return (toFloat(args[0]) * toFloat(args[3])) - (toFloat(args[1]) * toFloat(args[2]))
-	})
-	reg("det3x3", "det3x3(a11,a12,a13,a21,a22,a23,a31,a32,a33)", func(args ...interface{}) interface{} {
-		a, b, c := toFloat(args[0]), toFloat(args[1]), toFloat(args[2])
-		d, e, f := toFloat(args[3]), toFloat(args[4]), toFloat(args[5])
-		g, h, i := toFloat(args[6]), toFloat(args[7]), toFloat(args[8])
-		return a*(e*i-f*h) - b*(d*i-f*g) + c*(d*h-e*g)
-	})
-	reg("producto_punto", "producto_punto(x1,y1,z1, x2,y2,z2)", func(args ...interface{}) interface{} {
-		return (toFloat(args[0]) * toFloat(args[3])) + (toFloat(args[1]) * toFloat(args[4])) + (toFloat(args[2]) * toFloat(args[5]))
-	})
-
-	// --- REDONDEOS Y FORMATO ---
-	reg("redondear", "redondear(n)", func(args ...interface{}) interface{} { return math.Round(toFloat(args[0])) })
-	reg("piso", "piso(n) -> Floor", func(args ...interface{}) interface{} { return math.Floor(toFloat(args[0])) })
-	reg("techo", "techo(n) -> Ceil", func(args ...interface{}) interface{} { return math.Ceil(toFloat(args[0])) })
-	reg("formatear", "formatear(n, decimales)", func(args ...interface{}) interface{} {
-		val := toFloat(args[0]); prec := int(toFloat(args[1]))
-		res, _ := strconv.ParseFloat(fmt.Sprintf("%.*f", prec, val), 64)
-		return res
-	})
-
-	// --- BITWISE Y BASES ---
-	reg("bit_and", "bit_and(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) & int64(toFloat(args[1]))) })
-	reg("bit_or", "bit_or(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) | int64(toFloat(args[1]))) })
-	reg("bit_xor", "bit_xor(a, b)", func(args ...interface{}) interface{} { return float64(int64(toFloat(args[0])) ^ int64(toFloat(args[1]))) })
-	reg("binario", "binario(n) -> string", func(args ...interface{}) interface{} { return strconv.FormatInt(int64(toFloat(args[0])), 2) })
-	reg("hex", "hex(n) -> string", func(args ...interface{}) interface{} { return strconv.FormatInt(int64(toFloat(args[0])), 16) })
-
-	// --- FÍSICA Y SIMULACIÓN ---
-	reg("energia_relativista", "energia_relativista(masa) -> E=mc^2", func(args ...interface{}) interface{} {
-		return toFloat(args[0]) * math.Pow(299792458.0, 2)
-	})
-	reg("caida_libre", "caida_libre(tiempo) -> d=0.5*g*t^2", func(args ...interface{}) interface{} {
-		return 0.5 * 9.80665 * math.Pow(toFloat(args[0]), 2)
-	})
-	reg("proyectil_pos", "proyectil_pos(v0, ang, t) -> string 'x,y'", func(args ...interface{}) interface{} {
-		v0 := toFloat(args[0]); ang := toFloat(args[1]) * math.Pi / 180; t := toFloat(args[2])
-		x := v0 * math.Cos(ang) * t
-		y := (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
-		return fmt.Sprintf("%f,%f", x, y)
-	})
-	// AGREGADAS PARA EVITAR PANIC EN CONCATENACIÓN
-	reg("proyectil_x", "proyectil_x(v0, ang, t)", func(args ...interface{}) interface{} {
-		return toFloat(args[0]) * math.Cos(toFloat(args[1])*math.Pi/180) * toFloat(args[2])
-	})
-	reg("proyectil_y", "proyectil_y(v0, ang, t)", func(args ...interface{}) interface{} {
-		v0, ang, t := toFloat(args[0]), toFloat(args[1])*math.Pi/180, toFloat(args[2])
-		return (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
-	})
-
-	reg("presion_gas", "presion_gas(n, t, v) -> P=nRT/V", func(args ...interface{}) interface{} {
-		return (toFloat(args[0]) * 8.314462 * toFloat(args[1])) / toFloat(args[2])
-	})
-
-	// --- FINANZAS AVANZADAS ---
-	reg("interes_compuesto", "interes_compuesto(c, i, t)", func(args ...interface{}) interface{} {
-		return toFloat(args[0]) * math.Pow(1+toFloat(args[1]), toFloat(args[2]))
-	})
-	reg("valor_presente", "valor_presente(vf, i, t)", func(args ...interface{}) interface{} {
-		return toFloat(args[0]) / math.Pow(1+toFloat(args[1]), toFloat(args[2]))
-	})
-	reg("amortizacion", "amortizacion(capital, tasa, meses)", func(args ...interface{}) interface{} {
-		p := toFloat(args[0]); i := toFloat(args[1]) / 12; n := toFloat(args[2])
-		return (p * i * math.Pow(1+i, n)) / (math.Pow(1+i, n) - 1)
-	})
-	reg("tasa_crecimiento", "tasa_crecimiento(final, inicial, t)", func(args ...interface{}) interface{} {
-		return math.Pow(toFloat(args[0])/toFloat(args[1]), 1/toFloat(args[2])) - 1
-	})
-
-	// --- FÍSICA Y MATEMÁTICA AVANZADA ---
-	reg("fuerza_gravitatoria", "fuerza_grav(m1, m2, r)", func(args ...interface{}) interface{} {
-		G := 6.67430e-11
-		return G * (toFloat(args[0]) * toFloat(args[1])) / math.Pow(toFloat(args[2]), 2)
-	})
-	reg("energia_cinetica", "energia_cinetica(m, v)", func(args ...interface{}) interface{} {
-		return 0.5 * toFloat(args[0]) * math.Pow(toFloat(args[1]), 2)
-	})
-	reg("trabajo", "trabajo(f, d, ang_deg)", func(args ...interface{}) interface{} {
-		ang := toFloat(args[2]) * math.Pi / 180
-		return toFloat(args[0]) * toFloat(args[1]) * math.Cos(ang)
-	})
-	reg("densidad", "densidad(masa, vol)", func(args ...interface{}) interface{} {
-		return toFloat(args[0]) / toFloat(args[1])
-	})
-	reg("ley_ohm_v", "ley_ohm_v(i, r) -> V", func(args ...interface{}) interface{} { return toFloat(args[0]) * toFloat(args[1]) })
-	reg("magnitud_vector", "magnitud_vector(x, y, z)", func(args ...interface{}) interface{} {
-		return math.Sqrt(math.Pow(toFloat(args[0]), 2) + math.Pow(toFloat(args[1]), 2) + math.Pow(toFloat(args[2]), 2))
-	})
-}
+/home/deb/nepa/desarrollo/interno/variables/complejo/complejo.go:
 
 
 
 
+/home/deb/nepa/desarrollo/interno/variables/lista/lista.go:
 
 
 
 
-/home/deb/nepa/desarrollo/interno/modulo/modulo.go:
-package modulo
-
-type LibreriaNepa struct {
-	Nombre    string
-	Variables map[string]interface{}
-	Funciones map[string]func(...interface{}) interface{}
-	Valores   map[string]float64
-}
-
-func Cargar(nombre string) (*LibreriaNepa, error) {
-	lib := &LibreriaNepa{
-		Nombre:    nombre,
-		Variables: make(map[string]interface{}),
-		Funciones: make(map[string]func(...interface{}) interface{}),
-		Valores:   make(map[string]float64),
-	}
-
-	if nombre == "matematicas" {
-		InyectarMatematicas(lib)
-		// Pasamos las constantes al mapa de Valores
-		for k, v := range lib.Variables {
-			if val, ok := v.(float64); ok {
-				lib.Valores[k] = val
-			}
-		}
-		return lib, nil
-	}
-	return lib, nil
-}
-
-func (l *LibreriaNepa) Exportar(ruta string) error { return nil }
+/home/deb/nepa/desarrollo/interno/variables/matriz/matriz.go:
 
 
 
 
+/home/deb/nepa/desarrollo/interno/variables/hora/hora.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/texto/texto.go:
+
+
+
+
+/home/deb/nepa/desarrollo/interno/variables/booleano/booleano.go:
 
 
 
@@ -1405,304 +1779,436 @@ func (l *LibreriaNepa) Exportar(ruta string) error { return nil }
 package parser
 
 import (
-    "nepa/desarrollo/interno/ast"
-    "nepa/desarrollo/interno/lexer"
     "strconv"
+    "strings"
 )
 
-type Parser struct {
-    tokens  []lexer.Token
-    pos     int
-    archivo string
+// Nodo representa un elemento del AST
+type Nodo struct {
+    Tipo   string        // variable, global, constante, llamada, imprimir, bloque, expresion
+    Nombre string        // nombre de variable o función
+    Valor  interface{}   // valor literal o expresión
+    Args   []interface{} // argumentos de llamadas
 }
 
-func Nuevo(tokens []lexer.Token, archivo string) *Parser {
-    return &Parser{tokens, 0, archivo}
-}
+// Parse convierte líneas validadas en un AST
+func Parse(lineas []string) []Nodo {
+    var ast []Nodo
 
-func (p *Parser) getPos() ast.Posicion {
-    if p.pos >= len(p.tokens) {
-        return ast.Posicion{Linea: 0, Archivo: p.archivo}
-    }
-    return ast.Posicion{Linea: p.actual().Linea, Archivo: p.archivo}
-}
-
-func (p *Parser) Parsear() []ast.Nodo {
-    var programa []ast.Nodo
-    for !p.esFin() {
-        if p.actual().Tipo == lexer.T_LINEA {
-            p.avanzar()
+    for _, linea := range lineas {
+        linea = strings.TrimSpace(linea)
+        if linea == "" || strings.HasPrefix(linea, "#") {
             continue
         }
-        nodo := p.parsearInstruccion()
-        if nodo != nil {
-            programa = append(programa, nodo)
-        } else {
-            // EVITAR LOOP INFINITO: Si nada parsea, avanzamos sí o sí
-            p.avanzar()
-        }
-    }
-    return programa
-}
 
-func (p *Parser) parsearInstruccion() ast.Nodo {
-    t := p.actual()
-    
-    // Caso: Asignación directa (identificador = ...)
-    if t.Tipo == lexer.T_IDENT && p.pos+1 < len(p.tokens) && p.tokens[p.pos+1].Tipo == lexer.T_IGUAL {
-        return p.parsearAsignacionDirecta()
-    }
-
-    if t.Tipo == lexer.T_KEYWORD {
-        switch t.Literal {
-        case "variable": return p.parsearAsignacion()
-        case "incluir":  return p.parsearIncluir()
-        case "imprime":  
-            p.avanzar()
-            return p.parsearLlamada("imprime")
-        case "si":       return p.parsearSi()
-        case "mientras": return p.parsearMientras()
-        case "para":     return p.parsearPara()
-        case "funcion":  return p.parsearDefFuncion()
-        case "retorna":
-            pos := p.getPos(); p.avanzar()
-            return ast.Retornar{Base: ast.Base{Pos: pos}, Valor: p.parsearExpresion()}
-        }
-    }
-    return p.parsearExpresion()
-}
-
-func (p *Parser) parsearAsignacionDirecta() ast.Nodo {
-    pos := p.getPos()
-    nombre := p.consumir(lexer.T_IDENT).Literal
-    p.consumir(lexer.T_IGUAL)
-    return ast.Asignacion{Base: ast.Base{Pos: pos}, Nombre: nombre, Valor: p.parsearExpresion()}
-}
-
-func (p *Parser) parsearMientras() ast.Nodo {
-    pos := p.getPos()
-    p.avanzar() // saltar 'mientras'
-    cond := p.parsearExpresion()
-    p.consumir(lexer.T_DOSPUNTOS)
-    return ast.Mientras{Base: ast.Base{Pos: pos}, Condicion: cond, Cuerpo: p.parsearBloque()}
-}
-
-func (p *Parser) parsearBloque() []ast.Nodo {
-    if p.actual().Tipo == lexer.T_LINEA { p.avanzar() }
-    p.consumir(lexer.T_INDENT)
-    var nodos []ast.Nodo
-    for !p.esFin() && p.actual().Tipo != lexer.T_DEDENT {
-        if p.actual().Tipo == lexer.T_LINEA {
-            p.avanzar()
+        // Bloques: si:, mientras:, para:, funcion:, etc.
+        if strings.HasSuffix(linea, ":") {
+            nombre := strings.TrimSuffix(linea, ":")
+            ast = append(ast, Nodo{Tipo: "bloque", Nombre: nombre})
             continue
         }
-        nodo := p.parsearInstruccion()
-        if nodo != nil {
-            nodos = append(nodos, nodo)
-        } else {
-            p.avanzar()
-        }
-    }
-    p.consumir(lexer.T_DEDENT)
-    return nodos
-}
 
-// --- JERARQUÍA DE EXPRESIONES (Para evitar 1 + 2 * 3 = 0) ---
-
-func (p *Parser) parsearExpresion() ast.Nodo {
-    izq := p.parsearComparacion()
-    for p.actual().Tipo == lexer.T_KEYWORD && (p.actual().Literal == "y" || p.actual().Literal == "o") {
-        pos := p.getPos(); op := p.actual().Literal; p.avanzar()
-        der := p.parsearComparacion()
-        izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
-    }
-    return izq
-}
-
-func (p *Parser) parsearComparacion() ast.Nodo {
-    izq := p.parsearSumaResta()
-    for p.actual().Tipo == lexer.T_OP {
-        op := p.actual().Literal
-        if op == "==" || op == "!=" || op == "<" || op == ">" || op == "<=" || op == ">=" {
-            pos := p.getPos(); p.avanzar()
-            der := p.parsearSumaResta()
-            izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
-        } else {
-            break 
-        }
-    }
-    return izq
-}
-
-func (p *Parser) parsearSumaResta() ast.Nodo {
-    izq := p.parsearMultDiv()
-    for p.actual().Tipo == lexer.T_OP && (p.actual().Literal == "+" || p.actual().Literal == "-") {
-        pos := p.getPos(); op := p.actual().Literal; p.avanzar()
-        der := p.parsearMultDiv()
-        izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
-    }
-    return izq
-}
-
-func (p *Parser) parsearMultDiv() ast.Nodo {
-    izq := p.parsearPrimario()
-    for p.actual().Tipo == lexer.T_OP && (p.actual().Literal == "*" || p.actual().Literal == "/") {
-        pos := p.getPos(); op := p.actual().Literal; p.avanzar()
-        der := p.parsearPrimario()
-        izq = ast.OperacionBinaria{Base: ast.Base{Pos: pos}, Izquierda: izq, Operador: op, Derecha: der}
-    }
-    return izq
-}
-
-func (p *Parser) parsearPrimario() ast.Nodo {
-    pos := p.getPos()
-    t := p.actual()
-
-    switch t.Tipo {
-    case lexer.T_NUMERO:
-        v, _ := strconv.ParseFloat(t.Literal, 64)
-        p.avanzar()
-        return ast.Literal{Base: ast.Base{Pos: pos}, Valor: v}
-    case lexer.T_CADENA:
-        v := t.Literal; p.avanzar()
-        return ast.Literal{Base: ast.Base{Pos: pos}, Valor: v}
-    case lexer.T_IDENT:
-        nombre := t.Literal; p.avanzar()
-        // Caso: modulo.funcion(...)
-        if p.actual().Tipo == lexer.T_PUNTO {
-            p.avanzar()
-            prop := p.consumir(lexer.T_IDENT).Literal
-            if p.actual().Tipo == lexer.T_PARENT_A {
-                return p.parsearLlamadaModulo(nombre, prop)
+        // --- Asignaciones globales y constantes ---
+        if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
+            partes := strings.SplitN(linea[len("global "):], "=", 2)
+            if len(partes) == 2 {
+                nombre := strings.TrimSpace(partes[0])
+                valor := parseValor(strings.TrimSpace(partes[1]))
+                ast = append(ast, Nodo{Tipo: "global", Nombre: nombre, Valor: valor})
+                continue
             }
-            return ast.LlamadaModulo{Base: ast.Base{Pos: pos}, Modulo: nombre, Funcion: prop}
         }
-        // Caso: funcion(...)
-        if p.actual().Tipo == lexer.T_PARENT_A {
-            return p.parsearLlamada(nombre)
+
+        if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
+            partes := strings.SplitN(linea[len("const "):], "=", 2)
+            if len(partes) == 2 {
+                nombre := strings.TrimSpace(partes[0])
+                valor := parseValor(strings.TrimSpace(partes[1]))
+                ast = append(ast, Nodo{Tipo: "constante", Nombre: nombre, Valor: valor})
+                continue
+            }
         }
-        return ast.Identificador{Base: ast.Base{Pos: pos}, Nombre: nombre}
-    case lexer.T_PARENT_A:
-        p.avanzar()
-        exp := p.parsearExpresion()
-        p.consumir(lexer.T_PARENT_C)
-        return exp
+
+        // --- Asignación local ---
+        if strings.Contains(linea, "=") && !strings.Contains(linea, "==") {
+            partes := strings.SplitN(linea, "=", 2)
+            if len(partes) == 2 {
+                nombre := strings.TrimSpace(partes[0])
+                valor := parseValor(strings.TrimSpace(partes[1]))
+                ast = append(ast, Nodo{Tipo: "variable", Nombre: nombre, Valor: valor})
+                continue
+            }
+        }
+
+        // --- Llamadas a funciones ---
+        if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
+            fn := linea[:strings.Index(linea, "(")]
+            fn = strings.TrimSpace(fn)
+            args := extraerArgs(linea)
+
+            if fn == "imprimir" {
+                ast = append(ast, Nodo{Tipo: "imprimir", Nombre: fn, Args: args})
+            } else {
+                ast = append(ast, Nodo{Tipo: "llamada", Nombre: fn, Args: args})
+            }
+            continue
+        }
+
+        // --- Expresión suelta ---
+        ast = append(ast, Nodo{Tipo: "expresion", Valor: parseValor(linea)})
     }
+
+    return ast
+}
+
+// extraerArgs obtiene los argumentos de una llamada tipo funcion(arg1, arg2)
+func extraerArgs(linea string) []interface{} {
+    ini := strings.Index(linea, "(")
+    fin := strings.LastIndex(linea, ")")
+    if ini == -1 || fin == -1 || fin <= ini {
+        return nil
+    }
+    contenido := linea[ini+1 : fin]
+    partes := strings.Split(contenido, ",")
+    var args []interface{}
+    for _, p := range partes {
+        arg := strings.TrimSpace(p)
+        if arg != "" {
+            args = append(args, parseValor(arg))
+        }
+    }
+    return args
+}
+
+// parseValor convierte un literal string en su tipo correcto
+func parseValor(raw string) interface{} {
+    // Booleanos
+    if raw == "true" {
+        return true
+    }
+    if raw == "false" {
+        return false
+    }
+
+    // Nulo
+    if raw == "nulo" {
+        return nil
+    }
+
+    // Enteros
+    if i, err := strconv.Atoi(raw); err == nil {
+        return i
+    }
+
+    // Flotantes
+    if f, err := strconv.ParseFloat(raw, 64); err == nil {
+        return f
+    }
+
+    // Strings con comillas
+    if strings.HasPrefix(raw, "\"") && strings.HasSuffix(raw, "\"") {
+        return strings.Trim(raw, "\"")
+    }
+
+    // Listas/matrices simples: [1,2,3]
+    if strings.HasPrefix(raw, "[") && strings.HasSuffix(raw, "]") {
+        contenido := strings.Trim(raw, "[]")
+        partes := strings.Split(contenido, ",")
+        var lista []interface{}
+        for _, p := range partes {
+            val := strings.TrimSpace(p)
+            if val != "" {
+                lista = append(lista, parseValor(val))
+            }
+        }
+        return lista
+    }
+
+    // Si no coincide con nada, devolver como string
+    return raw
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/core/core-utils.go:
+package core
+
+import (
+    "bytes"
+    "fmt"
+    "os"
+)
+
+// Versión global del intérprete
+const Version = "0.0002"
+
+// NepaError es el formato estándar de error en Nepa
+type NepaError struct {
+    Archivo string
+    Linea   int
+    Mensaje string
+}
+
+func (e NepaError) Error() string {
+    if e.Archivo != "" && e.Linea > 0 {
+        return fmt.Sprintf("Error en %s, línea %d: %s", e.Archivo, e.Linea, e.Mensaje)
+    }
+    return fmt.Sprintf("Error: %s", e.Mensaje)
+}
+
+// NewError crea un NepaError de forma sencilla
+func NewError(archivo string, linea int, mensaje string) error {
+    return NepaError{Archivo: archivo, Linea: linea, Mensaje: mensaje}
+}
+
+// StripBOM remueve BOM de una cadena si existe
+func StripBOM(s string) string {
+    return string(bytes.TrimPrefix([]byte(s), []byte{0xEF, 0xBB, 0xBF}))
+}
+
+// --- Logging helpers ---
+var DebugMode = false
+
+// Debug imprime mensajes solo si está activado el modo debug
+func Debug(msg string) {
+    if DebugMode {
+        fmt.Fprintln(os.Stderr, "[DEPURAR]", msg)
+    }
+}
+
+// Info imprime mensajes informativos
+func Info(msg string) {
+    fmt.Fprintln(os.Stderr, "[INFO]", msg)
+}
+
+// Warn imprime advertencias
+func Warn(msg string) {
+    fmt.Fprintln(os.Stderr, "[ADVERTENCIA]", msg)
+}
+
+// Error imprime errores
+func Error(msg string) {
+    fmt.Fprintln(os.Stderr, "[ERROR]", msg)
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/asignar/asignar.go:
+package asignar
+
+import (
+    "errors"
+    "fmt"
+    "strings"
+
+    "nepa/interno/administrador"
+    "nepa/interno/evaluador"
+)
+
+var (
+    ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'asignar <nombre> = <expresión>' o '<nombre> = <expresión>' o '<nombre>++/--'")
+    ErrVariableNoExiste = errors.New("la variable no existe")
+    ErrNombreVacio      = errors.New("nombre vacío en asignación")
+    ErrValorVacio       = errors.New("valor vacío en asignación")
+)
+
+// Ejecutar soporta:
+//   - asignar a = expr
+//   - a = expr
+//   - a++ / a--
+//   - asignar a++ / asignar a--
+func Ejecutar(linea string) error {
+    linea = strings.TrimSpace(linea)
+    if linea == "" {
+        return ErrSintaxisInvalida
+    }
+
+    // Quitar palabra clave "asignar" si existe
+    if strings.HasPrefix(strings.ToLower(linea), "asignar") {
+        linea = strings.TrimSpace(linea[len("asignar"):])
+    }
+
+    // Incremento/decremento
+    if strings.HasSuffix(linea, "++") || strings.HasSuffix(linea, "--") {
+        nombre := strings.TrimSpace(strings.TrimSuffix(strings.TrimSuffix(linea, "++"), "--"))
+        if nombre == "" {
+            return ErrNombreVacio
+        }
+        v, err := administrador.ObtenerVariable(nombre)
+        if err != nil {
+            return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
+        }
+        delta := 1.0
+        if strings.HasSuffix(linea, "--") {
+            delta = -1.0
+        }
+        actual, err := evaluador.ToFloat64(v.ValorComoInterface())
+        if err != nil {
+            return fmt.Errorf("incremento/decremento inválido para tipo=%s: %v", v.Tipo(), err)
+        }
+        nuevo := actual + delta
+        if err := administrador.ModificarVariable(nombre, nuevo); err != nil {
+            return fmt.Errorf("error asignando a '%s' (tipo=%s): %w", nombre, v.Tipo(), err)
+        }
+        fmt.Printf("✔ %s '%s' %s → %v\n", strings.ToUpper(v.Tipo()), nombre, tern(delta > 0, "++", "--"), nuevo)
+        return nil
+    }
+
+    // Asignación con '='
+    partes := strings.SplitN(linea, "=", 2)
+    if len(partes) != 2 {
+        return ErrSintaxisInvalida
+    }
+    nombre := strings.TrimSpace(partes[0])
+    expr := strings.TrimSpace(partes[1])
+    if nombre == "" {
+        return ErrNombreVacio
+    }
+    if expr == "" {
+        return ErrValorVacio
+    }
+
+    // Verificar existencia
+    v, err := administrador.ObtenerVariable(nombre)
+    if err != nil {
+        return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
+    }
+
+    // Evaluar expresión completa (variables, literales, funciones, etc.)
+    resultado, err := evaluador.Eval(expr)
+    if err != nil {
+        // Fallback: pasar crudo, el tipo decidirá si es válido
+        resultado = expr
+    }
+
+    // Asignar resultado
+    if err := administrador.ModificarVariable(nombre, resultado); err != nil {
+        return fmt.Errorf("error asignando a '%s' (tipo=%s) con '%v': %w", nombre, v.Tipo(), resultado, err)
+    }
+
+    fmt.Printf("✔ %s '%s' ← %s → %v\n", strings.ToUpper(v.Tipo()), nombre, expr, resultado)
     return nil
 }
 
-func (p *Parser) parsearLlamada(nombre string) ast.Nodo {
-    pos := p.getPos(); p.consumir(lexer.T_PARENT_A)
-    var args []ast.Nodo
-    for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
-        args = append(args, p.parsearExpresion())
-        if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
+func tern(cond bool, a, b string) string {
+    if cond {
+        return a
     }
-    p.consumir(lexer.T_PARENT_C)
-    return ast.LlamadaFuncion{Base: ast.Base{Pos: pos}, Nombre: nombre, Args: args}
+    return b
 }
 
-func (p *Parser) parsearLlamadaModulo(mod, fn string) ast.Nodo {
-    pos := p.getPos(); p.consumir(lexer.T_PARENT_A)
-    var args []ast.Nodo
-    for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
-        args = append(args, p.parsearExpresion())
-        if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
-    }
-    p.consumir(lexer.T_PARENT_C)
-    return ast.LlamadaModulo{Base: ast.Base{Pos: pos}, Modulo: mod, Funcion: fn, Args: args}
-}
 
-func (p *Parser) parsearSi() ast.Nodo {
-    pos := p.getPos(); p.avanzar()
-    cond := p.parsearExpresion()
-    p.consumir(lexer.T_DOSPUNTOS)
-    cuerpo := p.parsearBloque()
-    var sino []ast.Nodo
-    if p.actual().Literal == "sino" {
-        p.avanzar()
-        if p.actual().Literal == "si" {
-            sino = append(sino, p.parsearSi())
-        } else {
-            if p.actual().Tipo == lexer.T_DOSPUNTOS { p.avanzar() }
-            sino = p.parsearBloque()
-        }
-    }
-    return ast.Si{Base: ast.Base{Pos: pos}, Condicion: cond, Cuerpo: cuerpo, Sino: sino}
-}
 
-func (p *Parser) parsearDefFuncion() ast.Nodo {
-    pos := p.getPos(); p.avanzar()
-    nombre := p.consumir(lexer.T_IDENT).Literal
-    p.consumir(lexer.T_PARENT_A)
-    params := []string{}
-    for p.actual().Tipo != lexer.T_PARENT_C && !p.esFin() {
-        params = append(params, p.consumir(lexer.T_IDENT).Literal)
-        if p.actual().Tipo == lexer.T_COMA { p.avanzar() }
-    }
-    p.consumir(lexer.T_PARENT_C); p.consumir(lexer.T_DOSPUNTOS)
-    return ast.FuncionDef{Base: ast.Base{Pos: pos}, Nombre: nombre, Parametros: params, Cuerpo: p.parsearBloque()}
-}
 
-func (p *Parser) parsearAsignacion() ast.Nodo {
-    pos := p.getPos(); p.avanzar()
-    nombre := p.consumir(lexer.T_IDENT).Literal
-    p.consumir(lexer.T_IGUAL)
-    return ast.Asignacion{Base: ast.Base{Pos: pos}, Nombre: nombre, Valor: p.parsearExpresion()}
-}
+/home/deb/nepa/desarrollo/comandos/variable/variable.go:
+package variable
 
-func (p *Parser) parsearIncluir() ast.Nodo {
-    pos := p.getPos(); p.avanzar()
-    nombre := p.consumir(lexer.T_CADENA).Literal
-    return ast.LlamadaFuncion{Base: ast.Base{Pos: pos}, Nombre: "incluir", Args: []ast.Nodo{ast.Literal{Base: ast.Base{Pos: pos}, Valor: nombre}}}
-}
+import (
+    "errors"
+    "fmt"
+    "strings"
 
-func (p *Parser) actual() lexer.Token { 
-    if p.pos >= len(p.tokens) { return lexer.Token{Tipo: lexer.T_EOF} }
-    return p.tokens[p.pos] 
-}
-func (p *Parser) avanzar() { p.pos++ }
-func (p *Parser) esFin() bool { return p.actual().Tipo == lexer.T_EOF }
-func (p *Parser) consumir(t lexer.TipoToken) lexer.Token { 
-    tok := p.actual()
-    p.avanzar() 
-    return tok 
-}
+    "nepa/interno/administrador"
+)
 
-func (p *Parser) parsearPara() ast.Nodo {
-    pos := p.getPos()
-    p.avanzar() // saltar 'para'
-    variable := p.consumir(lexer.T_IDENT).Literal
-    
-    var origen, fin, incremento ast.Nodo
-    
-    if p.actual().Literal == "desde" {
-        p.avanzar()
-        origen = p.parsearExpresion()
-        if p.actual().Literal == "hasta" {
-            p.avanzar()
-            fin = p.parsearExpresion()
-        }
-        if p.actual().Literal == "incremento" {
-            p.avanzar()
-            incremento = p.parsearExpresion()
-        }
-    } else if p.actual().Literal == "en" {
-        p.avanzar()
-        origen = p.parsearExpresion()
+// Errores específicos del comando variable.
+var (
+    ErrSintaxisInvalida = errors.New("sintaxis inválida para comando 'variable'")
+    ErrTipoDesconocido  = errors.New("tipo de variable desconocido")
+)
+
+// Ejecutar interpreta el comando 'variable'.
+// Sintaxis esperada: variable <tipo> <nombre> [valor_opcional]
+func Ejecutar(args []string) error {
+    if len(args) < 2 {
+        return ErrSintaxisInvalida
     }
 
-    p.consumir(lexer.T_DOSPUNTOS)
-    cuerpo := p.parsearBloque()
-    
-    return ast.Para{
-        Base: ast.Base{Pos: pos},
-        Variable: variable,
-        Origen: origen,
-        Fin: fin,
-        Incremento: incremento,
-        Cuerpo: cuerpo,
+    tipo := strings.ToLower(args[0])
+    nombre := args[1]
+    var valor interface{} = nil
+    if len(args) > 2 {
+        valor = args[2]
     }
+
+    constructor, ok := administrador.Constructores[tipo]
+    if !ok {
+        return fmt.Errorf("%w: %s", ErrTipoDesconocido, tipo)
+    }
+
+    v, err := constructor(nombre, valor)
+    if err != nil {
+        return fmt.Errorf("error creando variable '%s' de tipo '%s': %w", nombre, tipo, err)
+    }
+
+    administrador.RegistrarVariable(nombre, v)
+    fmt.Printf("✔ Variable creada: %s\n", v.Mostrar())
+    return nil
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/imprimir/imprimir.go:
+package imprimir
+
+import (
+    "errors"
+    "fmt"
+    "strings"
+
+    "nepa/interno/evaluador"
+)
+
+var (
+    ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'imprimir()', 'imprimir \"texto\"', 'imprimir var' o 'imprimir expr'")
+    ErrTipoNoImprimible = errors.New("tipo de dato no imprimible")
+)
+
+func Ejecutar(linea string) error {
+    linea = strings.TrimSpace(linea)
+
+    // Quitar palabra clave "imprimir"
+    if strings.HasPrefix(strings.ToLower(linea), "imprimir") {
+        linea = strings.TrimSpace(linea[len("imprimir"):])
+    }
+
+    // Caso: imprimir sin nada → error
+    if linea == "" {
+        return ErrSintaxisInvalida
+    }
+
+    // Caso: imprimir() → línea en blanco
+    if linea == "()" {
+        fmt.Println()
+        return nil
+    }
+
+    // Caso: imprimir "" o '' → línea en blanco
+    if linea == `""` || linea == `''` {
+        fmt.Println()
+        return nil
+    }
+
+    // Evaluar expresión completa (concatenaciones, funciones, variables, etc.)
+    resultado, err := evaluador.Eval(linea)
+    if err != nil {
+        return fmt.Errorf("error evaluando expresión '%s': %v", linea, err)
+    }
+
+    // Convertir resultado a string imprimible
+    switch v := resultado.(type) {
+    case string:
+        fmt.Println(v)
+    case int, int64, float64, bool:
+        fmt.Println(fmt.Sprintf("%v", v))
+    default:
+        return fmt.Errorf("%w: %T", ErrTipoNoImprimible, v)
+    }
+
+    return nil
 }
 
 
@@ -1753,106 +2259,6 @@ echo "✅ Subida completada con éxito."
 
 
 /home/deb/nepa/history/last-100-history.txt:
-bash probar.sh 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
-ls desarrollo/interno/modulo/
-nano desarrollo/interno/modulo/core_math.go
-bash probar.sh 
-cat inicio.nepa 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
-./dist/bin/nepa inicio.nepa
-bash probar.sh 
-cat inicio.nepa 
-bash probar.sh 
-cat inicio.nepa 
-bash probar.sh 
-ash probar.sh 
-bash probar.sh 
-cat inicio.nepa 
-bash probar.sh 
-nano inicio.nepa
-./dist/bin/nepa inicio.nepa
-cat inicio.nepa
-bash probar.sh 
-cat desarrollo/interno/modulo/core_math.go
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-cat desarrollo/interno/modulo/core_math.go
-cat desarrollo/interno/modulo/modulo.go
-cat inicio.nepa
-bash probar.sh 
-nano gist.sh
-bash gist.sh
-ls
-cat gist.txt
-no en binario, solo los text files
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-nano gist.sh
-bash gist.sh
-cat gist.txt
-sudo apt update && sudo apt install xclip -y
-nano gist.sh
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-go mod init nepa 2>/dev/null || go mod tidy
-bash probar.sh 
-go mod tidy
-bash probar.sh 
-export GO111MODULE=on
-go mod edit -module nepa
-bash probar.sh 
-# Borrar archivos de módulos viejos si existen
-rm -f go.mod go.sum
-# Reiniciar el módulo con el nombre correcto
-go mod init nepa
-# Forzar a Go a encontrar las dependencias locales
-go mod tidy
-tree .
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-cat inicio.nepa
-bash gist.sh
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
-cat inicio.nepa
-bash probar.sh 
-bash gist.sh
-bash probar.sh 
 
 
 
@@ -1878,7 +2284,7 @@ Aplica esos cambios a este archivo, si es posible adiciona un comentario para sa
 
 
 
-/home/deb/nepa/probar.sh:
+/home/deb/nepa/compila.sh:
 #!/bin/bash
 
 # Colores para la terminal
@@ -1893,12 +2299,9 @@ make clean && make
 if [ $? -eq 0 ]; then
     echo -e "${VERDE}✅ Compilación exitosa.${NC}"
     
-    echo -e "${AZUL}📚 Generando librerías...${NC}"
-    ./dist/bin/nepa_lib
-    
     echo -e "${AZUL}🚀 Ejecutando inicio.nepa...${NC}"
     echo "--------------------------"
-    ./dist/bin/nepa inicio.nepa
+    ./dist/bin/nepa test.nepa
 else
     echo -e "${ROJO}❌ Error en la compilación.${NC}"
     exit 1
@@ -1907,45 +2310,31 @@ fi
 
 
 
-
-
-
-
 /home/deb/nepa/Makefile:
 # Nombres de los binarios
 INTERPRETE=nepa
-GENERADOR=nepa_lib
 
 # Rutas de origen
-SRC_MAIN=./desarrollo/cmd/nepa/main.go
-SRC_LIB=./desarrollo/cmd/nepa_lib/main.go
+SRC_MAIN=./desarrollo/cmd/nepa
 
 # Ruta de destino
 DEST=./dist/bin
 
+.PHONY: all build install clean
+
 all: clean build install
 
 build:
-	@echo "🔨 Compilando Nepa (Intérprete)..."
-	@go build -o $(INTERPRETE) $(SRC_MAIN)
-	@echo "🔨 Compilando Generador de Librerías..."
-	@go build -o $(GENERADOR) $(SRC_LIB)
+	@echo "Compilando Nepa (Intérprete)..."
+	@mkdir -p $(DEST)
+	@go build -o $(DEST)/$(INTERPRETE) $(SRC_MAIN)
 
 install:
-	@mkdir -p $(DEST)
-	@mkdir -p ./dist/lib
-	@mv $(INTERPRETE) $(DEST)/
-	@mv $(GENERADOR) $(DEST)/
-	@echo "✅ Binarios instalados en $(DEST)/"
+	@echo "Binarios instalados en $(DEST)/"
 
 clean:
-	@rm -f $(INTERPRETE) $(GENERADOR)
-	@rm -rf ./dist/bin/*
-	@echo "🧹 Limpieza completada."
-
-
-
-
+	@rm -rf $(DEST)/*
+	@echo "Limpieza completada."
 
 
 
@@ -2629,6 +3018,51 @@ Public License instead of this License.  But first, please read
 
 
 
+/home/deb/nepa/crear-variable-estructura.sh:
+#!/bin/bash
+
+mkdir -p desarrollo/interno/variables/bit
+touch desarrollo/interno/variables/bit/bit.go
+
+mkdir -p desarrollo/interno/variables/entero
+touch desarrollo/interno/variables/entero/entero.go
+
+mkdir -p desarrollo/interno/variables/real
+touch desarrollo/interno/variables/real/real.go
+
+mkdir -p desarrollo/interno/variables/cadena
+touch desarrollo/interno/variables/cadena/cadena.go
+
+mkdir -p desarrollo/interno/variables/char
+touch desarrollo/interno/variables/char/char.go
+
+mkdir -p desarrollo/interno/variables/booleano
+touch desarrollo/interno/variables/booleano/booleano.go
+
+mkdir -p desarrollo/interno/variables/matriz
+touch desarrollo/interno/variables/matriz/matriz.go
+
+mkdir -p desarrollo/interno/variables/puntero
+touch desarrollo/interno/variables/puntero/puntero.go
+
+mkdir -p desarrollo/interno/variables/fecha
+touch desarrollo/interno/variables/fecha/fecha.go
+
+mkdir -p desarrollo/interno/variables/hora
+touch desarrollo/interno/variables/hora/hora.go
+
+mkdir -p desarrollo/interno/variables/texto
+touch desarrollo/interno/variables/texto/texto.go
+
+mkdir -p desarrollo/interno/variables/lista
+touch desarrollo/interno/variables/lista/lista.go
+
+mkdir -p desarrollo/interno/variables/objeto
+touch desarrollo/interno/variables/objeto/objeto.go
+
+
+
+
 /home/deb/nepa/inicio.nepa:
 --- 🎯 TEST DE ALCANCE ---
 
@@ -2644,21 +3078,15 @@ para x en 500 {
 
 
 /home/deb/nepa/test.nepa:
-# Cálculo de área y condicional en Nepa
-radio = 5
-area = pi * radio * radio
+# test_ok.nepa
+x = raiz(16)
+y = media(10, 20, 30)
+imprimir(x, y)
 
-si (area > 50) {
-    imprime("El área es grande:", area)
-} sino {
-    imprime("El área es pequeña:", area)
-}
 
-x = 0
-mientras (x < 3) {
-    imprime("Contador:", x)
-    x = x + 1
-}
+
+
+/home/deb/nepa/touch:
 
 
 

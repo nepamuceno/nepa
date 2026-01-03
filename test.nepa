@@ -1,4 +1,56 @@
-# test_ok.nepa
-x = raiz(16)
-y = media(10, 20, 30)
-imprimir(x, y)
+# ============================
+# Pruebas de asignación con bit
+# ============================
+
+# Asignación directa de valores bit
+asignar a = 0
+asignar b = 1
+
+# Asignación con operación lógica AND
+asignar c = a y b
+
+# Asignación con operación lógica OR
+asignar d = a o b
+
+# Asignación con operación lógica NOT
+asignar e = no a
+
+# ============================
+# Pruebas de variable con bit
+# ============================
+
+# Declaración explícita sin valor inicial
+variable f
+
+# Declaración con valor inicial
+variable g = 1
+
+# Declaración con operación lógica
+variable h = g y b
+
+# ============================
+# Pruebas de imprimir con bit
+# ============================
+
+# Imprimir literal bit
+imprimir 0
+imprimir 1
+
+# Imprimir variable
+imprimir a
+imprimir b
+imprimir c
+imprimir d
+imprimir e
+imprimir f
+imprimir g
+imprimir h
+
+# Imprimir operación directa
+imprimir a o b
+imprimir no g
+imprimir (a y b) o (no a)
+
+# ============================
+# Fin de pruebas básicas con bit
+# ============================

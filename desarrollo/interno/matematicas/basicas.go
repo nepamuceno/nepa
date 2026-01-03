@@ -1,6 +1,7 @@
 package matematicas
 
 import (
+    "errors"
     "math"
 
     "nepa/desarrollo/interno/evaluador"
@@ -19,56 +20,88 @@ func InyectarBasicas(ctx *evaluador.Contexto) {
     // --- Raíz cuadrada ---
     reg("raiz", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: raiz requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: raiz requiere 1 argumento")
         }
-        return math.Sqrt(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Sqrt(f)
     })
 
     // --- Potencia ---
     reg("potencia", func(args ...interface{}) interface{} {
         if len(args) != 2 {
-            return "Error: potencia requiere 2 argumentos"
+            return errors.New("❌ ERROR FATAL: potencia requiere 2 argumentos")
         }
-        return math.Pow(toFloat(args[0]), toFloat(args[1]))
+        base, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        exp, err := evaluador.ConvertirAReal(args[1])
+        if err != nil {
+            return err
+        }
+        return math.Pow(base, exp)
     })
 
     // --- Seno ---
     reg("seno", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: seno requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: seno requiere 1 argumento")
         }
-        return math.Sin(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Sin(f)
     })
 
     // --- Coseno ---
     reg("coseno", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: coseno requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: coseno requiere 1 argumento")
         }
-        return math.Cos(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Cos(f)
     })
 
     // --- Tangente ---
     reg("tangente", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: tangente requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: tangente requiere 1 argumento")
         }
-        return math.Tan(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Tan(f)
     })
 
     // --- Logaritmo natural ---
     reg("log", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: log requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: log requiere 1 argumento")
         }
-        return math.Log(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Log(f)
     })
 
     // --- Valor absoluto ---
     reg("abs", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: abs requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: abs requiere 1 argumento")
         }
-        return math.Abs(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Abs(f)
     })
 }

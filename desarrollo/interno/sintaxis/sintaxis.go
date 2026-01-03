@@ -33,9 +33,14 @@ func ValidarLinea(linea string, num int, archivo string) error {
         return fmt.Errorf("Paréntesis desbalanceados en %s línea %d", archivo, num)
     }
 
-    // Validar comillas balanceadas
+    // Validar comillas dobles balanceadas
     if strings.Count(l, "\"")%2 != 0 {
-        return fmt.Errorf("Comillas desbalanceadas en %s línea %d", archivo, num)
+        return fmt.Errorf("Comillas dobles desbalanceadas en %s línea %d", archivo, num)
+    }
+
+    // Validar comillas simples balanceadas
+    if strings.Count(l, "'")%2 != 0 {
+        return fmt.Errorf("Comillas simples desbalanceadas en %s línea %d", archivo, num)
     }
 
     return nil

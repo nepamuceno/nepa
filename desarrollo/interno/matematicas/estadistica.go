@@ -1,6 +1,7 @@
 package matematicas
 
 import (
+    "errors"
     "math"
     "sort"
 
@@ -20,11 +21,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Media ---
     reg("media", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: media requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: media requiere al menos 1 argumento")
         }
         sum := 0.0
         for _, v := range args {
-            sum += toFloat(v)
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
         }
         return sum / float64(len(args))
     })
@@ -32,11 +37,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Mediana ---
     reg("mediana", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: mediana requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: mediana requiere al menos 1 argumento")
         }
         vals := []float64{}
         for _, v := range args {
-            vals = append(vals, toFloat(v))
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            vals = append(vals, f)
         }
         sort.Float64s(vals)
         l := len(vals)
@@ -49,13 +58,16 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Varianza ---
     reg("varianza", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: varianza requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: varianza requiere al menos 1 argumento")
         }
         var sum, sumSq float64
         for _, v := range args {
-            val := toFloat(v)
-            sum += val
-            sumSq += val * val
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
+            sumSq += f * f
         }
         n := float64(len(args))
         return (sumSq / n) - math.Pow(sum/n, 2)
@@ -64,13 +76,16 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Desviación estándar ---
     reg("desviacion", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: desviacion requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: desviacion requiere al menos 1 argumento")
         }
         var sum, sumSq float64
         for _, v := range args {
-            val := toFloat(v)
-            sum += val
-            sumSq += val * val
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
+            sumSq += f * f
         }
         n := float64(len(args))
         return math.Sqrt((sumSq / n) - math.Pow(sum/n, 2))
@@ -79,11 +94,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Rango ---
     reg("rango", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: rango requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: rango requiere al menos 1 argumento")
         }
         vals := []float64{}
         for _, v := range args {
-            vals = append(vals, toFloat(v))
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            vals = append(vals, f)
         }
         sort.Float64s(vals)
         return vals[len(vals)-1] - vals[0]
