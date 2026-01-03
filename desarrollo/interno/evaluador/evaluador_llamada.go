@@ -10,7 +10,6 @@ import (
 func evalLlamada(n *ast.CallExpr) (interface{}, error) {
     switch fn := n.Fun.(type) {
     case *ast.Ident:
-        // Función global: suma(a,b), max(a,b), etc.
         nombreFuncion := strings.ToLower(fn.Name)
         argumentos, err := evalArgs(n.Args)
         if err != nil {
@@ -23,7 +22,6 @@ func evalLlamada(n *ast.CallExpr) (interface{}, error) {
         return f(argumentos...)
 
     case *ast.SelectorExpr:
-        // Método sobre objeto: "texto".convertir_caracter(...)
         objeto, err := evalNode(fn.X)
         if err != nil {
             return nil, err
@@ -33,7 +31,6 @@ func evalLlamada(n *ast.CallExpr) (interface{}, error) {
         if err != nil {
             return nil, err
         }
-        // Clave: tipo.metodo → ej: cadena.convertir_caracter
         tipo := tipoEnEspañol(objeto)
         clave := fmt.Sprintf("%s.%s", tipo, nombreMetodo)
         if f, ok := Funciones[clave]; ok {

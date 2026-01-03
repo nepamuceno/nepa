@@ -21,9 +21,9 @@ var (
 
 // Bit representa un valor binario (0 o 1) con nombre y metadatos.
 type Bit struct {
-    mu       sync.RWMutex
-    nombre   string
-    valor    uint8
+    mu        sync.RWMutex
+    nombre    string
+    valor     uint8
     etiquetas map[string]string
 }
 
@@ -170,4 +170,9 @@ func (b *Bit) EsUno() bool {
     b.mu.RLock()
     defer b.mu.RUnlock()
     return b.valor == 1
+}
+
+// Registro automático del constructor en el administrador
+func init() {
+    administrador.RegistrarConstructor("bit", CrearBit)
 }

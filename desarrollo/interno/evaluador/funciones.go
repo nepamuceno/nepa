@@ -50,7 +50,6 @@ var Funciones = map[string]func(args ...interface{}) (interface{}, error){
         if !ok {
             return nil, errors.New("primer argumento no es una cadena")
         }
-        // Ejemplo simple: convertir a mayúsculas
         return strings.ToUpper(s), nil
     },
 

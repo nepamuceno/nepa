@@ -3,12 +3,12 @@ package administrador
 
 import (
     "errors"
+    "fmt"
     "sync"
 )
 
 // Interfaz común que todos los tipos deben implementar.
-// Ya la definimos en bit.go, pero lo ideal es centralizarla aquí
-// para que todos los tipos la importen desde este paquete.
+// Todos los paquetes de variables deben importar esta interfaz.
 type Variable interface {
     Nombre() string
     Tipo() string
@@ -18,7 +18,7 @@ type Variable interface {
     AsignarDesdeInterface(v interface{}) error
     ValorComoInterface() interface{}
 
-    // Conversiones básicas
+    // Conversiones básicas universales
     ABooleano() (bool, error)
     AEntero() (int, error)
     AReal() (float64, error)
@@ -44,6 +44,26 @@ var Constructores = make(map[string]func(string, interface{}) (Variable, error))
 // Ejemplo: administrador.RegistrarConstructor("bit", bit.CrearBit)
 func RegistrarConstructor(tipo string, f func(string, interface{}) (Variable, error)) {
     Constructores[tipo] = f
+}
+
+// CrearVariableUniversal crea una variable de cualquier tipo registrado.
+// Si el constructor no existe, retorna ErrConstructorNoExiste.
+func CrearVariableUniversal(tipo, nombre string, valor interface{}) (Variable, error) {
+    mu.Lock()
+    defer mu.Unlock()
+    if _, existe := tabla[nombre]; existe {
+        return nil, ErrVariableYaExiste
+    }
+    constructor, ok := Constructores[tipo]
+    if !ok {
+        return nil, ErrConstructorNoExiste
+    }
+    v, err := constructor(nombre, valor)
+    if err != nil {
+        return nil, fmt.Errorf("error creando variable '%s' de tipo '%s': %w", nombre, tipo, err)
+    }
+    tabla[nombre] = v
+    return v, nil
 }
 
 // RegistrarVariable guarda una variable en la tabla global.

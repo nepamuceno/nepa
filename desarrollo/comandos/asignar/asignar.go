@@ -5,8 +5,9 @@ import (
     "fmt"
     "strings"
 
-    "nepa/interno/administrador"
-    "nepa/interno/evaluador"
+    "nepa/desarrollo/interno/administrador"
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
 )
 
 var (
@@ -40,19 +41,19 @@ func Ejecutar(linea string) error {
         }
         v, err := administrador.ObtenerVariable(nombre)
         if err != nil {
-            return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
+            return fmt.Errorf("❌ %w: '%s'", ErrVariableNoExiste, nombre)
         }
         delta := 1.0
         if strings.HasSuffix(linea, "--") {
             delta = -1.0
         }
-        actual, err := evaluador.ToFloat64(v.ValorComoInterface())
+        actual, err := toFloat64(v.ValorComoInterface())
         if err != nil {
-            return fmt.Errorf("incremento/decremento inválido para tipo=%s: %v", v.Tipo(), err)
+            return fmt.Errorf("⚠️ incremento/decremento inválido para tipo=%s: %v", v.Tipo(), err)
         }
         nuevo := actual + delta
         if err := administrador.ModificarVariable(nombre, nuevo); err != nil {
-            return fmt.Errorf("error asignando a '%s' (tipo=%s): %w", nombre, v.Tipo(), err)
+            return fmt.Errorf("⚠️ error asignando a '%s' (tipo=%s): %w", nombre, v.Tipo(), err)
         }
         fmt.Printf("✔ %s '%s' %s → %v\n", strings.ToUpper(v.Tipo()), nombre, tern(delta > 0, "++", "--"), nuevo)
         return nil
@@ -75,7 +76,7 @@ func Ejecutar(linea string) error {
     // Verificar existencia
     v, err := administrador.ObtenerVariable(nombre)
     if err != nil {
-        return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
+        return fmt.Errorf("❌ %w: '%s'", ErrVariableNoExiste, nombre)
     }
 
     // Evaluar expresión completa (variables, literales, funciones, etc.)
@@ -87,7 +88,7 @@ func Ejecutar(linea string) error {
 
     // Asignar resultado
     if err := administrador.ModificarVariable(nombre, resultado); err != nil {
-        return fmt.Errorf("error asignando a '%s' (tipo=%s) con '%v': %w", nombre, v.Tipo(), resultado, err)
+        return fmt.Errorf("⚠️ error asignando a '%s' (tipo=%s) con '%v': %w", nombre, v.Tipo(), resultado, err)
     }
 
     fmt.Printf("✔ %s '%s' ← %s → %v\n", strings.ToUpper(v.Tipo()), nombre, expr, resultado)
@@ -99,4 +100,45 @@ func tern(cond bool, a, b string) string {
         return a
     }
     return b
+}
+
+// Conversión genérica a float64 (ahora soporta bit y bool)
+func toFloat64(v interface{}) (float64, error) {
+    switch n := v.(type) {
+    case int:
+        return float64(n), nil
+    case int64:
+        return float64(n), nil
+    case float64:
+        return n, nil
+    case uint8:
+        return float64(n), nil
+    case bool:
+        if n {
+            return 1.0, nil
+        }
+        return 0.0, nil
+    default:
+        return 0, fmt.Errorf("no se puede convertir %T a float64", v)
+    }
+}
+
+// init registra este comando en el ejecutor universal
+func init() {
+    evaluador.Registrar("asignar", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        // Verificar existencia
+        v, err := administrador.ObtenerVariable(n.Nombre)
+        if err != nil {
+            fmt.Printf("❌ Variable '%s' no existe\n", n.Nombre)
+            return
+        }
+
+        // Asignar valor directamente desde el nodo
+        if err := administrador.ModificarVariable(n.Nombre, n.Valor); err != nil {
+            fmt.Printf("⚠️ Error asignando a '%s': %v\n", n.Nombre, err)
+            return
+        }
+
+        fmt.Printf("✔ %s '%s' ← %v\n", strings.ToUpper(v.Tipo()), n.Nombre, n.Valor)
+    })
 }

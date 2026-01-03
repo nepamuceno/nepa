@@ -1,27 +1,22 @@
 package bloque
 
-// BloquesReservados contiene todas las sentencias que abren bloques en Nepa.
-// Se usan en sintaxis.go para validar que terminen con ":" y tengan indentación correcta.
 var BloquesReservados = []string{
     // --- Control de flujo ---
-    "si",        // bloque condicional principal
-    "sino",      // bloque alternativo, dependiente de "si"
+    "si_es", "si_no", "opcion_en", "entonces",
 
     // --- Bucles ---
-    "mientras",  // bucle mientras condición sea verdadera
-    "para",      // bucle universal (rangos, listas, strings, mapas, iteradores)
+    "mientras", "para", "por_cada", "hasta",
+    "desde", "incremento",
 
     // --- Definiciones ---
-    "funcion",   // definición de funciones
-    "modulo",    // definición de módulos / librerías
+    "funcion", "modulo", "clase", "estructura", "interfaz",
 
-    // --- Manejo de errores / excepciones ---
-    "intentar",   // bloque de manejo de excepciones (equivalente a try)
-    "capturar",   // bloque para capturar errores (equivalente a catch)
-    "finalmente", // bloque de limpieza tras intentar/capturar (equivalente a finally)
+    // --- Manejo de errores ---
+    "intentar", "capturar", "finalmente",
 
-    // --- Otros bloques previstos ---
-    "clase",      // definición de clases (futuro)
-    "estructura", // definición de estructuras (futuro)
-    "ayuda",      // bloque/llamada especial para sistema de ayuda
+    // --- Concurrencia / asincronía ---
+    "async", "esperar", "concurrente",
+
+    // --- Contextos especiales ---
+    "usar", "transaccion",
 }

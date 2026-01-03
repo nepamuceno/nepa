@@ -1,44 +1,70 @@
 package variable
 
 import (
-    "errors"
     "fmt"
+    "regexp"
     "strings"
 
-    "nepa/interno/administrador"
+    "nepa/desarrollo/interno/administrador"
+    "nepa/desarrollo/interno/bloque"
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
 )
 
-// Errores específicos del comando variable.
-var (
-    ErrSintaxisInvalida = errors.New("sintaxis inválida para comando 'variable'")
-    ErrTipoDesconocido  = errors.New("tipo de variable desconocido")
-)
-
-// Ejecutar interpreta el comando 'variable'.
-// Sintaxis esperada: variable <tipo> <nombre> [valor_opcional]
-func Ejecutar(args []string) error {
-    if len(args) < 2 {
-        return ErrSintaxisInvalida
+// Validación de nombres
+func esNombreValido(nombre string) bool {
+    re := regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+    if !re.MatchString(nombre) {
+        return false
     }
-
-    tipo := strings.ToLower(args[0])
-    nombre := args[1]
-    var valor interface{} = nil
-    if len(args) > 2 {
-        valor = args[2]
+    for _, r := range bloque.PalabrasReservadas {
+        if nombre == r {
+            return false
+        }
     }
+    return true
+}
 
-    constructor, ok := administrador.Constructores[tipo]
-    if !ok {
-        return fmt.Errorf("%w: %s", ErrTipoDesconocido, tipo)
-    }
+func init() {
+    evaluador.Registrar("variable", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        // Tipo desde Args[0]; si no viene, lo marcamos como desconocido
+        tipo := ""
+        if len(n.Args) > 0 {
+            if t, ok := n.Args[0].(string); ok {
+                tipo = strings.ToLower(strings.TrimSpace(t))
+            }
+        }
+        if tipo == "" {
+            fmt.Printf("⚠️ Tipo de variable no especificado para '%s'\n", n.Nombre)
+            return
+        }
 
-    v, err := constructor(nombre, valor)
-    if err != nil {
-        return fmt.Errorf("error creando variable '%s' de tipo '%s': %w", nombre, tipo, err)
-    }
+        // Soportar múltiples nombres: "x,y,z"
+        nombres := strings.Split(n.Nombre, ",")
+        for i := range nombres {
+            nombres[i] = strings.TrimSpace(nombres[i])
+            if !esNombreValido(nombres[i]) {
+                fmt.Printf("⚠️ Nombre de variable inválido: %s\n", nombres[i])
+                return
+            }
+        }
 
-    administrador.RegistrarVariable(nombre, v)
-    fmt.Printf("✔ Variable creada: %s\n", v.Mostrar())
-    return nil
+        // Buscar constructor del tipo (universal: hoy puede existir solo 'bit')
+        constructor, ok := administrador.Constructores[tipo]
+        if !ok {
+            fmt.Printf("⚠️ Tipo de variable no implementado: %s (omitido)\n", tipo)
+            return
+        }
+
+        // Crear y registrar cada variable
+        for _, nombre := range nombres {
+            v, err := constructor(nombre, n.Valor)
+            if err != nil {
+                fmt.Printf("⚠️ Error creando variable '%s' (%s): %v\n", nombre, tipo, err)
+                continue
+            }
+            administrador.RegistrarVariable(nombre, v)
+            fmt.Printf("✔ Variable creada: %s\n", v.Mostrar())
+        }
+    })
 }
