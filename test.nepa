@@ -1,15 +1,20 @@
 # Hola Mundo
-imprimir("hola mundo")
-variable bit a := 1
-variable bit b := 0
+imprimir("--- Test de Tipos ---")
 
-asignar a, b := 1
+variable entero edad := 25
+variable real n_pi := 3.14159
+variable real radio := 10.5
+variable real area
 
-a := 0
-b := a
+# Operación mixta (si ya tienes implementado multiplicar y potencia)
+# area := multiplicar(pi, potencia(radio, 2))
 
-#test 1
-variable bit w,x,y,z := 1
+imprimir("Edad:")
+imprimir(edad)
+imprimir("Área:")
+imprimir(area)
 
-#test 2 deberia deffecto a 0
-variable bit t,r,q,m
+# Test de seguridad (inicialización nula)
+variable real vacio
+imprimir("Variable vacía (debe ser 0.0):")
+imprimir(vacio)
