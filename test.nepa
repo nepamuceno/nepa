@@ -1,2 +1,11 @@
 # Hola Mundo
 imprimir("hola mundo")
+variable bit a := 1
+variable bit b := 0
+
+asignar a, b := 1
+
+a := 0
+b := a
+
+asignar bit a,b,c,d := 1

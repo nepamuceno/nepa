@@ -37,27 +37,3 @@ func parseVariable(linea string) *Nodo {
         Args:   []interface{}{tipo},
     }
 }
-
-// parseAsignar: universal, solo := (regla Nepa)
-// Ejemplos:
-//   asignar a := 1
-//   a := 1
-//   a := b
-func parseAsignar(linea string) *Nodo {
-    if !strings.Contains(linea, ":=") {
-        return nil
-    }
-    linea = strings.TrimPrefix(linea, "asignar ")
-    partes := strings.SplitN(linea, ":=", 2)
-    if len(partes) != 2 {
-        return nil
-    }
-    nombre := strings.TrimSpace(partes[0])
-    valor := strings.TrimSpace(partes[1])
-
-    return &Nodo{
-        Tipo:   "asignar",
-        Nombre: nombre,
-        Valor:  parseValor(valor),
-    }
-}

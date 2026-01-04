@@ -37,7 +37,7 @@ make install
 ```
 bash compila.sh
 ```
-El binario estara en dist/bin/nepa
+El binario estara en ###dist/bin/nepa###
 
 ## 📂 Uso: 
 ```

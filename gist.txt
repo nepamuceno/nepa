@@ -1,7 +1,7 @@
 /home/deb/nepa/README.md:
-# Nepa
+# **nepa**
 
-**Nepa** es un lenguaje de programación **nuevo y experimental**, acompañado de su propio intérprete escrito en **Go**.  
+**nepa** es un lenguaje de programación **nuevo y experimental**, acompañado de su propio intérprete escrito en **Go**.  
 Su diseño se inspira en la claridad estructurada de lenguajes modernos como Python, pero con una identidad única: utiliza **acrónimos y palabras reservadas en español** en lugar de inglés, creando una experiencia más cercana y accesible.
 
 ---
@@ -25,21 +25,49 @@ Su diseño se inspira en la claridad estructurada de lenguajes modernos como Pyt
 
 ---
 
+## 📂 Instalacion
+Compilar e instalar **nepa** es sencillo. Existen dos formas principales: 
+
+### 🔨 Usando `make`
+```
+make
+make install
+```
+### 🔨 Usando `compila.sh`
+
+```
+bash compila.sh
+```
+El binario estara en ###dist/bin/nepa###
+
+## 📂 Uso: 
+```
+./dist/bin/nepa <programa.nepa>
+```
+### 📂 Ejemplo:
+```
+echo -e '#Ejemplo Hola Mundo\nimprimir("Hola Mundo")' > holamundo.nepa
+./dist/bin/nepa holamundo.nepa
+Hola Mundo
+```
+
+---
+
 ## 🚀 Objetivo
-El objetivo de Nepa es servir como base para un **lenguaje modular en español**, fácil de extender y mantener, que permita experimentar con nuevas ideas de sintaxis y ejecución.  
+El objetivo de **nepa** es servir como base para un **lenguaje modular en español**, fácil de extender y mantener, que permita experimentar con nuevas ideas de sintaxis y ejecución.  
 Es un proyecto en evolución, pensado para crecer paso a paso y dejar siempre espacio para futuras expansiones.
 
 ---
 
 ## 🌱 Filosofía
-Nepa busca ser un **laboratorio de ideas**:  
+**nepa** busca ser un **laboratorio de ideas**:  
 - Simple en el presente, para que cualquiera pueda probarlo.  
 - Modular y estructurado, para que sea mantenible.  
 - Con identidad propia en español, para demostrar que los lenguajes de programación también pueden hablar nuestro idioma.  
 
 ---
 
-💡 *Nepa es más que un intérprete: es una propuesta experimental para imaginar cómo podrían ser los lenguajes del futuro, diseñados desde nuestra lengua y cultura.*
+💡 * **nepa** es más que un intérprete: es una propuesta experimental para imaginar cómo podrían ser los lenguajes del futuro, diseñados desde nuestra lengua y cultura.*
 
 
 
@@ -57,6 +85,9 @@ import (
     "nepa/desarrollo/interno/parser"
     "nepa/desarrollo/interno/evaluador"
     "nepa/desarrollo/interno/modulos"
+
+    // 🔑 Importar todos los comandos de una sola vez
+    _ "nepa/desarrollo/comandos"
 )
 
 // Mapas globales y constantes compartidos por todos los programas
@@ -67,7 +98,7 @@ var Constantes = map[string]interface{}{}
 func EjecutarPrograma(archivo string, args map[string]interface{}) (map[string]interface{}, error) {
     f, err := os.Open(archivo)
     if err != nil {
-        return nil, core.NewError(archivo, 0, fmt.Sprintf("No se pudo abrir archivo: %v", err))
+        return nil, core.ErrorEjecucion{Archivo: archivo, Linea: 0, Mensaje: fmt.Sprintf("No se pudo abrir archivo: %v", err)}
     }
     defer f.Close()
 
@@ -87,19 +118,19 @@ func EjecutarPrograma(archivo string, args map[string]interface{}) (map[string]i
         }
 
         if err := sintaxis.ValidarLinea(linea, lineaNum, archivo); err != nil {
-            return nil, core.NewError(archivo, lineaNum, err.Error())
+            return nil, core.ErrorEjecucion{Archivo: archivo, Linea: lineaNum, Mensaje: err.Error()}
         }
 
         lineas = append(lineas, linea)
     }
 
     if err := scanner.Err(); err != nil {
-        return nil, core.NewError(archivo, 0, fmt.Sprintf("Error leyendo archivo: %v", err))
+        return nil, core.ErrorEjecucion{Archivo: archivo, Linea: 0, Mensaje: fmt.Sprintf("Error leyendo archivo: %v", err)}
     }
 
     ast := parser.Parse(lineas)
 
-    resultados, err := evaluador.EjecutarConContexto(ast, args, Globales, Constantes)
+    resultados, err := evaluador.EjecutarConContexto(ast, args, Globales, Constantes, archivo)
     if err != nil {
         if solicitud, ok := err.(evaluador.SolicitudEjecutar); ok {
             subArgs := map[string]interface{}{}
@@ -109,7 +140,8 @@ func EjecutarPrograma(archivo string, args map[string]interface{}) (map[string]i
             }
             return EjecutarPrograma(solicitud.Archivo, subArgs)
         }
-        return nil, core.NewError(archivo, 0, err.Error())
+        // ✅ No envolver de nuevo, devolver tal cual
+        return nil, err
     }
 
     for k, v := range resultados {
@@ -163,7 +195,7 @@ func main() {
 
     resultados, err := EjecutarPrograma(archivo, args)
     if err != nil {
-        fmt.Println(err)
+        fmt.Println(err) // ✅ ya formateado por ErrorEjecucion
         os.Exit(1)
     }
 
@@ -198,69 +230,200 @@ func main() {
 
 
 /home/deb/nepa/desarrollo/interno/sintaxis/sintaxis.go:
-package sintaxis
+package parser
 
 import (
-    "fmt"
+    "strconv"
     "strings"
-
-    "nepa/desarrollo/interno/bloque"
 )
 
-// ValidarLinea revisa una línea de código y devuelve error si hay problema
-func ValidarLinea(linea string, num int, archivo string) error {
-    l := strings.TrimSpace(linea)
-    if l == "" {
-        return nil
+// Nodo representa un elemento del AST
+type Nodo struct {
+    Tipo   string        // variable, global, constante, llamada, bloque, expresion, asignar
+    Nombre string        // nombre de variable o función
+    Valor  interface{}   // valor literal o expresión
+    Args   []interface{} // argumentos de llamadas o metadatos (ej. tipo de variable)
+}
+
+// Parse convierte líneas validadas en un AST
+func Parse(lineas []string) []Nodo {
+    var ast []Nodo
+
+    for _, linea := range lineas {
+        linea = strings.TrimSpace(linea)
+        if linea == "" || strings.HasPrefix(linea, "#") {
+            continue
+        }
+
+        tokens := strings.Fields(linea)
+        if len(tokens) == 0 {
+            continue
+        }
+        token := tokens[0]
+
+        // --- Caso especial: si_es ---
+        if token == "si_es" {
+            if strings.HasSuffix(linea, ":") {
+                ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
+            } else {
+                ast = append(ast, Nodo{Tipo: "expresion", Valor: parseValor(linea)})
+            }
+            continue
+        }
+
+        // --- Bloques generales ---
+        if strings.HasSuffix(linea, ":") {
+            ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
+            continue
+        }
+
+        // --- Globales ---
+        if nodo := parseGlobal(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Constantes ---
+        if nodo := parseConst(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Variables ---
+        if nodo := parseVariable(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Asignaciones ---
+        if nodo := parseAsignar(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Llamadas ---
+        if nodo := parseLlamada(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Expresión suelta ---
+        ast = append(ast, Nodo{Tipo: "expresion", Valor: parseValor(linea)})
     }
 
-    // Validar que no use palabras reservadas como variables
-    for _, palabra := range bloque.PalabrasReservadas {
-        if strings.HasPrefix(l, palabra+" ") || strings.HasPrefix(l, palabra+"=") {
-            return fmt.Errorf("Uso inválido de palabra reservada '%s' en %s línea %d", palabra, archivo, num)
+    return ast
+}
+
+// --- Funciones auxiliares ---
+
+func parseGlobal(linea string) *Nodo {
+    if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("global "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "global", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
         }
     }
-
-    // Validar bloques reservados (ejemplo: "si", "para", etc.)
-    for _, b := range bloque.BloquesReservados {
-        if strings.HasPrefix(l, b) && !strings.HasSuffix(l, ":") {
-            return fmt.Errorf("Bloque '%s' en %s línea %d requiere ':' al final", b, archivo, num)
-        }
-    }
-
-    // Validar paréntesis balanceados
-    if strings.Count(l, "(") != strings.Count(l, ")") {
-        return fmt.Errorf("Paréntesis desbalanceados en %s línea %d", archivo, num)
-    }
-
-    // Validar comillas balanceadas
-    if strings.Count(l, "\"")%2 != 0 {
-        return fmt.Errorf("Comillas desbalanceadas en %s línea %d", archivo, num)
-    }
-
     return nil
 }
 
-// EsReservada indica si una palabra es reservada en Nepa
-func EsReservada(p string) bool {
-    for _, r := range bloque.PalabrasReservadas {
-        if p == r {
-            return true
+func parseConst(linea string) *Nodo {
+    if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("const "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "constante", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
         }
     }
-    for _, r := range bloque.BloquesReservados {
-        if p == r {
-            return true
+    return nil
+}
+
+func parseLlamada(linea string) *Nodo {
+    if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
+        fn := strings.TrimSpace(linea[:strings.Index(linea, "(")])
+        args := extraerArgs(linea)
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    if strings.Contains(linea, " ") {
+        partes := strings.SplitN(linea, " ", 2)
+        fn := strings.TrimSpace(partes[0])
+        resto := strings.TrimSpace(partes[1])
+        args := []interface{}{}
+        for _, p := range strings.Split(resto, ",") {
+            arg := strings.TrimSpace(p)
+            if arg != "" {
+                args = append(args, parseValor(arg))
+            }
+        }
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    return nil
+}
+
+// --- Utilidades ---
+
+func extraerArgs(linea string) []interface{} {
+    ini := strings.Index(linea, "(")
+    fin := strings.LastIndex(linea, ")")
+    if ini == -1 || fin == -1 || fin <= ini {
+        return nil
+    }
+    contenido := linea[ini+1 : fin]
+    partes := strings.Split(contenido, ",")
+    var args []interface{}
+    for _, p := range partes {
+        arg := strings.TrimSpace(p)
+        if arg != "" {
+            args = append(args, parseValor(arg))
         }
     }
-    return false
+    return args
+}
+
+func parseValor(raw string) interface{} {
+    if raw == "true" {
+        return true
+    }
+    if raw == "false" {
+        return false
+    }
+    if raw == "nulo" {
+        return nil
+    }
+    if i, err := strconv.Atoi(raw); err == nil {
+        return i
+    }
+    if f, err := strconv.ParseFloat(raw, 64); err == nil {
+        return f
+    }
+    if strings.HasPrefix(raw, "\"") && strings.HasSuffix(raw, "\"") {
+        return strings.Trim(raw, "\"")
+    }
+    if strings.HasPrefix(raw, "'") && strings.HasSuffix(raw, "'") {
+        contenido := strings.Trim(raw, "'")
+        if len(contenido) == 1 {
+            return rune(contenido[0])
+        }
+        return contenido
+    }
+    if strings.HasPrefix(raw, "[") && strings.HasSuffix(raw, "]") {
+        contenido := strings.Trim(raw, "[]")
+        partes := strings.Split(contenido, ",")
+        var lista []interface{}
+        for _, p := range partes {
+            val := strings.TrimSpace(p)
+            if val != "" {
+                lista = append(lista, parseValor(val))
+            }
+        }
+        return lista
+    }
+    // Si no coincide con literal, se devuelve tal cual (posible nombre de variable)
+    return raw
 }
 
 
 
 
 /home/deb/nepa/desarrollo/interno/administrador/variables_administrador.go:
-// desarrollo/interno/administrador/variables_administrador.go
 package administrador
 
 import (
@@ -270,8 +433,7 @@ import (
 )
 
 // Interfaz común que todos los tipos deben implementar.
-// Ya la definimos en bit.go, pero lo ideal es centralizarla aquí
-// para que todos los tipos la importen desde este paquete.
+// Todos los paquetes de variables deben importar esta interfaz.
 type Variable interface {
     Nombre() string
     Tipo() string
@@ -281,7 +443,7 @@ type Variable interface {
     AsignarDesdeInterface(v interface{}) error
     ValorComoInterface() interface{}
 
-    // Conversiones básicas
+    // Conversiones básicas universales
     ABooleano() (bool, error)
     AEntero() (int, error)
     AReal() (float64, error)
@@ -303,10 +465,42 @@ var mu sync.RWMutex
 // Registro de constructores: tipo → función(nombre, valor) → Variable
 var Constructores = make(map[string]func(string, interface{}) (Variable, error))
 
-// RegistrarConstructor permite añadir nuevos tipos al ecosistema.
+// RegistrarConstructor permite añadir un nuevo tipo al ecosistema.
 // Ejemplo: administrador.RegistrarConstructor("bit", bit.CrearBit)
 func RegistrarConstructor(tipo string, f func(string, interface{}) (Variable, error)) {
     Constructores[tipo] = f
+}
+
+// RegistrarConstructores permite inyectar múltiples tipos de una sola vez.
+// Ejemplo:
+// administrador.RegistrarConstructores(map[string]func(string, interface{}) (Variable, error){
+//     "bit":    bit.CrearBit,
+//     "entero": entero.CrearEntero,
+// })
+func RegistrarConstructores(mapa map[string]func(string, interface{}) (Variable, error)) {
+    for tipo, f := range mapa {
+        Constructores[tipo] = f
+    }
+}
+
+// CrearVariableUniversal crea una variable de cualquier tipo registrado.
+// Si el constructor no existe, retorna ErrConstructorNoExiste.
+func CrearVariableUniversal(tipo, nombre string, valor interface{}) (Variable, error) {
+    mu.Lock()
+    defer mu.Unlock()
+    if _, existe := tabla[nombre]; existe {
+        return nil, ErrVariableYaExiste
+    }
+    constructor, ok := Constructores[tipo]
+    if !ok {
+        return nil, ErrConstructorNoExiste
+    }
+    v, err := constructor(nombre, valor)
+    if err != nil {
+        return nil, fmt.Errorf("error creando variable '%s' de tipo '%s': %w", nombre, tipo, err)
+    }
+    tabla[nombre] = v
+    return v, nil
 }
 
 // RegistrarVariable guarda una variable en la tabla global.
@@ -377,33 +571,44 @@ func ListarVariables() []Variable {
 
 
 
+/home/deb/nepa/desarrollo/interno/bloque/comandos_permitidos.go:
+package bloque
+
+var ComandosPrimitivos = []string{
+    "asignar",   // asignación de variables
+    "variable",  // declaración de variables
+    "imprimir",  // salida estándar
+    "ejecutar",  // invocar otro programa .nepa
+    "ayuda",     // sistema de ayuda/documentación
+    "global",    // variables compartidas
+    "constante", // constantes inmutables
+}
+
+
+
+
 /home/deb/nepa/desarrollo/interno/bloque/bloques-reservados.go:
 package bloque
 
-// BloquesReservados contiene todas las sentencias que abren bloques en Nepa.
-// Se usan en sintaxis.go para validar que terminen con ":" y tengan indentación correcta.
 var BloquesReservados = []string{
     // --- Control de flujo ---
-    "si",        // bloque condicional
-    "sino",      // bloque alternativo
+    "si_es", "si_no", "opcion_en", "entonces",
 
     // --- Bucles ---
-    "mientras",  // loop mientras condición sea verdadera
-    "para",      // loop universal (rangos, listas, strings, mapas, iteradores)
+    "mientras", "para", "por_cada", "hasta",
+    "desde", "incremento",
 
     // --- Definiciones ---
-    "funcion",   // definición de funciones
-    "modulo",    // definición de módulos / librerías
+    "funcion", "modulo", "clase", "estructura", "interfaz",
 
-    // --- Manejo de errores / excepciones ---
-    "intentar",   // bloque de manejo de excepciones (antes try)
-    "capturar",   // bloque para capturar errores (antes catch)
-    "finalmente", // bloque de limpieza tras intentar/capturar (antes finally)
+    // --- Manejo de errores ---
+    "intentar", "capturar", "finalmente",
 
-    // --- Otros bloques previstos ---
-    "clase",      // definición de clases (futuro)
-    "estructura", // definición de estructuras (futuro)
-    "ayuda",      // bloque/llamada especial para sistema de ayuda
+    // --- Concurrencia / asincronía ---
+    "async", "esperar", "concurrente",
+
+    // --- Contextos especiales ---
+    "usar", "transaccion",
 }
 
 
@@ -412,103 +617,44 @@ var BloquesReservados = []string{
 /home/deb/nepa/desarrollo/interno/bloque/palabras-reservados.go:
 package bloque
 
-// PalabrasReservadas contiene todas las palabras reservadas globales del lenguaje Nepa.
-// Se usan en sintaxis.go para validar que no se asignen ni se redefinan.
 var PalabrasReservadas = []string{
-    // --- Control de flujo ---
-    "si",
-    "sino",
-    "mientras",
-    "para",
-
-    // --- Definiciones y módulos ---
-    "funcion",
-    "modulo",
-    "retornar",
-    "importar",
-
-    // --- Sintaxis de bucles ---
-    "desde",
-    "hasta",
-    "incremento",
-
     // --- Operadores lógicos ---
-    "and",
-    "or",
-    "not",
+    "y_es", "o_es", "no_es",
 
-    // --- Constantes matemáticas y físicas nativas ---
-    "pi",       // π
-    "e",        // número de Euler
-    "phi",      // número áureo
-    "gravedad", // aceleración de la gravedad
-    "c",        // velocidad de la luz
-    "h",        // constante de Planck
-    "k",        // constante de Boltzmann
+    // --- Constantes matemáticas y físicas ---
+    "pi", "euler", "phi", "gravedad", "luz", "planck", "boltzmann",
 
     // --- Literales especiales ---
-    "true",
-    "false",
-    "nulo",
+    "verdadero", "falso", "nulo",
 
-    // --- Funciones matemáticas básicas (core_math.go) ---
-    "abs",
-    "sqrt",
-    "pow",
-    "exp",
-    "log",
-    "log10",
-    "sin",
-    "cos",
-    "tan",
-    "asin",
-    "acos",
-    "atan",
-    "sinh",
-    "cosh",
-    "tanh",
+    // --- Funciones matemáticas internas ---
+    "abs", "raiz", "potencia", "exp", "log", "log10",
+    "seno", "coseno", "tangente", "arcseno", "arccoseno", "arctan",
+    "senh", "cosh", "tanh",
 
     // --- Estadística ---
-    "media",
-    "mediana",
-    "moda",
-    "varianza",
-    "desviacion",
-    "max",
-    "min",
+    "media", "mediana", "moda", "varianza", "desviacion",
+    "maximo", "minimo",
 
     // --- Física ---
-    "energia",
-    "trabajo",
-    "potencia",
-    "densidad",
-    "presion",
-    "fuerza",
-    "momento",
-    "impulso",
+    "energia", "trabajo", "densidad", "presion", "fuerza",
+    "momento", "impulso",
 
     // --- Finanzas ---
-    "interes_simple",
-    "interes_compuesto",
-    "valor_presente",
-    "valor_futuro",
+    "interes_simple", "interes_compuesto", "valor_presente", "valor_futuro",
 
-    // --- Bitwise ---
-    "bit_and",
-    "bit_or",
-    "bit_xor",
-    "bit_not",
-    "bit_shift_left",
-    "bit_shift_right",
+    // --- Operaciones bit a bit ---
+    "bit_y", "bit_o", "bit_xor", "bit_no",
+    "bit_desplazar_izq", "bit_desplazar_der",
 
-    // --- Primitivas del lenguaje ---
-    "imprimir", // salida estándar
-    "ejecutar", // invocar otro programa .nepa
-    "ayuda",    // sistema de ayuda/documentación
+    // --- Tipos de variables ---
+    "entero", "decimal", "binario", "cadena",
+    "booleano", "lista", "mapa", "objeto",
 
-    // --- Definiciones de espacio ---
-    "global",   // variables compartidas
-    "const",    // constantes inmutables
+    // --- Manejo de cadenas (futuro) ---
+    "sin_espacio", "espacios_izquierda", "espacios_derecha",
+    "mayusculas", "minusculas", "longitud",
+    "subcadena", "reemplazar", "dividir", "unir",
 }
 
 
@@ -553,14 +699,27 @@ func evalNode(node ast.Expr) (interface{}, error) {
     case *ast.Ident:
         return evalIdent(n)
     case *ast.UnaryExpr:
-        return evalUnario(n)   // antes evalUnary
+        return evalUnario(n)   // ✅ nombre en español
     case *ast.BinaryExpr:
-        return evalBinario(n)  // antes evalBinary
+        return evalBinario(n)  // ✅ nombre en español
     case *ast.CallExpr:
-        return evalLlamada(n)  // antes evalCall
+        return evalLlamada(n)  // ✅ nombre en español
     default:
         return nil, ErrExpresionInvalida
     }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/formateo.go:
+package evaluador
+
+import "fmt"
+
+// FormatearValor convierte un valor a cadena para mostrarlo en main.go
+func FormatearValor(v interface{}) string {
+    return fmt.Sprintf("%v", v)
 }
 
 
@@ -610,17 +769,6 @@ var Funciones = map[string]func(args ...interface{}) (interface{}, error){
         return m, nil
     },
 
-    "seno": func(args ...interface{}) (interface{}, error) {
-        if len(args) != 1 {
-            return nil, errors.New("seno(x) requiere 1 argumento")
-        }
-        f, err := ConvertirAReal(args[0])
-        if err != nil {
-            return nil, err
-        }
-        return AproximarSeno(f), nil
-    },
-
     // --- Métodos sobre cadenas ---
     "cadena.convertir_caracter": func(args ...interface{}) (interface{}, error) {
         if len(args) < 1 {
@@ -630,7 +778,6 @@ var Funciones = map[string]func(args ...interface{}) (interface{}, error){
         if !ok {
             return nil, errors.New("primer argumento no es una cadena")
         }
-        // Ejemplo simple: convertir a mayúsculas
         return strings.ToUpper(s), nil
     },
 
@@ -653,6 +800,7 @@ var Funciones = map[string]func(args ...interface{}) (interface{}, error){
 package evaluador
 
 import (
+    "errors"
     "go/ast"
     "go/token"
     "strconv"
@@ -660,31 +808,70 @@ import (
 )
 
 // evalLiteral maneja literales básicos: enteros, reales, cadenas y caracteres.
-// Se invoca desde el dispatcher en evaluador.go cuando el nodo es *ast.BasicLit.
+// Se invoca desde el despachador en evaluador.go cuando el nodo es *ast.BasicLit.
 func evalLiteral(n *ast.BasicLit) (interface{}, error) {
     switch n.Kind {
     case token.INT:
-        // Ejemplo: 42
-        return strconv.Atoi(n.Value)
+        valor, err := strconv.Atoi(n.Value)
+        if err != nil {
+            return nil, errors.New("❌ ERROR FATAL: entero inválido → " + n.Value)
+        }
+        return valor, nil
 
     case token.FLOAT:
-        // Ejemplo: 3.14
-        return strconv.ParseFloat(n.Value, 64)
+        valor, err := strconv.ParseFloat(n.Value, 64)
+        if err != nil {
+            return nil, errors.New("❌ ERROR FATAL: número real inválido → " + n.Value)
+        }
+        return valor, nil
 
     case token.STRING:
-        // Ejemplo: "hola mundo"
-        // Se eliminan las comillas y se procesan escapes básicos (\n, \t, \", etc.)
         raw := strings.Trim(n.Value, `"`)
         return desescaparCadena(raw), nil
 
     case token.CHAR:
-        // Ejemplo: 'a'
-        raw := strings.Trim(n.Value, `'`)
-        return raw, nil
+        raw := strings.TrimSpace(strings.Trim(n.Value, `'`))
+        if len(raw) != 1 {
+            return nil, errors.New("❌ ERROR FATAL: carácter inválido → " + n.Value)
+        }
+        return rune(raw[0]), nil
 
     default:
-        return nil, ErrTipoNoSoportado
+        // Aquí usamos ErrTipoNoSoportado definido en evaluador.go
+        return nil, errors.New(ErrTipoNoSoportado.Error() + " → " + n.Kind.String())
     }
+}
+
+// desescaparCadena procesa secuencias de escape comunes en cadenas
+func desescaparCadena(s string) string {
+    reemplazos := map[string]string{
+        `\n`: "\n",
+        `\t`: "\t",
+        `\"`: `"`,
+        `\\`: `\`,
+        `\r`: "\r",
+        `\b`: "\b",
+        `\f`: "\f",
+    }
+    resultado := s
+    for k, v := range reemplazos {
+        resultado = strings.ReplaceAll(resultado, k, v)
+    }
+    return resultado
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/contexto.go:
+package evaluador
+
+// Contexto representa el entorno de ejecución del intérprete.
+type Contexto struct {
+    Variables  map[string]interface{}                       // Variables locales
+    Globales   map[string]interface{}                       // Variables globales
+    Constantes map[string]interface{}                       // Constantes definidas
+    Funciones  map[string]func(...interface{}) interface{}  // Funciones registradas
 }
 
 
@@ -694,20 +881,22 @@ func evalLiteral(n *ast.BasicLit) (interface{}, error) {
 package evaluador
 
 import (
-    "fmt"
+    "errors"
     "go/ast"
     "strings"
 
-    "nepa/interno/administrador"
+    "nepa/desarrollo/interno/administrador"
+
 )
 
-var ErrIdentificadorNoExiste = fmt.Errorf("identificador no existe")
+// Error específico para identificadores inexistentes
+var ErrIdentificadorNoExiste = errors.New("❌ ERROR FATAL: el identificador no existe")
 
 // evalIdent maneja identificadores:
 // - verdadero / falso → booleanos
 // - nombres de variables registrados en el administrador
 func evalIdent(n *ast.Ident) (interface{}, error) {
-    nombre := strings.ToLower(n.Name)
+    nombre := strings.ToLower(strings.TrimSpace(n.Name))
 
     switch nombre {
     case "verdadero":
@@ -717,7 +906,7 @@ func evalIdent(n *ast.Ident) (interface{}, error) {
     default:
         v, err := administrador.ObtenerVariable(nombre)
         if err != nil {
-            return nil, fmt.Errorf("%w: %s", ErrIdentificadorNoExiste, nombre)
+            return nil, errors.New(ErrIdentificadorNoExiste.Error() + " → " + nombre)
         }
         return v.ValorComoInterface(), nil
     }
@@ -736,7 +925,7 @@ import (
     "go/token"
 )
 
-// evalBinario maneja operaciones binarias (+, -, *, /, %, concatenación).
+// evalBinario maneja operaciones binarias (+, -, *, /, %, concatenación, comparaciones, lógicas).
 func evalBinario(n *ast.BinaryExpr) (interface{}, error) {
     izquierda, err := evalNode(n.X)
     if err != nil {
@@ -761,51 +950,21 @@ func aplicarOperacion(op token.Token, izquierda, derecha interface{}) (interface
             return fmt.Sprint(izquierda) + rs, nil
         }
         // Suma numérica
-        li, err := ConvertirAReal(izquierda)
-        if err != nil {
-            return nil, err
-        }
-        ri, err := ConvertirAReal(derecha)
-        if err != nil {
-            return nil, err
-        }
-        return li + ri, nil
+        return operarNumeros(izquierda, derecha, func(a, b float64) float64 { return a + b })
 
     case token.SUB:
-        li, err := ConvertirAReal(izquierda)
-        if err != nil {
-            return nil, err
-        }
-        ri, err := ConvertirAReal(derecha)
-        if err != nil {
-            return nil, err
-        }
-        return li - ri, nil
+        return operarNumeros(izquierda, derecha, func(a, b float64) float64 { return a - b })
 
     case token.MUL:
-        li, err := ConvertirAReal(izquierda)
-        if err != nil {
-            return nil, err
-        }
-        ri, err := ConvertirAReal(derecha)
-        if err != nil {
-            return nil, err
-        }
-        return li * ri, nil
+        return operarNumeros(izquierda, derecha, func(a, b float64) float64 { return a * b })
 
     case token.QUO:
-        li, err := ConvertirAReal(izquierda)
-        if err != nil {
-            return nil, err
-        }
-        ri, err := ConvertirAReal(derecha)
-        if err != nil {
-            return nil, err
-        }
-        if ri == 0 {
-            return nil, errors.New("división por cero")
-        }
-        return li / ri, nil
+        return operarNumerosConValidacion(izquierda, derecha, func(a, b float64) (float64, error) {
+            if b == 0 {
+                return 0, errors.New("❌ ERROR FATAL: división por cero")
+            }
+            return a / b, nil
+        })
 
     case token.REM:
         li, err := ConvertirAReal(izquierda)
@@ -817,13 +976,80 @@ func aplicarOperacion(op token.Token, izquierda, derecha interface{}) (interface
             return nil, err
         }
         if int(ri) == 0 {
-            return nil, errors.New("módulo por cero")
+            return nil, errors.New("❌ ERROR FATAL: módulo por cero")
         }
         return float64(int(li) % int(ri)), nil
 
+    // Comparaciones
+    case token.EQL:
+        return izquierda == derecha, nil
+    case token.NEQ:
+        return izquierda != derecha, nil
+    case token.LSS:
+        return compararNumeros(izquierda, derecha, func(a, b float64) bool { return a < b })
+    case token.GTR:
+        return compararNumeros(izquierda, derecha, func(a, b float64) bool { return a > b })
+    case token.LEQ:
+        return compararNumeros(izquierda, derecha, func(a, b float64) bool { return a <= b })
+    case token.GEQ:
+        return compararNumeros(izquierda, derecha, func(a, b float64) bool { return a >= b })
+
+    // Operadores lógicos
+    case token.LAND:
+        li, lok := izquierda.(bool)
+        ri, rok := derecha.(bool)
+        if !lok || !rok {
+            return nil, errors.New("❌ ERROR FATAL: operador lógico requiere valores booleanos")
+        }
+        return li && ri, nil
+    case token.LOR:
+        li, lok := izquierda.(bool)
+        ri, rok := derecha.(bool)
+        if !lok || !rok {
+            return nil, errors.New("❌ ERROR FATAL: operador lógico requiere valores booleanos")
+        }
+        return li || ri, nil
+
     default:
-        return nil, ErrExpresionInvalida
+        return nil, errors.New("❌ ERROR FATAL: expresión binaria inválida")
     }
+}
+
+// Helpers para evitar duplicación
+func operarNumeros(izquierda, derecha interface{}, op func(a, b float64) float64) (float64, error) {
+    li, err := ConvertirAReal(izquierda)
+    if err != nil {
+        return 0, err
+    }
+    ri, err := ConvertirAReal(derecha)
+    if err != nil {
+        return 0, err
+    }
+    return op(li, ri), nil
+}
+
+func operarNumerosConValidacion(izquierda, derecha interface{}, op func(a, b float64) (float64, error)) (float64, error) {
+    li, err := ConvertirAReal(izquierda)
+    if err != nil {
+        return 0, err
+    }
+    ri, err := ConvertirAReal(derecha)
+    if err != nil {
+        return 0, err
+    }
+    return op(li, ri)
+}
+
+func compararNumeros(izquierda, derecha interface{}, cmp func(a, b float64) bool) (bool, error) {
+    li, err := ConvertirAReal(izquierda)
+    if err != nil {
+        return false, err
+    }
+    ri, err := ConvertirAReal(derecha)
+    if err != nil {
+        return false, err
+    }
+    return cmp(li, ri), nil
 }
 
 
@@ -832,19 +1058,37 @@ func aplicarOperacion(op token.Token, izquierda, derecha interface{}) (interface
 /home/deb/nepa/desarrollo/interno/evaluador/ayudantes.go:
 package evaluador
 
-import "strconv"
+import (
+    "errors"
+    "strconv"
+)
 
 // ConvertirAReal convierte cualquier valor a float64 para cálculos universales.
+// Se usa en todo el intérprete para evitar duplicación de lógica (sustituye a matematicas/toFloat).
 func ConvertirAReal(v interface{}) (float64, error) {
     switch x := v.(type) {
     case int:
         return float64(x), nil
+    case int32:
+        return float64(x), nil
     case int64:
+        return float64(x), nil
+    case uint:
+        return float64(x), nil
+    case uint32:
+        return float64(x), nil
+    case uint64:
+        return float64(x), nil
+    case float32:
         return float64(x), nil
     case float64:
         return x, nil
     case string:
-        return strconv.ParseFloat(x, 64)
+        f, err := strconv.ParseFloat(x, 64)
+        if err != nil {
+            return 0, errors.New("❌ ERROR FATAL: no se pudo convertir la cadena a número → " + x)
+        }
+        return f, nil
     case bool:
         if x {
             return 1, nil
@@ -871,7 +1115,6 @@ import (
 func evalLlamada(n *ast.CallExpr) (interface{}, error) {
     switch fn := n.Fun.(type) {
     case *ast.Ident:
-        // Función global: suma(a,b), max(a,b), etc.
         nombreFuncion := strings.ToLower(fn.Name)
         argumentos, err := evalArgs(n.Args)
         if err != nil {
@@ -879,12 +1122,11 @@ func evalLlamada(n *ast.CallExpr) (interface{}, error) {
         }
         f, ok := Funciones[nombreFuncion]
         if !ok {
-            return nil, fmt.Errorf("%w: %s", ErrFuncionNoExiste, nombreFuncion)
+            return nil, fmt.Errorf("%w → %s", ErrFuncionNoExiste, nombreFuncion)
         }
         return f(argumentos...)
 
     case *ast.SelectorExpr:
-        // Método sobre objeto: "texto".convertir_caracter(...)
         objeto, err := evalNode(fn.X)
         if err != nil {
             return nil, err
@@ -894,13 +1136,12 @@ func evalLlamada(n *ast.CallExpr) (interface{}, error) {
         if err != nil {
             return nil, err
         }
-        // Clave: tipo.metodo → ej: cadena.convertir_caracter
         tipo := tipoEnEspañol(objeto)
         clave := fmt.Sprintf("%s.%s", tipo, nombreMetodo)
         if f, ok := Funciones[clave]; ok {
             return f(append([]interface{}{objeto}, argumentos...)...)
         }
-        return nil, fmt.Errorf("%w: método %s no existe para tipo %s", ErrFuncionNoExiste, nombreMetodo, tipo)
+        return nil, fmt.Errorf("%w → método %s no existe para tipo %s", ErrFuncionNoExiste, nombreMetodo, tipo)
 
     default:
         return nil, ErrFuncionNoExiste
@@ -936,7 +1177,7 @@ func tipoEnEspañol(v interface{}) string {
     case []interface{}:
         return "lista"
     default:
-        return fmt.Sprintf("%T", v)
+        return "objeto"
     }
 }
 
@@ -947,6 +1188,7 @@ func tipoEnEspañol(v interface{}) string {
 package evaluador
 
 import (
+    "errors"
     "go/ast"
     "go/token"
 )
@@ -954,6 +1196,7 @@ import (
 // evalUnario maneja expresiones unarias:
 // - +x → devuelve el valor numérico positivo
 // - -x → devuelve el valor numérico negado
+// - !x → devuelve la negación lógica booleana
 func evalUnario(n *ast.UnaryExpr) (interface{}, error) {
     valor, err := evalNode(n.X)
     if err != nil {
@@ -962,16 +1205,120 @@ func evalUnario(n *ast.UnaryExpr) (interface{}, error) {
 
     switch n.Op {
     case token.ADD: // +x
-        return ConvertirAReal(valor) // antes ToFloat64
+        return ConvertirAReal(valor)
+
     case token.SUB: // -x
         f, err := ConvertirAReal(valor)
         if err != nil {
             return nil, err
         }
         return -f, nil
+
+    case token.NOT: // !x
+        b, ok := valor.(bool)
+        if !ok {
+            return nil, errors.New("❌ ERROR FATAL: operador lógico '!' requiere un valor booleano")
+        }
+        return !b, nil
+
     default:
-        return nil, ErrExpresionInvalida
+        return nil, errors.New("❌ ERROR FATAL: expresión unaria inválida")
     }
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/evaluador/ejecutor.go:
+package evaluador
+
+import (
+    "fmt"
+    "strings"
+    "sync"
+
+    "nepa/desarrollo/interno/parser"
+     "nepa/desarrollo/interno/administrador"
+)
+
+type SolicitudEjecutar struct {
+    Codigo     string
+    Argumentos []interface{}
+    Archivo    string
+    Mensaje    string
+}
+
+func (s SolicitudEjecutar) Error() string {
+    return s.Mensaje
+}
+
+type Handler func(parser.Nodo, *Contexto)
+
+var manejadores = make(map[string]Handler)
+var mu sync.RWMutex
+
+func Registrar(tipo string, fn Handler) {
+    mu.Lock()
+    defer mu.Unlock()
+    manejadores[tipo] = fn
+}
+
+func EjecutarConContexto(ast []parser.Nodo, args map[string]interface{},
+    globales map[string]interface{}, constantes map[string]interface{},
+    archivo string) (map[string]interface{}, error) {
+
+    ctx := &Contexto{
+        Variables:  map[string]interface{}{},
+        Globales:   globales,
+        Constantes: constantes,
+        Funciones:  map[string]func(...interface{}) interface{}{},
+    }
+
+    for k, v := range args {
+        ctx.Variables[k] = v
+    }
+
+    resultados := map[string]interface{}{}
+
+    for i, nodo := range ast {
+        linea := i + 1 // número de línea (1-based)
+
+        if nodo.Tipo == "llamada" {
+            nombre := strings.ToLower(nodo.Nombre)
+            f, ok := Funciones[nombre]
+            if ok {
+                if _, err := f(nodo.Args...); err != nil {
+                    return nil, fmt.Errorf("%s:%d: ejecución fallida en '%s' → %v",
+                        archivo, linea, nodo.Nombre, err)
+                }
+            } else {
+                return nil, fmt.Errorf("%s:%d: instrucción no reconocida '%s'",
+                    archivo, linea, nodo.Nombre)
+            }
+            continue
+        }
+
+        mu.RLock()
+        handler, ok := manejadores[nodo.Tipo]
+        mu.RUnlock()
+        if ok {
+            handler(nodo, ctx)
+        } else {
+            return nil, fmt.Errorf("%s:%d: tipo de nodo no reconocido '%s'",
+                archivo, linea, nodo.Tipo)
+        }
+    }
+
+	for k, v := range ctx.Variables { 
+		// Si la variable implementa administrador.Variable, usamos Mostrar() 
+		if varObj, ok := v.(administrador.Variable); ok {
+			resultados[k] = varObj.Mostrar() 
+		} else { 
+			resultados[k] = v 
+		}
+	}
+
+    return resultados, nil
 }
 
 
@@ -1021,6 +1368,7 @@ func CargarCore(ctx *evaluador.Contexto) {
 package matematicas
 
 import (
+    "errors"
     "math"
 
     "nepa/desarrollo/interno/evaluador"
@@ -1039,57 +1387,89 @@ func InyectarBasicas(ctx *evaluador.Contexto) {
     // --- Raíz cuadrada ---
     reg("raiz", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: raiz requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: raiz requiere 1 argumento")
         }
-        return math.Sqrt(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Sqrt(f)
     })
 
     // --- Potencia ---
     reg("potencia", func(args ...interface{}) interface{} {
         if len(args) != 2 {
-            return "Error: potencia requiere 2 argumentos"
+            return errors.New("❌ ERROR FATAL: potencia requiere 2 argumentos")
         }
-        return math.Pow(toFloat(args[0]), toFloat(args[1]))
+        base, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        exp, err := evaluador.ConvertirAReal(args[1])
+        if err != nil {
+            return err
+        }
+        return math.Pow(base, exp)
     })
 
     // --- Seno ---
     reg("seno", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: seno requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: seno requiere 1 argumento")
         }
-        return math.Sin(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Sin(f)
     })
 
     // --- Coseno ---
     reg("coseno", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: coseno requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: coseno requiere 1 argumento")
         }
-        return math.Cos(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Cos(f)
     })
 
     // --- Tangente ---
     reg("tangente", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: tangente requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: tangente requiere 1 argumento")
         }
-        return math.Tan(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Tan(f)
     })
 
     // --- Logaritmo natural ---
     reg("log", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: log requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: log requiere 1 argumento")
         }
-        return math.Log(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Log(f)
     })
 
     // --- Valor absoluto ---
     reg("abs", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: abs requiere 1 argumento"
+            return errors.New("❌ ERROR FATAL: abs requiere 1 argumento")
         }
-        return math.Abs(toFloat(args[0]))
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return math.Abs(f)
     })
 }
 
@@ -1100,6 +1480,7 @@ func InyectarBasicas(ctx *evaluador.Contexto) {
 package matematicas
 
 import (
+    "errors"
     "math"
     "sort"
 
@@ -1119,11 +1500,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Media ---
     reg("media", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: media requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: media requiere al menos 1 argumento")
         }
         sum := 0.0
         for _, v := range args {
-            sum += toFloat(v)
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
         }
         return sum / float64(len(args))
     })
@@ -1131,11 +1516,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Mediana ---
     reg("mediana", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: mediana requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: mediana requiere al menos 1 argumento")
         }
         vals := []float64{}
         for _, v := range args {
-            vals = append(vals, toFloat(v))
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            vals = append(vals, f)
         }
         sort.Float64s(vals)
         l := len(vals)
@@ -1148,13 +1537,16 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Varianza ---
     reg("varianza", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: varianza requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: varianza requiere al menos 1 argumento")
         }
         var sum, sumSq float64
         for _, v := range args {
-            val := toFloat(v)
-            sum += val
-            sumSq += val * val
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
+            sumSq += f * f
         }
         n := float64(len(args))
         return (sumSq / n) - math.Pow(sum/n, 2)
@@ -1163,13 +1555,16 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Desviación estándar ---
     reg("desviacion", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: desviacion requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: desviacion requiere al menos 1 argumento")
         }
         var sum, sumSq float64
         for _, v := range args {
-            val := toFloat(v)
-            sum += val
-            sumSq += val * val
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            sum += f
+            sumSq += f * f
         }
         n := float64(len(args))
         return math.Sqrt((sumSq / n) - math.Pow(sum/n, 2))
@@ -1178,11 +1573,15 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
     // --- Rango ---
     reg("rango", func(args ...interface{}) interface{} {
         if len(args) == 0 {
-            return "Error: rango requiere al menos 1 argumento"
+            return errors.New("❌ ERROR FATAL: rango requiere al menos 1 argumento")
         }
         vals := []float64{}
         for _, v := range args {
-            vals = append(vals, toFloat(v))
+            f, err := evaluador.ConvertirAReal(v)
+            if err != nil {
+                return err
+            }
+            vals = append(vals, f)
         }
         sort.Float64s(vals)
         return vals[len(vals)-1] - vals[0]
@@ -1196,9 +1595,6 @@ func InyectarEstadistica(ctx *evaluador.Contexto) {
 package matematicas
 
 import (
-    "fmt"
-    "strconv"
-
     "nepa/desarrollo/interno/evaluador"
 )
 
@@ -1222,32 +1618,167 @@ func InyectarTodo(ctx *evaluador.Contexto) {
 
     // Álgebra
     InyectarAlgebra(ctx)
+
+    // Sistemas de numeración y operaciones bit a bit
+    InyectarBases(ctx)
 }
 
-// toFloat convierte cualquier tipo soportado a float64
-func toFloat(v interface{}) float64 {
-    switch val := v.(type) {
-    case int:
-        return float64(val)
-    case int32:
-        return float64(val)
-    case int64:
-        return float64(val)
-    case float32:
-        return float64(val)
-    case float64:
-        return val
-    case string:
-        f, err := strconv.ParseFloat(val, 64)
-        if err != nil {
-            fmt.Printf("Error: no se pudo convertir '%s' a número\n", val)
-            return 0
-        }
-        return f
-    default:
-        fmt.Printf("Error: tipo no soportado (%T)\n", v)
-        return 0
+
+
+
+/home/deb/nepa/desarrollo/interno/matematicas/bases.go:
+package matematicas
+
+import (
+    "errors"
+    "fmt"
+    "strconv"
+
+    "nepa/desarrollo/interno/evaluador"
+)
+
+// InyectarBases agrega funciones de sistemas de numeración y operaciones bit a bit al contexto
+func InyectarBases(ctx *evaluador.Contexto) {
+    if ctx.Funciones == nil {
+        ctx.Funciones = map[string]func(...interface{}) interface{}{}
     }
+
+    reg := func(n string, f func(...interface{}) interface{}) {
+        ctx.Funciones[n] = f
+    }
+
+    // --- Conversiones entre bases ---
+    reg("decimal_a_binario", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: decimal_a_binario requiere 1 argumento")
+        }
+        n, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return fmt.Sprintf("%b", int64(n))
+    })
+
+    reg("binario_a_decimal", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: binario_a_decimal requiere 1 argumento")
+        }
+        s, ok := args[0].(string)
+        if !ok {
+            return errors.New("❌ ERROR FATAL: argumento debe ser cadena binaria")
+        }
+        val, err := strconv.ParseInt(s, 2, 64)
+        if err != nil {
+            return err
+        }
+        return val
+    })
+
+    reg("decimal_a_hexadecimal", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: decimal_a_hexadecimal requiere 1 argumento")
+        }
+        n, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return fmt.Sprintf("%X", int64(n))
+    })
+
+    reg("hexadecimal_a_decimal", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: hexadecimal_a_decimal requiere 1 argumento")
+        }
+        s, ok := args[0].(string)
+        if !ok {
+            return errors.New("❌ ERROR FATAL: argumento debe ser cadena hexadecimal")
+        }
+        val, err := strconv.ParseInt(s, 16, 64)
+        if err != nil {
+            return err
+        }
+        return val
+    })
+
+    reg("decimal_a_octal", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: decimal_a_octal requiere 1 argumento")
+        }
+        n, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return fmt.Sprintf("%o", int64(n))
+    })
+
+    reg("octal_a_decimal", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: octal_a_decimal requiere 1 argumento")
+        }
+        s, ok := args[0].(string)
+        if !ok {
+            return errors.New("❌ ERROR FATAL: argumento debe ser cadena octal")
+        }
+        val, err := strconv.ParseInt(s, 8, 64)
+        if err != nil {
+            return err
+        }
+        return val
+    })
+
+    // --- Operaciones bit a bit ---
+    reg("bit_and", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: bit_and requiere 2 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        return int64(a) & int64(b)
+    })
+
+    reg("bit_or", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: bit_or requiere 2 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        return int64(a) | int64(b)
+    })
+
+    reg("bit_xor", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: bit_xor requiere 2 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        return int64(a) ^ int64(b)
+    })
+
+    reg("bit_not", func(args ...interface{}) interface{} {
+        if len(args) != 1 {
+            return errors.New("❌ ERROR FATAL: bit_not requiere 1 argumento")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        return ^int64(a)
+    })
+
+    reg("bit_shift_left", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: bit_shift_left requiere 2 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        n, _ := evaluador.ConvertirAReal(args[1])
+        return int64(a) << uint(n)
+    })
+
+    reg("bit_shift_right", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: bit_shift_right requiere 2 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        n, _ := evaluador.ConvertirAReal(args[1])
+        return int64(a) >> uint(n)
+    })
 }
 
 
@@ -1257,12 +1788,13 @@ func toFloat(v interface{}) float64 {
 package matematicas
 
 import (
+    "errors"
     "math"
 
     "nepa/desarrollo/interno/evaluador"
 )
 
-// InyectarAlgebra agrega funciones de álgebra lineal al contexto
+// InyectarAlgebra agrega funciones de álgebra lineal y vectorial al contexto
 func InyectarAlgebra(ctx *evaluador.Contexto) {
     if ctx.Funciones == nil {
         ctx.Funciones = map[string]func(...interface{}) interface{}{}
@@ -1274,45 +1806,238 @@ func InyectarAlgebra(ctx *evaluador.Contexto) {
 
     // --- Determinantes ---
     reg("det2x2", func(args ...interface{}) interface{} {
-        // |a b|
-        // |c d| = ad - bc
         if len(args) != 4 {
-            return "Error: det2x2 requiere 4 argumentos"
+            return errors.New("❌ ERROR FATAL: det2x2 requiere 4 argumentos")
         }
-        return (toFloat(args[0]) * toFloat(args[3])) - (toFloat(args[1]) * toFloat(args[2]))
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        return a*d - b*c
     })
 
     reg("det3x3", func(args ...interface{}) interface{} {
-        // determinante de matriz 3x3
         if len(args) != 9 {
-            return "Error: det3x3 requiere 9 argumentos"
+            return errors.New("❌ ERROR FATAL: det3x3 requiere 9 argumentos")
         }
-        a, b, c := toFloat(args[0]), toFloat(args[1]), toFloat(args[2])
-        d, e, f := toFloat(args[3]), toFloat(args[4]), toFloat(args[5])
-        g, h, i := toFloat(args[6]), toFloat(args[7]), toFloat(args[8])
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        e, _ := evaluador.ConvertirAReal(args[4])
+        f, _ := evaluador.ConvertirAReal(args[5])
+        g, _ := evaluador.ConvertirAReal(args[6])
+        h, _ := evaluador.ConvertirAReal(args[7])
+        i, _ := evaluador.ConvertirAReal(args[8])
         return a*(e*i-f*h) - b*(d*i-f*g) + c*(d*h-e*g)
+    })
+
+    // --- Traza ---
+    reg("traza2x2", func(args ...interface{}) interface{} {
+        if len(args) != 4 {
+            return errors.New("❌ ERROR FATAL: traza2x2 requiere 4 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        return a + d
+    })
+
+    reg("traza3x3", func(args ...interface{}) interface{} {
+        if len(args) != 9 {
+            return errors.New("❌ ERROR FATAL: traza3x3 requiere 9 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        e, _ := evaluador.ConvertirAReal(args[4])
+        i, _ := evaluador.ConvertirAReal(args[8])
+        return a + e + i
     })
 
     // --- Producto punto ---
     reg("producto_punto", func(args ...interface{}) interface{} {
-        // (x1,y1,z1) · (x2,y2,z2)
         if len(args) != 6 {
-            return "Error: producto_punto requiere 6 argumentos"
+            return errors.New("❌ ERROR FATAL: producto_punto requiere 6 argumentos")
         }
-        return (toFloat(args[0]) * toFloat(args[3])) +
-            (toFloat(args[1]) * toFloat(args[4])) +
-            (toFloat(args[2]) * toFloat(args[5]))
+        x1, _ := evaluador.ConvertirAReal(args[0])
+        y1, _ := evaluador.ConvertirAReal(args[1])
+        z1, _ := evaluador.ConvertirAReal(args[2])
+        x2, _ := evaluador.ConvertirAReal(args[3])
+        y2, _ := evaluador.ConvertirAReal(args[4])
+        z2, _ := evaluador.ConvertirAReal(args[5])
+        return x1*x2 + y1*y2 + z1*z2
     })
 
     // --- Magnitud de vector ---
     reg("magnitud_vector", func(args ...interface{}) interface{} {
-        // ||v|| = sqrt(x^2 + y^2 + z^2)
         if len(args) != 3 {
-            return "Error: magnitud_vector requiere 3 argumentos"
+            return errors.New("❌ ERROR FATAL: magnitud_vector requiere 3 argumentos")
         }
-        return math.Sqrt(math.Pow(toFloat(args[0]), 2) +
-            math.Pow(toFloat(args[1]), 2) +
-            math.Pow(toFloat(args[2]), 2))
+        x, _ := evaluador.ConvertirAReal(args[0])
+        y, _ := evaluador.ConvertirAReal(args[1])
+        z, _ := evaluador.ConvertirAReal(args[2])
+        return math.Sqrt(x*x + y*y + z*z)
+    })
+
+    // --- Producto cruz ---
+    reg("producto_cruz", func(args ...interface{}) interface{} {
+        if len(args) != 6 {
+            return errors.New("❌ ERROR FATAL: producto_cruz requiere 6 argumentos")
+        }
+        x1, _ := evaluador.ConvertirAReal(args[0])
+        y1, _ := evaluador.ConvertirAReal(args[1])
+        z1, _ := evaluador.ConvertirAReal(args[2])
+        x2, _ := evaluador.ConvertirAReal(args[3])
+        y2, _ := evaluador.ConvertirAReal(args[4])
+        z2, _ := evaluador.ConvertirAReal(args[5])
+        return []float64{
+            y1*z2 - z1*y2,
+            z1*x2 - x1*z2,
+            x1*y2 - y1*x2,
+        }
+    })
+
+    // --- Normalización de vector ---
+    reg("normalizar_vector", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return errors.New("❌ ERROR FATAL: normalizar_vector requiere 3 argumentos")
+        }
+        x, _ := evaluador.ConvertirAReal(args[0])
+        y, _ := evaluador.ConvertirAReal(args[1])
+        z, _ := evaluador.ConvertirAReal(args[2])
+        mag := math.Sqrt(x*x + y*y + z*z)
+        if mag == 0 {
+            return errors.New("❌ ERROR FATAL: no se puede normalizar un vector nulo")
+        }
+        return []float64{x / mag, y / mag, z / mag}
+    })
+
+    // --- Ángulo entre dos vectores (grados) ---
+    reg("angulo_vectores", func(args ...interface{}) interface{} {
+        if len(args) != 6 {
+            return errors.New("❌ ERROR FATAL: angulo_vectores requiere 6 argumentos")
+        }
+        x1, _ := evaluador.ConvertirAReal(args[0])
+        y1, _ := evaluador.ConvertirAReal(args[1])
+        z1, _ := evaluador.ConvertirAReal(args[2])
+        x2, _ := evaluador.ConvertirAReal(args[3])
+        y2, _ := evaluador.ConvertirAReal(args[4])
+        z2, _ := evaluador.ConvertirAReal(args[5])
+        dot := x1*x2 + y1*y2 + z1*z2
+        mag1 := math.Sqrt(x1*x1 + y1*y1 + z1*z1)
+        mag2 := math.Sqrt(x2*x2 + y2*y2 + z2*z2)
+        if mag1 == 0 || mag2 == 0 {
+            return errors.New("❌ ERROR FATAL: no se puede calcular ángulo con vector nulo")
+        }
+        cos := dot / (mag1 * mag2)
+        // Corrección numérica por posibles redondeos
+        if cos > 1 {
+            cos = 1
+        } else if cos < -1 {
+            cos = -1
+        }
+        return math.Acos(cos) * 180 / math.Pi
+    })
+
+    // --- Proyección de un vector sobre otro ---
+    reg("proyeccion_vector", func(args ...interface{}) interface{} {
+        if len(args) != 6 {
+            return errors.New("❌ ERROR FATAL: proyeccion_vector requiere 6 argumentos")
+        }
+        ax, _ := evaluador.ConvertirAReal(args[0])
+        ay, _ := evaluador.ConvertirAReal(args[1])
+        az, _ := evaluador.ConvertirAReal(args[2])
+        bx, _ := evaluador.ConvertirAReal(args[3])
+        by, _ := evaluador.ConvertirAReal(args[4])
+        bz, _ := evaluador.ConvertirAReal(args[5])
+        dot := ax*bx + ay*by + az*bz
+        magB2 := bx*bx + by*by + bz*bz
+        if magB2 == 0 {
+            return errors.New("❌ ERROR FATAL: no se puede proyectar sobre un vector nulo")
+        }
+        esc := dot / magB2
+        return []float64{esc * bx, esc * by, esc * bz}
+    })
+
+    // --- Ecuación cuadrática ---
+    reg("ecuacion_cuadratica", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return errors.New("❌ ERROR FATAL: ecuacion_cuadratica requiere 3 argumentos (a, b, c)")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        if a == 0 {
+            return errors.New("❌ ERROR FATAL: coeficiente 'a' no puede ser 0")
+        }
+        disc := b*b - 4*a*c
+        if disc < 0 {
+            return errors.New("❌ ERROR FATAL: discriminante negativo, raíces complejas")
+        }
+        r1 := (-b + math.Sqrt(disc)) / (2 * a)
+        r2 := (-b - math.Sqrt(disc)) / (2 * a)
+        return []float64{r1, r2}
+    })
+
+    // --- Multiplicación de matrices 2x2 ---
+    // A = [a b; c d], B = [e f; g h] → A*B = [ae+bg, af+bh; ce+dg, cf+dh]
+    reg("multiplicar2x2", func(args ...interface{}) interface{} {
+        if len(args) != 8 {
+            return errors.New("❌ ERROR FATAL: multiplicar2x2 requiere 8 argumentos (a,b,c,d,e,f,g,h)")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        e, _ := evaluador.ConvertirAReal(args[4])
+        f, _ := evaluador.ConvertirAReal(args[5])
+        g, _ := evaluador.ConvertirAReal(args[6])
+        h, _ := evaluador.ConvertirAReal(args[7])
+        return []float64{
+            a*e + b*g, a*f + b*h,
+            c*e + d*g, c*f + d*h,
+        }
+    })
+
+    // --- Inversa de matriz 2x2 ---
+    // A^{-1} = (1/det) * [d -b; -c a]
+    reg("inversa2x2", func(args ...interface{}) interface{} {
+        if len(args) != 4 {
+            return errors.New("❌ ERROR FATAL: inversa2x2 requiere 4 argumentos")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        det := a*d - b*c
+        if det == 0 {
+            return errors.New("❌ ERROR FATAL: la matriz no es invertible (determinante 0)")
+        }
+        invDet := 1 / det
+        return []float64{
+            d * invDet, -b * invDet,
+            -c * invDet, a * invDet,
+        }
+    })
+
+    // --- Resolver sistema 2x2 ---
+    // a x + b y = e
+    // c x + d y = f
+    reg("resolver_sistema2x2", func(args ...interface{}) interface{} {
+        if len(args) != 6 {
+            return errors.New("❌ ERROR FATAL: resolver_sistema2x2 requiere 6 argumentos (a,b,c,d,e,f)")
+        }
+        a, _ := evaluador.ConvertirAReal(args[0])
+        b, _ := evaluador.ConvertirAReal(args[1])
+        c, _ := evaluador.ConvertirAReal(args[2])
+        d, _ := evaluador.ConvertirAReal(args[3])
+        e, _ := evaluador.ConvertirAReal(args[4])
+        f, _ := evaluador.ConvertirAReal(args[5])
+        det := a*d - b*c
+        if det == 0 {
+            return errors.New("❌ ERROR FATAL: sistema sin solución única (determinante 0)")
+        }
+        x := (e*d - b*f) / det
+        y := (a*f - e*c) / det
+        return []float64{x, y}
     })
 }
 
@@ -1323,6 +2048,7 @@ func InyectarAlgebra(ctx *evaluador.Contexto) {
 package matematicas
 
 import (
+    "errors"
     "math"
 
     "nepa/desarrollo/interno/evaluador"
@@ -1340,47 +2066,140 @@ func InyectarFinanzas(ctx *evaluador.Contexto) {
 
     // --- Interés compuesto ---
     reg("interes_compuesto", func(args ...interface{}) interface{} {
-        // c * (1+i)^t
         if len(args) != 3 {
-            return "Error: interes_compuesto requiere 3 argumentos (capital, tasa, tiempo)"
+            return errors.New("❌ ERROR FATAL: interes_compuesto requiere 3 argumentos (capital, tasa, tiempo)")
         }
-        return toFloat(args[0]) * math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+        c, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        return c * math.Pow(1+i, t)
+    })
+
+    // --- Interés simple ---
+    reg("interes_simple", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return errors.New("❌ ERROR FATAL: interes_simple requiere 3 argumentos (capital, tasa, tiempo)")
+        }
+        c, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        return c * i * t
     })
 
     // --- Valor presente ---
     reg("valor_presente", func(args ...interface{}) interface{} {
-        // vf / (1+i)^t
         if len(args) != 3 {
-            return "Error: valor_presente requiere 3 argumentos (valor futuro, tasa, tiempo)"
+            return errors.New("❌ ERROR FATAL: valor_presente requiere 3 argumentos (valor futuro, tasa, tiempo)")
         }
-        return toFloat(args[0]) / math.Pow(1+toFloat(args[1]), toFloat(args[2]))
+        vf, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        return vf / math.Pow(1+i, t)
     })
 
-    // --- Amortización ---
-    reg("amortizacion", func(args ...interface{}) interface{} {
-        // Fórmula de cuota fija: (P * i * (1+i)^n) / ((1+i)^n - 1)
+    // --- Valor futuro de una anualidad ---
+    reg("valor_futuro_anualidad", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: amortizacion requiere 3 argumentos (principal, tasa anual, número de meses)"
+            return errors.New("❌ ERROR FATAL: valor_futuro_anualidad requiere 3 argumentos (pago, tasa, periodos)")
         }
-        p := toFloat(args[0])
-        i := toFloat(args[1]) / 12 // tasa mensual
-        n := toFloat(args[2])
-        if n == 0 {
-            return "Error: número de meses no puede ser 0"
+        p, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        n, _ := evaluador.ConvertirAReal(args[2])
+        if i == 0 {
+            return p * n
         }
-        return (p * i * math.Pow(1+i, n)) / (math.Pow(1+i, n) - 1)
+        return p * (math.Pow(1+i, n) - 1) / i
     })
 
-    // --- Tasa de crecimiento ---
-    reg("tasa_crecimiento", func(args ...interface{}) interface{} {
-        // (final/inicial)^(1/t) - 1
+    // --- Valor presente de una anualidad ---
+    reg("valor_presente_anualidad", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: tasa_crecimiento requiere 3 argumentos (valor final, valor inicial, tiempo)"
+            return errors.New("❌ ERROR FATAL: valor_presente_anualidad requiere 3 argumentos (pago, tasa, periodos)")
         }
-        if toFloat(args[1]) == 0 {
-            return "Error: valor inicial no puede ser 0"
+        p, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        n, _ := evaluador.ConvertirAReal(args[2])
+        if i == 0 {
+            return p * n
         }
-        return math.Pow(toFloat(args[0])/toFloat(args[1]), 1/toFloat(args[2])) - 1
+        return p * (1 - math.Pow(1+i, -n)) / i
+    })
+
+    // --- Pago de anualidad (PMT) ---
+    reg("pago_anualidad", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return errors.New("❌ ERROR FATAL: pago_anualidad requiere 3 argumentos (principal, tasa, periodos)")
+        }
+        p, _ := evaluador.ConvertirAReal(args[0])
+        i, _ := evaluador.ConvertirAReal(args[1])
+        n, _ := evaluador.ConvertirAReal(args[2])
+        if i == 0 {
+            return p / n
+        }
+        return (p * i) / (1 - math.Pow(1+i, -n))
+    })
+
+    // --- Valor Neto Actual (VAN) ---
+    reg("van", func(args ...interface{}) interface{} {
+        if len(args) < 2 {
+            return errors.New("❌ ERROR FATAL: van requiere al menos 2 argumentos (tasa, flujos...)")
+        }
+        i, _ := evaluador.ConvertirAReal(args[0])
+        flujos := args[1:]
+        van := 0.0
+        for t, f := range flujos {
+            val, err := evaluador.ConvertirAReal(f)
+            if err != nil {
+                return err
+            }
+            van += val / math.Pow(1+i, float64(t+1))
+        }
+        return van
+    })
+
+    // --- Tasa Interna de Retorno (TIR) ---
+    reg("tir", func(args ...interface{}) interface{} {
+        if len(args) < 2 {
+            return errors.New("❌ ERROR FATAL: tir requiere al menos 2 argumentos (costo inicial, flujos...)")
+        }
+        c0, _ := evaluador.ConvertirAReal(args[0])
+        flujos := args[1:]
+        // Método de bisección simple
+        low, high := -0.99, 1.0
+        for iter := 0; iter < 100; iter++ {
+            mid := (low + high) / 2
+            npv := -c0
+            for t, f := range flujos {
+                val, _ := evaluador.ConvertirAReal(f)
+                npv += val / math.Pow(1+mid, float64(t+1))
+            }
+            if npv > 0 {
+                low = mid
+            } else {
+                high = mid
+            }
+        }
+        return (low + high) / 2
+    })
+
+    // --- Tasa efectiva anual (TEA) ---
+    reg("tea", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: tea requiere 2 argumentos (tasa nominal, número de periodos por año)")
+        }
+        i, _ := evaluador.ConvertirAReal(args[0])
+        m, _ := evaluador.ConvertirAReal(args[1])
+        return math.Pow(1+i/m, m) - 1
+    })
+
+    // --- Tasa nominal anual (TNA) ---
+    reg("tna", func(args ...interface{}) interface{} {
+        if len(args) != 2 {
+            return errors.New("❌ ERROR FATAL: tna requiere 2 argumentos (tasa periódica, número de periodos por año)")
+        }
+        i, _ := evaluador.ConvertirAReal(args[0])
+        m, _ := evaluador.ConvertirAReal(args[1])
+        return i * m
     })
 }
 
@@ -1391,6 +2210,7 @@ func InyectarFinanzas(ctx *evaluador.Contexto) {
 package matematicas
 
 import (
+    "errors"
     "fmt"
     "math"
 
@@ -1410,107 +2230,172 @@ func InyectarFisica(ctx *evaluador.Contexto) {
     // --- Energía y movimiento ---
     reg("energia_relativista", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: energia_relativista requiere 1 argumento (masa)"
+            return errors.New("❌ ERROR FATAL: energia_relativista requiere 1 argumento (masa)")
         }
-        return toFloat(args[0]) * math.Pow(299792458.0, 2)
+        m, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return m * math.Pow(299792458.0, 2)
     })
 
     reg("energia_cinetica", func(args ...interface{}) interface{} {
         if len(args) != 2 {
-            return "Error: energia_cinetica requiere 2 argumentos (masa, velocidad)"
+            return errors.New("❌ ERROR FATAL: energia_cinetica requiere 2 argumentos (masa, velocidad)")
         }
-        return 0.5 * toFloat(args[0]) * math.Pow(toFloat(args[1]), 2)
+        m, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        v, err := evaluador.ConvertirAReal(args[1])
+        if err != nil {
+            return err
+        }
+        return 0.5 * m * math.Pow(v, 2)
     })
 
     reg("trabajo", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: trabajo requiere 3 argumentos (fuerza, distancia, ángulo)"
+            return errors.New("❌ ERROR FATAL: trabajo requiere 3 argumentos (fuerza, distancia, ángulo)")
         }
-        ang := toFloat(args[2]) * math.Pi / 180
-        return toFloat(args[0]) * toFloat(args[1]) * math.Cos(ang)
+        f, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        d, err := evaluador.ConvertirAReal(args[1])
+        if err != nil {
+            return err
+        }
+        ang, err := evaluador.ConvertirAReal(args[2])
+        if err != nil {
+            return err
+        }
+        return f * d * math.Cos(ang*math.Pi/180)
+    })
+
+    reg("energia_potencial", func(args ...interface{}) interface{} {
+        if len(args) != 3 {
+            return errors.New("❌ ERROR FATAL: energia_potencial requiere 3 argumentos (masa, gravedad, altura)")
+        }
+        m, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        g, err := evaluador.ConvertirAReal(args[1])
+        if err != nil {
+            return err
+        }
+        h, err := evaluador.ConvertirAReal(args[2])
+        if err != nil {
+            return err
+        }
+        return m * g * h
     })
 
     // --- Proyectiles ---
     reg("caida_libre", func(args ...interface{}) interface{} {
         if len(args) != 1 {
-            return "Error: caida_libre requiere 1 argumento (tiempo)"
+            return errors.New("❌ ERROR FATAL: caida_libre requiere 1 argumento (tiempo)")
         }
-        return 0.5 * 9.80665 * math.Pow(toFloat(args[0]), 2)
+        t, err := evaluador.ConvertirAReal(args[0])
+        if err != nil {
+            return err
+        }
+        return 0.5 * 9.80665 * math.Pow(t, 2)
     })
 
     reg("proyectil_pos", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: proyectil_pos requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+            return errors.New("❌ ERROR FATAL: proyectil_pos requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
         }
-        v0 := toFloat(args[0])
-        ang := toFloat(args[1]) * math.Pi / 180
-        t := toFloat(args[2])
-        x := v0 * math.Cos(ang) * t
-        y := (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+        v0, _ := evaluador.ConvertirAReal(args[0])
+        ang, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        rad := ang * math.Pi / 180
+        x := v0 * math.Cos(rad) * t
+        y := (v0 * math.Sin(rad) * t) - (0.5 * 9.80665 * t * t)
         return fmt.Sprintf("%f,%f", x, y)
     })
 
     reg("proyectil_x", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: proyectil_x requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+            return errors.New("❌ ERROR FATAL: proyectil_x requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
         }
-        return toFloat(args[0]) * math.Cos(toFloat(args[1])*math.Pi/180) * toFloat(args[2])
+        v0, _ := evaluador.ConvertirAReal(args[0])
+        ang, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        return v0 * math.Cos(ang*math.Pi/180) * t
     })
 
     reg("proyectil_y", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: proyectil_y requiere 3 argumentos (velocidad inicial, ángulo, tiempo)"
+            return errors.New("❌ ERROR FATAL: proyectil_y requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
         }
-        v0, ang, t := toFloat(args[0]), toFloat(args[1])*math.Pi/180, toFloat(args[2])
-        return (v0 * math.Sin(ang) * t) - (0.5 * 9.80665 * t * t)
+        v0, _ := evaluador.ConvertirAReal(args[0])
+        ang, _ := evaluador.ConvertirAReal(args[1])
+        t, _ := evaluador.ConvertirAReal(args[2])
+        rad := ang * math.Pi / 180
+        return (v0 * math.Sin(rad) * t) - (0.5 * 9.80665 * t * t)
     })
 
     // --- Física general ---
     reg("densidad", func(args ...interface{}) interface{} {
         if len(args) != 2 {
-            return "Error: densidad requiere 2 argumentos (masa, volumen)"
+            return errors.New("❌ ERROR FATAL: densidad requiere 2 argumentos (masa, volumen)")
         }
-        if toFloat(args[1]) == 0 {
-            return "Error: volumen no puede ser 0"
+        m, _ := evaluador.ConvertirAReal(args[0])
+        v, _ := evaluador.ConvertirAReal(args[1])
+        if v == 0 {
+            return errors.New("❌ ERROR FATAL: volumen no puede ser 0")
         }
-        return toFloat(args[0]) / toFloat(args[1])
+        return m / v
     })
 
     reg("presion_gas", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: presion_gas requiere 3 argumentos (n moles, temperatura, volumen)"
+            return errors.New("❌ ERROR FATAL: presion_gas requiere 3 argumentos (n moles, temperatura, volumen)")
         }
-        if toFloat(args[2]) == 0 {
-            return "Error: volumen no puede ser 0"
+        n, _ := evaluador.ConvertirAReal(args[0])
+        T, _ := evaluador.ConvertirAReal(args[1])
+        V, _ := evaluador.ConvertirAReal(args[2])
+        if V == 0 {
+            return errors.New("❌ ERROR FATAL: volumen no puede ser 0")
         }
-        return (toFloat(args[0]) * 8.314462 * toFloat(args[1])) / toFloat(args[2])
+        R := 8.314462
+        return (n * R * T) / V
     })
 
     reg("fuerza_gravitatoria", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: fuerza_gravitatoria requiere 3 argumentos (masa1, masa2, distancia)"
+            return errors.New("❌ ERROR FATAL: fuerza_gravitatoria requiere 3 argumentos (masa1, masa2, distancia)")
         }
-        if toFloat(args[2]) == 0 {
-            return "Error: distancia no puede ser 0"
+        m1, _ := evaluador.ConvertirAReal(args[0])
+        m2, _ := evaluador.ConvertirAReal(args[1])
+        r, _ := evaluador.ConvertirAReal(args[2])
+        if r == 0 {
+            return errors.New("❌ ERROR FATAL: distancia no puede ser 0")
         }
         G := 6.67430e-11
-        return G * (toFloat(args[0]) * toFloat(args[1])) / math.Pow(toFloat(args[2]), 2)
+        return G * (m1 * m2) / math.Pow(r, 2)
     })
 
     reg("ley_ohm_v", func(args ...interface{}) interface{} {
         if len(args) != 2 {
-            return "Error: ley_ohm_v requiere 2 argumentos (corriente, resistencia)"
+            return errors.New("❌ ERROR FATAL: ley_ohm_v requiere 2 argumentos (corriente, resistencia)")
         }
-        return toFloat(args[0]) * toFloat(args[1])
+        I, _ := evaluador.ConvertirAReal(args[0])
+        R, _ := evaluador.ConvertirAReal(args[1])
+        return I * R
     })
 
     reg("magnitud_vector", func(args ...interface{}) interface{} {
         if len(args) != 3 {
-            return "Error: magnitud_vector requiere 3 argumentos (x, y, z)"
+            return errors.New("❌ ERROR FATAL: magnitud_vector requiere 3 argumentos (x, y, z)")
         }
-        return math.Sqrt(math.Pow(toFloat(args[0]), 2) +
-            math.Pow(toFloat(args[1]), 2) +
-            math.Pow(toFloat(args[2]), 2))
+        x, _ := evaluador.ConvertirAReal(args[0])
+        y, _ := evaluador.ConvertirAReal(args[1])
+        z, _ := evaluador.ConvertirAReal(args[2])
+        return math.Sqrt(x*x + y*y + z*z)
     })
 }
 
@@ -1578,27 +2463,25 @@ import (
     "strings"
     "sync"
 
-    "nepa/interno/administrador"
+    "nepa/desarrollo/interno/administrador"
 )
 
-// Errores específicos del tipo Bit
 var (
-    ErrValorInvalido  = errors.New("valor inválido para Bit: solo se permite 0 o 1")
-    ErrAsignacionNula = errors.New("asignación nula: se requiere un valor para Bit")
-    ErrConversion     = errors.New("conversión inválida hacia/desde Bit")
-    ErrNombreInvalido = errors.New("nombre inválido: vacío o con espacios")
+    ErrValorInvalido  = errors.New("❌ valor inválido para Bit: solo se permite 0 o 1")
+    ErrAsignacionNula = errors.New("❌ asignación nula: se requiere un valor para Bit")
+    ErrConversion     = errors.New("❌ conversión inválida hacia/desde Bit")
+    ErrNombreInvalido = errors.New("❌ nombre inválido: vacío o con espacios")
 )
 
 // Bit representa un valor binario (0 o 1) con nombre y metadatos.
 type Bit struct {
-    mu       sync.RWMutex
-    nombre   string
-    valor    uint8
+    mu        sync.RWMutex
+    nombre    string
+    valor     uint8
     etiquetas map[string]string
 }
 
 // CrearBit crea una instancia de Bit y devuelve administrador.Variable.
-// Cumple con la firma esperada por el administrador.
 func CrearBit(nombre string, v interface{}) (administrador.Variable, error) {
     nombre = strings.TrimSpace(nombre)
     if nombre == "" || strings.Contains(nombre, " ") {
@@ -1613,9 +2496,10 @@ func CrearBit(nombre string, v interface{}) (administrador.Variable, error) {
 
     if v != nil {
         if err := b.AsignarDesdeInterface(v); err != nil {
-            return nil, err
+            return nil, fmt.Errorf("❌ error asignando valor inicial a '%s': %v", nombre, err)
         }
     }
+
     return b, nil
 }
 
@@ -1674,11 +2558,9 @@ func (b *Bit) AsignarDesdeInterface(v interface{}) error {
             b.valor = 1
             return nil
         default:
-            if n, err := strconv.Atoi(s); err == nil {
-                if n == 0 || n == 1 {
-                    b.valor = uint8(n)
-                    return nil
-                }
+            if n, err := strconv.Atoi(s); err == nil && (n == 0 || n == 1) {
+                b.valor = uint8(n)
+                return nil
             }
             return ErrValorInvalido
         }
@@ -1775,6 +2657,74 @@ func (b *Bit) EsUno() bool {
 
 
 
+/home/deb/nepa/desarrollo/interno/parser/parser_variables.go:
+package parser
+
+import (
+    "strings"
+)
+
+// parseVariable: universal para cualquier tipo
+// Ejemplos:
+//   variable bit a
+//   variable bit a := 1
+//   variable caracter c
+//   variable entero x, y, z := 0
+func parseVariable(linea string) *Nodo {
+    if !strings.HasPrefix(linea, "variable ") {
+        return nil
+    }
+
+    partes := strings.Fields(linea)
+    if len(partes) < 3 {
+        return nil
+    }
+
+    tipo := partes[1]
+    nombres := partes[2]
+    valor := ""
+
+    if strings.Contains(linea, ":=") {
+        idx := strings.Index(linea, ":=")
+        nombres = strings.TrimSpace(linea[len("variable ")+len(tipo) : idx])
+        valor = strings.TrimSpace(linea[idx+2:])
+    }
+
+    return &Nodo{
+        Tipo:   "variable",
+        Nombre: nombres,
+        Valor:  parseValor(valor), // nil → constructor aplica default
+        Args:   []interface{}{tipo},
+    }
+}
+
+// parseAsignar: universal, solo := (regla Nepa)
+// Ejemplos:
+//   asignar a := 1
+//   a := 1
+//   a := b
+func parseAsignar(linea string) *Nodo {
+    if !strings.Contains(linea, ":=") {
+        return nil
+    }
+    linea = strings.TrimPrefix(linea, "asignar ")
+    partes := strings.SplitN(linea, ":=", 2)
+    if len(partes) != 2 {
+        return nil
+    }
+    nombre := strings.TrimSpace(partes[0])
+    valor := strings.TrimSpace(partes[1])
+
+    return &Nodo{
+        Tipo:   "asignar",
+        Nombre: nombre,
+        Valor:  parseValor(valor),
+    }
+}
+
+
+
+
 /home/deb/nepa/desarrollo/interno/parser/parser.go:
 package parser
 
@@ -1785,10 +2735,10 @@ import (
 
 // Nodo representa un elemento del AST
 type Nodo struct {
-    Tipo   string        // variable, global, constante, llamada, imprimir, bloque, expresion
+    Tipo   string        // variable, global, constante, llamada, bloque, expresion, asignar
     Nombre string        // nombre de variable o función
     Valor  interface{}   // valor literal o expresión
-    Args   []interface{} // argumentos de llamadas
+    Args   []interface{} // argumentos de llamadas o metadatos (ej. tipo de variable)
 }
 
 // Parse convierte líneas validadas en un AST
@@ -1801,56 +2751,55 @@ func Parse(lineas []string) []Nodo {
             continue
         }
 
-        // Bloques: si:, mientras:, para:, funcion:, etc.
-        if strings.HasSuffix(linea, ":") {
-            nombre := strings.TrimSuffix(linea, ":")
-            ast = append(ast, Nodo{Tipo: "bloque", Nombre: nombre})
+        tokens := strings.Fields(linea)
+        if len(tokens) == 0 {
+            continue
+        }
+        token := tokens[0]
+
+        // --- Caso especial: si_es ---
+        if token == "si_es" {
+            if strings.HasSuffix(linea, ":") {
+                ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
+            } else {
+                ast = append(ast, Nodo{Tipo: "expresion", Valor: parseValor(linea)})
+            }
             continue
         }
 
-        // --- Asignaciones globales y constantes ---
-        if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
-            partes := strings.SplitN(linea[len("global "):], "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "global", Nombre: nombre, Valor: valor})
-                continue
-            }
+        // --- Bloques generales ---
+        if strings.HasSuffix(linea, ":") {
+            ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
+            continue
         }
 
-        if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
-            partes := strings.SplitN(linea[len("const "):], "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "constante", Nombre: nombre, Valor: valor})
-                continue
-            }
+        // --- Globales ---
+        if nodo := parseGlobal(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
         }
 
-        // --- Asignación local ---
-        if strings.Contains(linea, "=") && !strings.Contains(linea, "==") {
-            partes := strings.SplitN(linea, "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "variable", Nombre: nombre, Valor: valor})
-                continue
-            }
+        // --- Constantes ---
+        if nodo := parseConst(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
         }
 
-        // --- Llamadas a funciones ---
-        if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
-            fn := linea[:strings.Index(linea, "(")]
-            fn = strings.TrimSpace(fn)
-            args := extraerArgs(linea)
+        // --- Variables ---
+        if nodo := parseVariable(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
 
-            if fn == "imprimir" {
-                ast = append(ast, Nodo{Tipo: "imprimir", Nombre: fn, Args: args})
-            } else {
-                ast = append(ast, Nodo{Tipo: "llamada", Nombre: fn, Args: args})
-            }
+        // --- Asignaciones ---
+        if nodo := parseAsignar(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Llamadas ---
+        if nodo := parseLlamada(linea); nodo != nil {
+            ast = append(ast, *nodo)
             continue
         }
 
@@ -1861,7 +2810,52 @@ func Parse(lineas []string) []Nodo {
     return ast
 }
 
-// extraerArgs obtiene los argumentos de una llamada tipo funcion(arg1, arg2)
+// --- Funciones auxiliares ---
+
+func parseGlobal(linea string) *Nodo {
+    if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("global "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "global", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
+        }
+    }
+    return nil
+}
+
+func parseConst(linea string) *Nodo {
+    if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("const "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "constante", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
+        }
+    }
+    return nil
+}
+
+func parseLlamada(linea string) *Nodo {
+    if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
+        fn := strings.TrimSpace(linea[:strings.Index(linea, "(")])
+        args := extraerArgs(linea)
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    if strings.Contains(linea, " ") {
+        partes := strings.SplitN(linea, " ", 2)
+        fn := strings.TrimSpace(partes[0])
+        resto := strings.TrimSpace(partes[1])
+        args := []interface{}{}
+        for _, p := range strings.Split(resto, ",") {
+            arg := strings.TrimSpace(p)
+            if arg != "" {
+                args = append(args, parseValor(arg))
+            }
+        }
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    return nil
+}
+
+// --- Utilidades ---
+
 func extraerArgs(linea string) []interface{} {
     ini := strings.Index(linea, "(")
     fin := strings.LastIndex(linea, ")")
@@ -1880,37 +2874,32 @@ func extraerArgs(linea string) []interface{} {
     return args
 }
 
-// parseValor convierte un literal string en su tipo correcto
 func parseValor(raw string) interface{} {
-    // Booleanos
     if raw == "true" {
         return true
     }
     if raw == "false" {
         return false
     }
-
-    // Nulo
     if raw == "nulo" {
         return nil
     }
-
-    // Enteros
     if i, err := strconv.Atoi(raw); err == nil {
         return i
     }
-
-    // Flotantes
     if f, err := strconv.ParseFloat(raw, 64); err == nil {
         return f
     }
-
-    // Strings con comillas
     if strings.HasPrefix(raw, "\"") && strings.HasSuffix(raw, "\"") {
         return strings.Trim(raw, "\"")
     }
-
-    // Listas/matrices simples: [1,2,3]
+    if strings.HasPrefix(raw, "'") && strings.HasSuffix(raw, "'") {
+        contenido := strings.Trim(raw, "'")
+        if len(contenido) == 1 {
+            return rune(contenido[0])
+        }
+        return contenido
+    }
     if strings.HasPrefix(raw, "[") && strings.HasSuffix(raw, "]") {
         contenido := strings.Trim(raw, "[]")
         partes := strings.Split(contenido, ",")
@@ -1923,9 +2912,31 @@ func parseValor(raw string) interface{} {
         }
         return lista
     }
-
-    // Si no coincide con nada, devolver como string
+    // Si no coincide con literal, se devuelve tal cual (posible nombre de variable)
     return raw
+}
+
+
+
+
+/home/deb/nepa/desarrollo/interno/core/error.go:
+package core
+
+import "fmt"
+
+type ErrorEjecucion struct {
+    Archivo string
+    Linea   int
+    Mensaje string
+}
+
+func (e ErrorEjecucion) Error() string {
+    rojoBold := "\033[1;31m"  // rojo + bold
+    grisBold := "\033[1;90m"  // gris + bold
+    reset := "\033[0m"        // reset
+
+    return fmt.Sprintf("%serror%s %s%s:%d%s → %s",
+        rojoBold, reset, grisBold, e.Archivo, e.Linea, reset, e.Mensaje)
 }
 
 
@@ -1995,108 +3006,285 @@ func Error(msg string) {
 
 
 
+/home/deb/nepa/desarrollo/comandos/comandos.go:
+package comandos
+
+// Este paquete centraliza la carga de todos los comandos.
+// Al importar "nepa/desarrollo/comandos" en main.go,
+// se ejecutarán los init() de cada subcomando.
+
+import (
+    _ "nepa/desarrollo/comandos/variable"
+    _ "nepa/desarrollo/comandos/imprimir"
+    _ "nepa/desarrollo/comandos/asignar"
+    _ "nepa/desarrollo/comandos/bloque"
+    _ "nepa/desarrollo/comandos/expresion"
+    _ "nepa/desarrollo/comandos/llamada"
+    _ "nepa/desarrollo/comandos/inyectar_todas_variables"
+)
+
+
+
+
 /home/deb/nepa/desarrollo/comandos/asignar/asignar.go:
 package asignar
 
 import (
-    "errors"
-    "fmt"
-    "strings"
+	"errors"
+	"fmt"
+	"strings"
 
-    "nepa/interno/administrador"
-    "nepa/interno/evaluador"
+	"nepa/desarrollo/interno/administrador"
+	"nepa/desarrollo/interno/evaluador"
+	"nepa/desarrollo/interno/parser"
 )
 
 var (
-    ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'asignar <nombre> = <expresión>' o '<nombre> = <expresión>' o '<nombre>++/--'")
-    ErrVariableNoExiste = errors.New("la variable no existe")
-    ErrNombreVacio      = errors.New("nombre vacío en asignación")
-    ErrValorVacio       = errors.New("valor vacío en asignación")
+	ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'asignar <nombre> := <expresión>' o '<nombre> := <expresión>'")
+	ErrVariableNoExiste = errors.New("la variable no existe")
+	ErrNombreVacio      = errors.New("nombre vacío en asignación")
+	ErrValorVacio       = errors.New("valor vacío en asignación")
 )
 
-// Ejecutar soporta:
-//   - asignar a = expr
-//   - a = expr
-//   - a++ / a--
-//   - asignar a++ / asignar a--
+// Ejecutar procesa líneas de comando directas
 func Ejecutar(linea string) error {
-    linea = strings.TrimSpace(linea)
-    if linea == "" {
-        return ErrSintaxisInvalida
-    }
+	linea = strings.TrimSpace(linea)
+	if linea == "" {
+		return ErrSintaxisInvalida
+	}
 
-    // Quitar palabra clave "asignar" si existe
-    if strings.HasPrefix(strings.ToLower(linea), "asignar") {
-        linea = strings.TrimSpace(linea[len("asignar"):])
-    }
+	// Quitar palabra clave "asignar" si existe
+	if strings.HasPrefix(strings.ToLower(linea), "asignar") {
+		linea = strings.TrimSpace(linea[len("asignar"):])
+	}
 
-    // Incremento/decremento
-    if strings.HasSuffix(linea, "++") || strings.HasSuffix(linea, "--") {
-        nombre := strings.TrimSpace(strings.TrimSuffix(strings.TrimSuffix(linea, "++"), "--"))
-        if nombre == "" {
-            return ErrNombreVacio
-        }
-        v, err := administrador.ObtenerVariable(nombre)
-        if err != nil {
-            return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
-        }
-        delta := 1.0
-        if strings.HasSuffix(linea, "--") {
-            delta = -1.0
-        }
-        actual, err := evaluador.ToFloat64(v.ValorComoInterface())
-        if err != nil {
-            return fmt.Errorf("incremento/decremento inválido para tipo=%s: %v", v.Tipo(), err)
-        }
-        nuevo := actual + delta
-        if err := administrador.ModificarVariable(nombre, nuevo); err != nil {
-            return fmt.Errorf("error asignando a '%s' (tipo=%s): %w", nombre, v.Tipo(), err)
-        }
-        fmt.Printf("✔ %s '%s' %s → %v\n", strings.ToUpper(v.Tipo()), nombre, tern(delta > 0, "++", "--"), nuevo)
-        return nil
-    }
+	// Manejo de incremento y decremento
+	if strings.HasSuffix(linea, "++") || strings.HasSuffix(linea, "--") {
+		nombre := strings.TrimSpace(strings.TrimSuffix(strings.TrimSuffix(linea, "++"), "--"))
+		if nombre == "" {
+			return ErrNombreVacio
+		}
+		v, err := administrador.ObtenerVariable(nombre)
+		if err != nil {
+			return fmt.Errorf("❌ %w: '%s'", ErrVariableNoExiste, nombre)
+		}
+		delta := 1.0
+		if strings.HasSuffix(linea, "--") {
+			delta = -1.0
+		}
+		actual, err := aFlotante64(v.ValorComoInterface())
+		if err != nil {
+			return fmt.Errorf("⚠️ operación inválida para tipo=%s: %v", v.Tipo(), err)
+		}
+		nuevo := actual + delta
+		if err := administrador.ModificarVariable(nombre, nuevo); err != nil {
+			return fmt.Errorf("⚠️ error asignando a '%s' (tipo=%s): %w", nombre, v.Tipo(), err)
+		}
+		fmt.Printf("✔ %s '%s' %s → %v\n", strings.ToUpper(v.Tipo()), nombre, selector(delta > 0, "++", "--"), nuevo)
+		return nil
+	}
 
-    // Asignación con '='
-    partes := strings.SplitN(linea, "=", 2)
-    if len(partes) != 2 {
-        return ErrSintaxisInvalida
-    }
-    nombre := strings.TrimSpace(partes[0])
-    expr := strings.TrimSpace(partes[1])
-    if nombre == "" {
-        return ErrNombreVacio
-    }
-    if expr == "" {
-        return ErrValorVacio
-    }
+	// Asignación estándar con :=
+	partes := strings.SplitN(linea, ":=", 2)
+	if len(partes) != 2 {
+		return ErrSintaxisInvalida
+	}
+	nombre := strings.TrimSpace(partes[0])
+	expr := strings.TrimSpace(partes[1])
 
-    // Verificar existencia
-    v, err := administrador.ObtenerVariable(nombre)
-    if err != nil {
-        return fmt.Errorf("%w: '%s'", ErrVariableNoExiste, nombre)
-    }
+	if nombre == "" { return ErrNombreVacio }
+	if expr == "" { return ErrValorVacio }
 
-    // Evaluar expresión completa (variables, literales, funciones, etc.)
-    resultado, err := evaluador.Eval(expr)
-    if err != nil {
-        // Fallback: pasar crudo, el tipo decidirá si es válido
-        resultado = expr
-    }
+	v, err := administrador.ObtenerVariable(nombre)
+	if err != nil {
+		return fmt.Errorf("❌ %w: '%s'", ErrVariableNoExiste, nombre)
+	}
 
-    // Asignar resultado
-    if err := administrador.ModificarVariable(nombre, resultado); err != nil {
-        return fmt.Errorf("error asignando a '%s' (tipo=%s) con '%v': %w", nombre, v.Tipo(), resultado, err)
-    }
+	// Intentar evaluar como expresión matemática o lógica
+	resultado, err := evaluador.Eval(expr)
+	if err != nil {
+		// Si falla la evaluación, verificar si es el nombre de otra variable
+		if vOrigen, err2 := administrador.ObtenerVariable(expr); err2 == nil && vOrigen != nil {
+			resultado = vOrigen.ValorComoInterface()
+		} else {
+			resultado = expr
+		}
+	}
 
-    fmt.Printf("✔ %s '%s' ← %s → %v\n", strings.ToUpper(v.Tipo()), nombre, expr, resultado)
-    return nil
+	if err := administrador.ModificarVariable(nombre, resultado); err != nil {
+		return fmt.Errorf("⚠️ error asignando a '%s': %w", nombre, err)
+	}
+
+	fmt.Printf("✔ %s '%s' ← %v\n", strings.ToUpper(v.Tipo()), nombre, resultado)
+	return nil
 }
 
-func tern(cond bool, a, b string) string {
-    if cond {
-        return a
-    }
-    return b
+// init registra el manejador en el evaluador central
+func init() {
+	evaluador.Registrar("asignar", func(n parser.Nodo, ctx *evaluador.Contexto) {
+		// Soportar múltiples nombres separados por coma (ej. a, b := 1)
+		nombres := strings.Split(n.Nombre, ",")
+
+		for _, nombreIndiv := range nombres {
+			nombreLimpio := strings.TrimSpace(nombreIndiv)
+			if nombreLimpio == "" {
+				continue
+			}
+
+			// Verificar si la variable destino existe
+			vDestino, err := administrador.ObtenerVariable(nombreLimpio)
+			if err != nil {
+				fmt.Printf("❌ Variable '%s' no existe\n", nombreLimpio)
+				continue
+			}
+
+			// RESOLUCIÓN: ¿El valor es el nombre de otra variable?
+			valorFinal := n.Valor
+			if nombreOrigen, ok := n.Valor.(string); ok {
+				// Buscamos si existe una variable con ese nombre para copiar su valor
+				if vOrigen, err2 := administrador.ObtenerVariable(nombreOrigen); err2 == nil && vOrigen != nil {
+					valorFinal = vOrigen.ValorComoInterface()
+				}
+			}
+
+			// Modificar la variable con el valor resuelto
+			if err := administrador.ModificarVariable(nombreLimpio, valorFinal); err != nil {
+				fmt.Printf("⚠️ Error asignando a '%s': %v\n", nombreLimpio, err)
+				continue
+			}
+
+			fmt.Printf("✔ %s '%s' ← %v\n", strings.ToUpper(vDestino.Tipo()), nombreLimpio, valorFinal)
+		}
+	})
+}
+
+func selector(condicion bool, a, b string) string {
+	if condicion { return a }
+	return b
+}
+
+func aFlotante64(v interface{}) (float64, error) {
+	switch n := v.(type) {
+	case int:     return float64(n), nil
+	case int64:   return float64(n), nil
+	case float64: return n, nil
+	case uint8:   return float64(n), nil
+	case bool:
+		if n { return 1.0, nil }
+		return 0.0, nil
+	default:
+		return 0, fmt.Errorf("conversión no soportada para %T", v)
+	}
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/expresion/expresion.go:
+package expresion
+
+import (
+    "fmt"
+
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
+)
+
+// init registra el handler para nodos tipo "expresion"
+func init() {
+    evaluador.Registrar("expresion", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        switch v := n.Valor.(type) {
+        case string:
+            // Si es un literal de texto, imprimir directo
+            fmt.Println(v)
+        case int, int64, float64, bool:
+            // Tipos básicos también se imprimen directo
+            fmt.Println(v)
+        default:
+            // Para otros casos, intentar evaluar como expresión
+            resultado, err := evaluador.Eval(fmt.Sprintf("%v", n.Valor))
+            if err != nil {
+                fmt.Printf("⚠️ Error evaluando expresión '%v': %v\n", n.Valor, err)
+                return
+            }
+            fmt.Printf("✔ Expresión evaluada: %v → %v\n", n.Valor, resultado)
+        }
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/llamada/llamada.go:
+package llamada
+
+import (
+    "fmt"
+
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
+)
+
+// init registra el handler para nodos tipo "llamada"
+func init() {
+    evaluador.Registrar("llamada", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        // Buscar la función en el contexto
+        fn, ok := ctx.Funciones[n.Nombre]
+        if !ok {
+            fmt.Printf("⚠️ Función '%s' no existe\n", n.Nombre)
+            return
+        }
+
+        // Preparar argumentos evaluados
+        var args []interface{}
+        for _, arg := range n.Args {
+            // Si el argumento ya es un valor básico, úsalo directo
+            switch v := arg.(type) {
+            case string, int, int64, float64, bool:
+                args = append(args, v)
+            default:
+                // Intentar evaluar como expresión
+                res, err := evaluador.Eval(fmt.Sprintf("%v", v))
+                if err != nil {
+                    fmt.Printf("⚠️ Error evaluando argumento '%v': %v\n", v, err)
+                    return
+                }
+                args = append(args, res)
+            }
+        }
+
+        // Ejecutar la función con los argumentos del nodo
+        resultado := fn(args...)
+
+        // Mostrar el resultado de la llamada
+        fmt.Printf("✔ Llamada a función '%s' → %v\n", n.Nombre, resultado)
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/inyectar_todas_variables/inyectar_todas_variables.go:
+package comandos
+
+import (
+    "nepa/desarrollo/interno/administrador"
+
+    // Importa aquí todos los paquetes de tipos
+    "nepa/desarrollo/interno/variables/bit"
+  
+    // "nepa/desarrollo/comandos/entero"
+    // "nepa/desarrollo/comandos/cadena"
+    // etc...
+)
+
+func init() {
+    administrador.RegistrarConstructores(map[string]func(string, interface{}) (administrador.Variable, error){
+        "bit":    bit.CrearBit,
+        // "entero": entero.CrearEntero,
+        // "cadena": cadena.CrearCadena,
+        // agrega más tipos aquí
+    })
 }
 
 
@@ -2106,46 +3294,112 @@ func tern(cond bool, a, b string) string {
 package variable
 
 import (
-    "errors"
     "fmt"
+    "regexp"
     "strings"
 
-    "nepa/interno/administrador"
+    "nepa/desarrollo/interno/administrador"
+    "nepa/desarrollo/interno/bloque"
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
 )
 
-// Errores específicos del comando variable.
-var (
-    ErrSintaxisInvalida = errors.New("sintaxis inválida para comando 'variable'")
-    ErrTipoDesconocido  = errors.New("tipo de variable desconocido")
+// esNombreValido valida que el nombre de la variable cumpla con las reglas
+func esNombreValido(nombre string) bool {
+    re := regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+    if !re.MatchString(nombre) {
+        return false
+    }
+    for _, r := range bloque.PalabrasReservadas {
+        if nombre == r {
+            return false
+        }
+    }
+    return true
+}
+
+func init() {
+    evaluador.Registrar("variable", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        // Obtener tipo desde Args[0]
+        var tipo string
+        if len(n.Args) > 0 {
+            if t, ok := n.Args[0].(string); ok {
+                tipo = strings.ToLower(strings.TrimSpace(t))
+            }
+        }
+        if tipo == "" {
+            fmt.Printf("❌ Tipo de variable no especificado para '%s'\n", n.Nombre)
+            return
+        }
+
+        // Soportar múltiples nombres separados por coma
+        nombres := strings.Split(n.Nombre, ",")
+        for i := range nombres {
+            nombres[i] = strings.TrimSpace(nombres[i])
+            if !esNombreValido(nombres[i]) {
+                fmt.Printf("❌ Nombre de variable inválido: %s\n", nombres[i])
+                return
+            }
+        }
+
+        // Buscar constructor del tipo
+        constructor, ok := administrador.Constructores[tipo]
+        if !ok {
+            fmt.Printf("❌ Tipo de variable no implementado: %s\n", tipo)
+            return
+        }
+
+        // Crear y registrar cada variable
+        for _, nombre := range nombres {
+            v, err := constructor(nombre, n.Valor)
+            if err != nil {
+                fmt.Printf("❌ Error creando variable '%s' (%s): %v\n", nombre, tipo, err)
+                continue
+            }
+            administrador.RegistrarVariable(nombre, v)
+            ctx.Variables[nombre] = v // <-- ahora también se mete en el contexto
+            fmt.Printf("✔ Variable creada: %s\n", v.Mostrar())
+        }
+    })
+}
+
+
+
+
+/home/deb/nepa/desarrollo/comandos/bloque/bloque.go:
+package bloque
+
+import (
+    "fmt"
+
+    "nepa/desarrollo/interno/evaluador"
+    "nepa/desarrollo/interno/parser"
 )
 
-// Ejecutar interpreta el comando 'variable'.
-// Sintaxis esperada: variable <tipo> <nombre> [valor_opcional]
-func Ejecutar(args []string) error {
-    if len(args) < 2 {
-        return ErrSintaxisInvalida
-    }
-
-    tipo := strings.ToLower(args[0])
-    nombre := args[1]
-    var valor interface{} = nil
-    if len(args) > 2 {
-        valor = args[2]
-    }
-
-    constructor, ok := administrador.Constructores[tipo]
-    if !ok {
-        return fmt.Errorf("%w: %s", ErrTipoDesconocido, tipo)
-    }
-
-    v, err := constructor(nombre, valor)
-    if err != nil {
-        return fmt.Errorf("error creando variable '%s' de tipo '%s': %w", nombre, tipo, err)
-    }
-
-    administrador.RegistrarVariable(nombre, v)
-    fmt.Printf("✔ Variable creada: %s\n", v.Mostrar())
-    return nil
+// init registra el handler para nodos tipo "bloque"
+func init() {
+    evaluador.Registrar("bloque", func(n parser.Nodo, ctx *evaluador.Contexto) {
+        // Un bloque normalmente contiene subnodos en n.Args
+        count := 0
+        for i, arg := range n.Args {
+            // Verificamos si el argumento es un Nodo
+            if hijo, ok := arg.(parser.Nodo); ok {
+                _, err := evaluador.EjecutarConContexto(
+                    []parser.Nodo{hijo},
+                    ctx.Variables,
+                    ctx.Globales,
+                    ctx.Constantes,
+                    fmt.Sprintf("bloque:%d", i+1), // identificador de archivo/posición
+                )
+                if err != nil {
+                    fmt.Printf("Error: bloque:%d: %v\n", i+1, err)
+                    return // detener ejecución del bloque en caso de error fatal
+                }
+                count++
+            }
+        }
+        fmt.Printf("✔ Bloque ejecutado (%d nodos)\n", count)
+    })
 }
 
 
@@ -2157,58 +3411,105 @@ package imprimir
 import (
     "errors"
     "fmt"
+    "reflect"
     "strings"
 
-    "nepa/interno/evaluador"
+    "nepa/desarrollo/interno/evaluador"
 )
 
 var (
     ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'imprimir()', 'imprimir \"texto\"', 'imprimir var' o 'imprimir expr'")
-    ErrTipoNoImprimible = errors.New("tipo de dato no imprimible")
 )
 
+// imprimirValor convierte cualquier valor Go en una representación legible
+func imprimirValor(v interface{}) string {
+    if v == nil {
+        return "nulo"
+    }
+
+    rv := reflect.ValueOf(v)
+    switch rv.Kind() {
+    case reflect.String:
+        return rv.String()
+    case reflect.Bool:
+        if rv.Bool() {
+            return "verdadero"
+        }
+        return "falso"
+    case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+        return fmt.Sprintf("%d", rv.Int())
+    case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+        return fmt.Sprintf("%d", rv.Uint())
+    case reflect.Float32, reflect.Float64:
+        return fmt.Sprintf("%f", rv.Float())
+    case reflect.Slice, reflect.Array:
+        var partes []string
+        for i := 0; i < rv.Len(); i++ {
+            partes = append(partes, imprimirValor(rv.Index(i).Interface()))
+        }
+        return "[" + strings.Join(partes, ", ") + "]"
+    case reflect.Map:
+        var partes []string
+        for _, key := range rv.MapKeys() {
+            partes = append(partes,
+                fmt.Sprintf("%s: %s", imprimirValor(key.Interface()), imprimirValor(rv.MapIndex(key).Interface())))
+        }
+        return "{" + strings.Join(partes, ", ") + "}"
+    case reflect.Ptr:
+        if rv.IsNil() {
+            return "puntero(nil)"
+        }
+        return fmt.Sprintf("puntero→%s", imprimirValor(rv.Elem().Interface()))
+    case reflect.Func:
+        return "función"
+    default:
+        return fmt.Sprintf("%v", v)
+    }
+}
+
+// Ejecutar mantiene compatibilidad con main.go (línea cruda)
 func Ejecutar(linea string) error {
     linea = strings.TrimSpace(linea)
 
-    // Quitar palabra clave "imprimir"
     if strings.HasPrefix(strings.ToLower(linea), "imprimir") {
         linea = strings.TrimSpace(linea[len("imprimir"):])
     }
 
-    // Caso: imprimir sin nada → error
-    if linea == "" {
-        return ErrSintaxisInvalida
-    }
-
-    // Caso: imprimir() → línea en blanco
-    if linea == "()" {
+    if linea == "" || linea == "()" || linea == `""` || linea == `''` {
         fmt.Println()
         return nil
     }
 
-    // Caso: imprimir "" o '' → línea en blanco
-    if linea == `""` || linea == `''` {
-        fmt.Println()
+    // Literal entre comillas
+    if (strings.HasPrefix(linea, "\"") && strings.HasSuffix(linea, "\"")) ||
+        (strings.HasPrefix(linea, "'") && strings.HasSuffix(linea, "'")) {
+        contenido := strings.Trim(linea, "\"'")
+        fmt.Println(contenido)
         return nil
     }
 
-    // Evaluar expresión completa (concatenaciones, funciones, variables, etc.)
+    // Evaluar expresión completa
     resultado, err := evaluador.Eval(linea)
     if err != nil {
-        return fmt.Errorf("error evaluando expresión '%s': %v", linea, err)
+        return fmt.Errorf("❌ error evaluando expresión '%s': %v", linea, err)
     }
 
-    // Convertir resultado a string imprimible
-    switch v := resultado.(type) {
-    case string:
-        fmt.Println(v)
-    case int, int64, float64, bool:
-        fmt.Println(fmt.Sprintf("%v", v))
-    default:
-        return fmt.Errorf("%w: %T", ErrTipoNoImprimible, v)
-    }
-
+    fmt.Println(imprimirValor(resultado))
     return nil
+}
+
+// init registra este comando en el mapa global de funciones
+func init() {
+    evaluador.Funciones["imprimir"] = func(args ...interface{}) (interface{}, error) {
+        if len(args) == 0 {
+            fmt.Println()
+            return nil, nil
+        }
+        for _, arg := range args {
+            fmt.Println(imprimirValor(arg))
+        }
+        return nil, nil
+    }
 }
 
 
@@ -2271,15 +3572,6 @@ go 1.23.2
 
 
 
-
-
-
-
-/home/deb/nepa/CONSTRAIN:
-Esto no es Python, es puro Golang, Aqui esta el archivo que pediste, verificalo y aplica los cambios que seab¿n necesarios, este archivo es importante pues de el dependen mas programas, respetalo, no lo optimices, no le quites comentarios, nunca trates de quitarle caracteristicas pues si me lo entregas bien modificado vaz a romper todo el interprete pues con esas variables y estrutura otros archivos esperan porque dependen de el, solo haz las modificaciones necesarias y entregame el archivo completo ya arreglado, aqui tienes el archivo.
-La identacion es estricta, 4 espacios y terminan con :, si no se cumplen las condiciones se termina la ejecucion y se arroja un error de sintaxis.
-Se va procesar un archivo a la vez.
-Aplica esos cambios a este archivo, si es posible adiciona un comentario para saber que hace.
 
 
 
@@ -3078,15 +4370,23 @@ para x en 500 {
 
 
 /home/deb/nepa/test.nepa:
-# test_ok.nepa
-x = raiz(16)
-y = media(10, 20, 30)
-imprimir(x, y)
+# Hola Mundo
+imprimir("hola mundo")
+variable bit a := 1
+variable bit b := 0
+
+asignar a, b := 1
+
+a := 0
+b := a
 
 
 
 
-/home/deb/nepa/touch:
+
+/home/deb/nepa/holamundo.nepa:
+#Ejemplo Hola Mundo
+imprimir("Hola Mundo")
 
 
 
