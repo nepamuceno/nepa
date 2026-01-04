@@ -2,4 +2,19 @@ imprimir("hola mundo")
 # se reconocen comentarios
 imprimir "hola mundo"
 
-// no se reconoce
+variable bit a := 1
+variable bit b := 0
+variable bit c := 1
+variable bit d := 0
+variable bit f:=1
+
+asignar a := 0
+asignar b := 1
+
+asignar a:=1
+asignar d:=1
+
+variable bit h, j ,k := 1
+
+a:=b
+c:=f

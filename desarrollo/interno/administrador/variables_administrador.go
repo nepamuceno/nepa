@@ -1,4 +1,3 @@
-// desarrollo/interno/administrador/variables_administrador.go
 package administrador
 
 import (
@@ -40,10 +39,22 @@ var mu sync.RWMutex
 // Registro de constructores: tipo → función(nombre, valor) → Variable
 var Constructores = make(map[string]func(string, interface{}) (Variable, error))
 
-// RegistrarConstructor permite añadir nuevos tipos al ecosistema.
+// RegistrarConstructor permite añadir un nuevo tipo al ecosistema.
 // Ejemplo: administrador.RegistrarConstructor("bit", bit.CrearBit)
 func RegistrarConstructor(tipo string, f func(string, interface{}) (Variable, error)) {
     Constructores[tipo] = f
+}
+
+// RegistrarConstructores permite inyectar múltiples tipos de una sola vez.
+// Ejemplo:
+// administrador.RegistrarConstructores(map[string]func(string, interface{}) (Variable, error){
+//     "bit":    bit.CrearBit,
+//     "entero": entero.CrearEntero,
+// })
+func RegistrarConstructores(mapa map[string]func(string, interface{}) (Variable, error)) {
+    for tipo, f := range mapa {
+        Constructores[tipo] = f
+    }
 }
 
 // CrearVariableUniversal crea una variable de cualquier tipo registrado.

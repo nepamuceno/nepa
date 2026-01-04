@@ -8,15 +8,14 @@ import (
     "strings"
     "sync"
 
-    "nepa/interno/administrador"
+    "nepa/desarrollo/interno/administrador"
 )
 
-// Errores específicos del tipo Bit
 var (
-    ErrValorInvalido  = errors.New("valor inválido para Bit: solo se permite 0 o 1")
-    ErrAsignacionNula = errors.New("asignación nula: se requiere un valor para Bit")
-    ErrConversion     = errors.New("conversión inválida hacia/desde Bit")
-    ErrNombreInvalido = errors.New("nombre inválido: vacío o con espacios")
+    ErrValorInvalido  = errors.New("❌ valor inválido para Bit: solo se permite 0 o 1")
+    ErrAsignacionNula = errors.New("❌ asignación nula: se requiere un valor para Bit")
+    ErrConversion     = errors.New("❌ conversión inválida hacia/desde Bit")
+    ErrNombreInvalido = errors.New("❌ nombre inválido: vacío o con espacios")
 )
 
 // Bit representa un valor binario (0 o 1) con nombre y metadatos.
@@ -28,7 +27,6 @@ type Bit struct {
 }
 
 // CrearBit crea una instancia de Bit y devuelve administrador.Variable.
-// Cumple con la firma esperada por el administrador.
 func CrearBit(nombre string, v interface{}) (administrador.Variable, error) {
     nombre = strings.TrimSpace(nombre)
     if nombre == "" || strings.Contains(nombre, " ") {
@@ -43,9 +41,10 @@ func CrearBit(nombre string, v interface{}) (administrador.Variable, error) {
 
     if v != nil {
         if err := b.AsignarDesdeInterface(v); err != nil {
-            return nil, err
+            return nil, fmt.Errorf("❌ error asignando valor inicial a '%s': %v", nombre, err)
         }
     }
+
     return b, nil
 }
 
@@ -104,11 +103,9 @@ func (b *Bit) AsignarDesdeInterface(v interface{}) error {
             b.valor = 1
             return nil
         default:
-            if n, err := strconv.Atoi(s); err == nil {
-                if n == 0 || n == 1 {
-                    b.valor = uint8(n)
-                    return nil
-                }
+            if n, err := strconv.Atoi(s); err == nil && (n == 0 || n == 1) {
+                b.valor = uint8(n)
+                return nil
             }
             return ErrValorInvalido
         }
@@ -170,9 +167,4 @@ func (b *Bit) EsUno() bool {
     b.mu.RLock()
     defer b.mu.RUnlock()
     return b.valor == 1
-}
-
-// Registro automático del constructor en el administrador
-func init() {
-    administrador.RegistrarConstructor("bit", CrearBit)
 }

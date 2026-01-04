@@ -1,11 +1,12 @@
 package evaluador
 
 import (
+    "fmt"
     "strings"
     "sync"
 
-    "nepa/desarrollo/interno/core"
     "nepa/desarrollo/interno/parser"
+     "nepa/desarrollo/interno/administrador"
 )
 
 type SolicitudEjecutar struct {
@@ -55,18 +56,12 @@ func EjecutarConContexto(ast []parser.Nodo, args map[string]interface{},
             f, ok := Funciones[nombre]
             if ok {
                 if _, err := f(nodo.Args...); err != nil {
-                    return nil, core.ErrorEjecucion{
-                        Archivo: archivo,
-                        Linea:   linea,
-                        Mensaje: "ejecución fallida en '" + nodo.Nombre + "' → " + err.Error(),
-                    }
+                    return nil, fmt.Errorf("%s:%d: ejecución fallida en '%s' → %v",
+                        archivo, linea, nodo.Nombre, err)
                 }
             } else {
-                return nil, core.ErrorEjecucion{
-                    Archivo: archivo,
-                    Linea:   linea,
-                    Mensaje: "instrucción no reconocida '" + nodo.Nombre + "'",
-                }
+                return nil, fmt.Errorf("%s:%d: instrucción no reconocida '%s'",
+                    archivo, linea, nodo.Nombre)
             }
             continue
         }
@@ -77,17 +72,19 @@ func EjecutarConContexto(ast []parser.Nodo, args map[string]interface{},
         if ok {
             handler(nodo, ctx)
         } else {
-            return nil, core.ErrorEjecucion{
-                Archivo: archivo,
-                Linea:   linea,
-                Mensaje: "tipo de nodo no reconocido '" + nodo.Tipo + "'",
-            }
+            return nil, fmt.Errorf("%s:%d: tipo de nodo no reconocido '%s'",
+                archivo, linea, nodo.Tipo)
         }
     }
 
-    for k, v := range ctx.Variables {
-        resultados[k] = v
-    }
+	for k, v := range ctx.Variables { 
+		// Si la variable implementa administrador.Variable, usamos Mostrar() 
+		if varObj, ok := v.(administrador.Variable); ok {
+			resultados[k] = varObj.Mostrar() 
+		} else { 
+			resultados[k] = v 
+		}
+	}
 
     return resultados, nil
 }

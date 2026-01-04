@@ -1,4 +1,0 @@
-Esto no es Python, es puro Golang, Aqui esta el archivo que pediste, verificalo y aplica los cambios que seab¿n necesarios, este archivo es importante pues de el dependen mas programas, respetalo, no lo optimices, no le quites comentarios, nunca trates de quitarle caracteristicas pues si me lo entregas bien modificado vaz a romper todo el interprete pues con esas variables y estrutura otros archivos esperan porque dependen de el, solo haz las modificaciones necesarias y entregame el archivo completo ya arreglado, aqui tienes el archivo.
-La identacion es estricta, 4 espacios y terminan con :, si no se cumplen las condiciones se termina la ejecucion y se arroja un error de sintaxis.
-Se va procesar un archivo a la vez.
-Aplica esos cambios a este archivo, si es posible adiciona un comentario para saber que hace.

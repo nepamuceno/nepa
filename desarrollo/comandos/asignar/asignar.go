@@ -11,15 +11,15 @@ import (
 )
 
 var (
-    ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'asignar <nombre> = <expresión>' o '<nombre> = <expresión>' o '<nombre>++/--'")
+    ErrSintaxisInvalida = errors.New("sintaxis inválida: use 'asignar <nombre> := <expresión>' o '<nombre> := <expresión>' o '<nombre>++/--'")
     ErrVariableNoExiste = errors.New("la variable no existe")
     ErrNombreVacio      = errors.New("nombre vacío en asignación")
     ErrValorVacio       = errors.New("valor vacío en asignación")
 )
 
 // Ejecutar soporta:
-//   - asignar a = expr
-//   - a = expr
+//   - asignar a := expr
+//   - a := expr
 //   - a++ / a--
 //   - asignar a++ / asignar a--
 func Ejecutar(linea string) error {
@@ -59,8 +59,8 @@ func Ejecutar(linea string) error {
         return nil
     }
 
-    // Asignación con '='
-    partes := strings.SplitN(linea, "=", 2)
+    // Asignación con ':=' (regla Nepa)
+    partes := strings.SplitN(linea, ":=", 2)
     if len(partes) != 2 {
         return ErrSintaxisInvalida
     }
@@ -82,8 +82,12 @@ func Ejecutar(linea string) error {
     // Evaluar expresión completa (variables, literales, funciones, etc.)
     resultado, err := evaluador.Eval(expr)
     if err != nil {
-        // Fallback: pasar crudo, el tipo decidirá si es válido
-        resultado = expr
+        // Fallback: si expr es nombre de otra variable, copiar su valor
+        if v2, err2 := administrador.ObtenerVariable(expr); err2 == nil && v2 != nil {
+            resultado = v2.ValorComoInterface()
+        } else {
+            resultado = expr
+        }
     }
 
     // Asignar resultado
@@ -102,7 +106,7 @@ func tern(cond bool, a, b string) string {
     return b
 }
 
-// Conversión genérica a float64 (ahora soporta bit y bool)
+// Conversión genérica a float64 (soporta bit y bool)
 func toFloat64(v interface{}) (float64, error) {
     switch n := v.(type) {
     case int:
@@ -133,12 +137,20 @@ func init() {
             return
         }
 
+        // Si el valor es otra variable, resolver su valor actual
+        valor := n.Valor
+        if nombreVar, ok := valor.(string); ok {
+            if v2, err2 := administrador.ObtenerVariable(nombreVar); err2 == nil && v2 != nil {
+                valor = v2.ValorComoInterface()
+            }
+        }
+
         // Asignar valor directamente desde el nodo
-        if err := administrador.ModificarVariable(n.Nombre, n.Valor); err != nil {
+        if err := administrador.ModificarVariable(n.Nombre, valor); err != nil {
             fmt.Printf("⚠️ Error asignando a '%s': %v\n", n.Nombre, err)
             return
         }
 
-        fmt.Printf("✔ %s '%s' ← %v\n", strings.ToUpper(v.Tipo()), n.Nombre, n.Valor)
+        fmt.Printf("✔ %s '%s' ← %v\n", strings.ToUpper(v.Tipo()), n.Nombre, valor)
     })
 }

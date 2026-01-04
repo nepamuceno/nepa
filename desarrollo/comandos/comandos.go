@@ -11,4 +11,5 @@ import (
     _ "nepa/desarrollo/comandos/bloque"
     _ "nepa/desarrollo/comandos/expresion"
     _ "nepa/desarrollo/comandos/llamada"
+    _ "nepa/desarrollo/comandos/inyectar_todas_variables"
 )

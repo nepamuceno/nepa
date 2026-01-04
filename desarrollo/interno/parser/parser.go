@@ -32,109 +32,46 @@ func Parse(lineas []string) []Nodo {
         // --- Caso especial: si_es ---
         if token == "si_es" {
             if strings.HasSuffix(linea, ":") {
-                nombre := strings.TrimSuffix(linea, ":")
-                ast = append(ast, Nodo{Tipo: "bloque", Nombre: nombre})
-                continue
+                ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
             } else {
                 ast = append(ast, Nodo{Tipo: "expresion", Valor: parseValor(linea)})
-                continue
             }
+            continue
         }
 
         // --- Bloques generales ---
         if strings.HasSuffix(linea, ":") {
-            nombre := strings.TrimSuffix(linea, ":")
-            ast = append(ast, Nodo{Tipo: "bloque", Nombre: nombre})
+            ast = append(ast, Nodo{Tipo: "bloque", Nombre: strings.TrimSuffix(linea, ":")})
             continue
         }
 
-        // --- Asignaciones globales y constantes ---
-        if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
-            partes := strings.SplitN(linea[len("global "):], "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "global", Nombre: nombre, Valor: valor})
-                continue
-            }
-        }
-
-        if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
-            partes := strings.SplitN(linea[len("const "):], "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "constante", Nombre: nombre, Valor: valor})
-                continue
-            }
-        }
-
-        // --- Declaración de variables ---
-        if strings.HasPrefix(linea, "variable ") {
-            partes := strings.Fields(linea)
-            if len(partes) >= 4 {
-                tipo := partes[1]
-                nombres := strings.TrimSuffix(partes[2], ":=")
-                valor := ""
-                if len(partes) > 3 {
-                    valor = strings.Join(partes[3:], " ")
-                }
-                ast = append(ast, Nodo{
-                    Tipo:   "variable",
-                    Nombre: nombres,
-                    Valor:  parseValor(valor),
-                    Args:   []interface{}{tipo},
-                })
-                continue
-            }
-        }
-
-        // --- Asignación con palabra clave "asignar" ---
-        if strings.HasPrefix(linea, "asignar ") && strings.Contains(linea, "=") && !strings.Contains(linea, "==") {
-            partes := strings.SplitN(linea[len("asignar "):], "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "asignar", Nombre: nombre, Valor: valor})
-                continue
-            }
-        }
-
-        // --- Asignación local sin palabra clave ---
-        if strings.Contains(linea, "=") && !strings.Contains(linea, "==") {
-            partes := strings.SplitN(linea, "=", 2)
-            if len(partes) == 2 {
-                nombre := strings.TrimSpace(partes[0])
-                valor := parseValor(strings.TrimSpace(partes[1]))
-                ast = append(ast, Nodo{Tipo: "variable", Nombre: nombre, Valor: valor})
-                continue
-            }
-        }
-
-        // --- Llamadas a funciones con paréntesis ---
-        if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
-            fn := linea[:strings.Index(linea, "(")]
-            fn = strings.TrimSpace(fn)
-            args := extraerArgs(linea)
-            ast = append(ast, Nodo{Tipo: "llamada", Nombre: fn, Args: args})
+        // --- Globales ---
+        if nodo := parseGlobal(linea); nodo != nil {
+            ast = append(ast, *nodo)
             continue
         }
 
-        // --- Llamadas inline a cualquier función ---
-        if strings.Contains(linea, " ") {
-            partes := strings.SplitN(linea, " ", 2)
-            fn := strings.TrimSpace(partes[0])
-            resto := strings.TrimSpace(partes[1])
+        // --- Constantes ---
+        if nodo := parseConst(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
 
-            args := []interface{}{}
-            for _, p := range strings.Split(resto, ",") {
-                arg := strings.TrimSpace(p)
-                if arg != "" {
-                    args = append(args, parseValor(arg))
-                }
-            }
+        // --- Variables ---
+        if nodo := parseVariable(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
 
-            ast = append(ast, Nodo{Tipo: "llamada", Nombre: fn, Args: args})
+        // --- Asignaciones ---
+        if nodo := parseAsignar(linea); nodo != nil {
+            ast = append(ast, *nodo)
+            continue
+        }
+
+        // --- Llamadas ---
+        if nodo := parseLlamada(linea); nodo != nil {
+            ast = append(ast, *nodo)
             continue
         }
 
@@ -145,7 +82,52 @@ func Parse(lineas []string) []Nodo {
     return ast
 }
 
-// extraerArgs obtiene los argumentos de una llamada tipo funcion(arg1, arg2)
+// --- Funciones auxiliares ---
+
+func parseGlobal(linea string) *Nodo {
+    if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("global "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "global", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
+        }
+    }
+    return nil
+}
+
+func parseConst(linea string) *Nodo {
+    if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
+        partes := strings.SplitN(linea[len("const "):], "=", 2)
+        if len(partes) == 2 {
+            return &Nodo{Tipo: "constante", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
+        }
+    }
+    return nil
+}
+
+func parseLlamada(linea string) *Nodo {
+    if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
+        fn := strings.TrimSpace(linea[:strings.Index(linea, "(")])
+        args := extraerArgs(linea)
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    if strings.Contains(linea, " ") {
+        partes := strings.SplitN(linea, " ", 2)
+        fn := strings.TrimSpace(partes[0])
+        resto := strings.TrimSpace(partes[1])
+        args := []interface{}{}
+        for _, p := range strings.Split(resto, ",") {
+            arg := strings.TrimSpace(p)
+            if arg != "" {
+                args = append(args, parseValor(arg))
+            }
+        }
+        return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
+    }
+    return nil
+}
+
+// --- Utilidades ---
+
 func extraerArgs(linea string) []interface{} {
     ini := strings.Index(linea, "(")
     fin := strings.LastIndex(linea, ")")
@@ -164,7 +146,6 @@ func extraerArgs(linea string) []interface{} {
     return args
 }
 
-// parseValor convierte un literal string en su tipo correcto
 func parseValor(raw string) interface{} {
     if raw == "true" {
         return true
@@ -203,5 +184,6 @@ func parseValor(raw string) interface{} {
         }
         return lista
     }
+    // Si no coincide con literal, se devuelve tal cual (posible nombre de variable)
     return raw
 }

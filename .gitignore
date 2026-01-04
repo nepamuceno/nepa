@@ -1,5 +1,6 @@
 # --- Secretos y Seguridad (MANTENER PROTEGIDO) ---
 .env
+CONSTRAIN
 
 # --- Archivos que SÍ queremos en el repo ---
 # Se eliminó history/ para que se suba el archivo de comandos
