@@ -1,191 +1,116 @@
 package matematicas
 
 import (
-    "errors"
-    "fmt"
-    "math"
-
-    "nepa/desarrollo/interno/evaluador"
+	"math"
+	"fmt"
+	"nepa/desarrollo/interno/evaluador"
 )
 
-// InyectarFisica agrega funciones físicas al contexto
-func InyectarFisica(ctx *evaluador.Contexto) {
-    if ctx.Funciones == nil {
-        ctx.Funciones = map[string]func(...interface{}) interface{}{}
-    }
+// Constantes Universales para el "Guru"
+const (
+	G_Universal = 6.67430e-11 // Constante de Gravitación
+	C_Luz       = 299792458   // Velocidad de la luz en m/s
+	H_Planck    = 6.62607e-34 // Constante de Planck
+)
 
-    reg := func(n string, f func(...interface{}) interface{}) {
-        ctx.Funciones[n] = f
-    }
+func inyectarFisicaGlobal() {
 
-    // --- Energía y movimiento ---
-    reg("energia_relativista", func(args ...interface{}) interface{} {
-        if len(args) != 1 {
-            return errors.New("❌ ERROR FATAL: energia_relativista requiere 1 argumento (masa)")
-        }
-        m, err := evaluador.ConvertirAReal(args[0])
-        if err != nil {
-            return err
-        }
-        return m * math.Pow(299792458.0, 2)
-    })
+	// --- 1. CINEMÁTICA (MOVIMIENTO) ---
 
-    reg("energia_cinetica", func(args ...interface{}) interface{} {
-        if len(args) != 2 {
-            return errors.New("❌ ERROR FATAL: energia_cinetica requiere 2 argumentos (masa, velocidad)")
-        }
-        m, err := evaluador.ConvertirAReal(args[0])
-        if err != nil {
-            return err
-        }
-        v, err := evaluador.ConvertirAReal(args[1])
-        if err != nil {
-            return err
-        }
-        return 0.5 * m * math.Pow(v, 2)
-    })
+	// velocidad(distancia, tiempo)
+	evaluador.Funciones["velocidad"] = func(args ...interface{}) (interface{}, error) {
+		d, t, err := validar2("velocidad", args); if err != nil { return nil, err }
+		return finalizar("velocidad", d/t)
+	}
 
-    reg("trabajo", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: trabajo requiere 3 argumentos (fuerza, distancia, ángulo)")
-        }
-        f, err := evaluador.ConvertirAReal(args[0])
-        if err != nil {
-            return err
-        }
-        d, err := evaluador.ConvertirAReal(args[1])
-        if err != nil {
-            return err
-        }
-        ang, err := evaluador.ConvertirAReal(args[2])
-        if err != nil {
-            return err
-        }
-        return f * d * math.Cos(ang*math.Pi/180)
-    })
+	// posicion_mrua(posicion_inicial, velocidad_inicial, aceleracion, tiempo)
+	// d = xi + vi*t + 0.5*a*t^2
+	evaluador.Funciones["posicion_mrua"] = func(args ...interface{}) (interface{}, error) {
+		xi, vi, a, t, err := validar4("posicion_mrua", args); if err != nil { return nil, err }
+		res := xi + (vi * t) + (0.5 * a * math.Pow(t, 2))
+		return finalizar("posicion_mrua", res)
+	}
 
-    reg("energia_potencial", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: energia_potencial requiere 3 argumentos (masa, gravedad, altura)")
-        }
-        m, err := evaluador.ConvertirAReal(args[0])
-        if err != nil {
-            return err
-        }
-        g, err := evaluador.ConvertirAReal(args[1])
-        if err != nil {
-            return err
-        }
-        h, err := evaluador.ConvertirAReal(args[2])
-        if err != nil {
-            return err
-        }
-        return m * g * h
-    })
+	// --- 2. DINÁMICA Y FUERZAS (NEWTON) ---
 
-    // --- Proyectiles ---
-    reg("caida_libre", func(args ...interface{}) interface{} {
-        if len(args) != 1 {
-            return errors.New("❌ ERROR FATAL: caida_libre requiere 1 argumento (tiempo)")
-        }
-        t, err := evaluador.ConvertirAReal(args[0])
-        if err != nil {
-            return err
-        }
-        return 0.5 * 9.80665 * math.Pow(t, 2)
-    })
+	// fuerza(masa, aceleracion) -> F = m * a
+	evaluador.Funciones["fuerza"] = func(args ...interface{}) (interface{}, error) {
+		m, a, err := validar2("fuerza", args); if err != nil { return nil, err }
+		return finalizar("fuerza", m*a)
+	}
 
-    reg("proyectil_pos", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: proyectil_pos requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
-        }
-        v0, _ := evaluador.ConvertirAReal(args[0])
-        ang, _ := evaluador.ConvertirAReal(args[1])
-        t, _ := evaluador.ConvertirAReal(args[2])
-        rad := ang * math.Pi / 180
-        x := v0 * math.Cos(rad) * t
-        y := (v0 * math.Sin(rad) * t) - (0.5 * 9.80665 * t * t)
-        return fmt.Sprintf("%f,%f", x, y)
-    })
+	// peso(masa, gravedad) -> P = m * g
+	evaluador.Funciones["peso"] = func(args ...interface{}) (interface{}, error) {
+		m, g, err := validar2("peso", args); if err != nil { return nil, err }
+		return finalizar("peso", m*g)
+	}
 
-    reg("proyectil_x", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: proyectil_x requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
-        }
-        v0, _ := evaluador.ConvertirAReal(args[0])
-        ang, _ := evaluador.ConvertirAReal(args[1])
-        t, _ := evaluador.ConvertirAReal(args[2])
-        return v0 * math.Cos(ang*math.Pi/180) * t
-    })
+	// --- 3. ENERGÍA Y TRABAJO ---
 
-    reg("proyectil_y", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: proyectil_y requiere 3 argumentos (velocidad inicial, ángulo, tiempo)")
-        }
-        v0, _ := evaluador.ConvertirAReal(args[0])
-        ang, _ := evaluador.ConvertirAReal(args[1])
-        t, _ := evaluador.ConvertirAReal(args[2])
-        rad := ang * math.Pi / 180
-        return (v0 * math.Sin(rad) * t) - (0.5 * 9.80665 * t * t)
-    })
+	// energia_cinetica(masa, velocidad) -> Ec = 0.5 * m * v^2
+	evaluador.Funciones["energia_cinetica"] = func(args ...interface{}) (interface{}, error) {
+		m, v, err := validar2("energia_cinetica", args); if err != nil { return nil, err }
+		return finalizar("energia_cinetica", 0.5*m*math.Pow(v, 2))
+	}
 
-    // --- Física general ---
-    reg("densidad", func(args ...interface{}) interface{} {
-        if len(args) != 2 {
-            return errors.New("❌ ERROR FATAL: densidad requiere 2 argumentos (masa, volumen)")
-        }
-        m, _ := evaluador.ConvertirAReal(args[0])
-        v, _ := evaluador.ConvertirAReal(args[1])
-        if v == 0 {
-            return errors.New("❌ ERROR FATAL: volumen no puede ser 0")
-        }
-        return m / v
-    })
+	// energia_potencial(masa, gravedad, altura) -> Ep = m * g * h
+	evaluador.Funciones["energia_potencial"] = func(args ...interface{}) (interface{}, error) {
+		m, g, h, err := validar3("energia_potencial", args); if err != nil { return nil, err }
+		return finalizar("energia_potencial", m*g*h)
+	}
 
-    reg("presion_gas", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: presion_gas requiere 3 argumentos (n moles, temperatura, volumen)")
-        }
-        n, _ := evaluador.ConvertirAReal(args[0])
-        T, _ := evaluador.ConvertirAReal(args[1])
-        V, _ := evaluador.ConvertirAReal(args[2])
-        if V == 0 {
-            return errors.New("❌ ERROR FATAL: volumen no puede ser 0")
-        }
-        R := 8.314462
-        return (n * R * T) / V
-    })
+	// energia_masa(masa) -> E = m * c^2 (Einstein)
+	evaluador.Funciones["energia_masa"] = func(args ...interface{}) (interface{}, error) {
+		m, err := validar1("energia_masa", args); if err != nil { return nil, err }
+		return finalizar("energia_masa", m*math.Pow(C_Luz, 2))
+	}
 
-    reg("fuerza_gravitatoria", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: fuerza_gravitatoria requiere 3 argumentos (masa1, masa2, distancia)")
-        }
-        m1, _ := evaluador.ConvertirAReal(args[0])
-        m2, _ := evaluador.ConvertirAReal(args[1])
-        r, _ := evaluador.ConvertirAReal(args[2])
-        if r == 0 {
-            return errors.New("❌ ERROR FATAL: distancia no puede ser 0")
-        }
-        G := 6.67430e-11
-        return G * (m1 * m2) / math.Pow(r, 2)
-    })
+	// --- 4. ASTROFÍSICA (GRAVITACIÓN) ---
 
-    reg("ley_ohm_v", func(args ...interface{}) interface{} {
-        if len(args) != 2 {
-            return errors.New("❌ ERROR FATAL: ley_ohm_v requiere 2 argumentos (corriente, resistencia)")
-        }
-        I, _ := evaluador.ConvertirAReal(args[0])
-        R, _ := evaluador.ConvertirAReal(args[1])
-        return I * R
-    })
+	// atraccion_gravitatoria(masa1, masa2, distancia)
+	// F = G * (m1 * m2) / r^2
+	evaluador.Funciones["atraccion_gravitatoria"] = func(args ...interface{}) (interface{}, error) {
+		m1, m2, r, err := validar3("atraccion_gravitatoria", args); if err != nil { return nil, err }
+		res := G_Universal * (m1 * m2) / math.Pow(r, 2)
+		return finalizar("atraccion_gravitatoria", res)
+	}
 
-    reg("magnitud_vector", func(args ...interface{}) interface{} {
-        if len(args) != 3 {
-            return errors.New("❌ ERROR FATAL: magnitud_vector requiere 3 argumentos (x, y, z)")
-        }
-        x, _ := evaluador.ConvertirAReal(args[0])
-        y, _ := evaluador.ConvertirAReal(args[1])
-        z, _ := evaluador.ConvertirAReal(args[2])
-        return math.Sqrt(x*x + y*y + z*z)
-    })
+	// --- 5. MECÁNICA CUÁNTICA BÁSICA ---
+
+	// energia_foton(frecuencia) -> E = h * f
+	evaluador.Funciones["energia_foton"] = func(args ...interface{}) (interface{}, error) {
+		f, err := validar1("energia_foton", args); if err != nil { return nil, err }
+		return finalizar("energia_foton", H_Planck*f)
+	}
+
+	// --- 6. RELATIVIDAD ESPECIAL ---
+
+	// dilatacion_tiempo(tiempo_propio, velocidad)
+	// t = t0 / sqrt(1 - v^2/c^2)
+	evaluador.Funciones["dilatacion_tiempo"] = func(args ...interface{}) (interface{}, error) {
+		t0, v, err := validar2("dilatacion_tiempo", args); if err != nil { return nil, err }
+		if v >= C_Luz { return nil, fmt.Errorf("❌ ERROR: La velocidad no puede ser mayor o igual a la de la luz") }
+		factor := math.Sqrt(1 - math.Pow(v, 2)/math.Pow(C_Luz, 2))
+		return finalizar("dilatacion_tiempo", t0/factor)
+	}
+
+	// --- 7. FLUIDOS Y TERMODINÁMICA ---
+
+	// presion(fuerza, area)
+	evaluador.Funciones["presion"] = func(args ...interface{}) (interface{}, error) {
+		f, a, err := validar2("presion", args); if err != nil { return nil, err }
+		return finalizar("presion", f/a)
+	}
+
+	// celsius_a_fahrenheit(c)
+	evaluador.Funciones["celsius_a_fahrenheit"] = func(args ...interface{}) (interface{}, error) {
+		c, err := validar1("celsius_a_fahrenheit", args); if err != nil { return nil, err }
+		return finalizar("celsius_a_fahrenheit", (c*9/5)+32)
+	}
+	
+	// celsius_a_kelvin(c)
+	evaluador.Funciones["celsius_a_kelvin"] = func(args ...interface{}) (interface{}, error) {
+		c, err := validar1("celsius_a_kelvin", args); if err != nil { return nil, err }
+		return finalizar("celsius_a_kelvin", c + 273.15)
+	}
 }

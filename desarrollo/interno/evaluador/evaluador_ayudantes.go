@@ -5,8 +5,9 @@ import (
 	"strconv"
 )
 
+// Eliminamos la línea de ErrTipoNoSoportado porque ya existe en evaluador.go
+
 // ConvertirAReal convierte cualquier valor a float64 para cálculos universales.
-// Es el corazón de la interoperabilidad entre tipos en Nepa.
 func ConvertirAReal(v interface{}) (float64, error) {
 	switch x := v.(type) {
 	case int:
@@ -15,7 +16,7 @@ func ConvertirAReal(v interface{}) (float64, error) {
 		return float64(x), nil
 	case int64:
 		return float64(x), nil
-	case uint8: // Crucial para tus variables de tipo BIT
+	case uint8: 
 		return float64(x), nil
 	case uint:
 		return float64(x), nil
@@ -39,7 +40,28 @@ func ConvertirAReal(v interface{}) (float64, error) {
 		}
 		return 0.0, nil
 	default:
-		// Si es un objeto complejo que tiene un valor interno, podrías intentar extraerlo aquí
-		return 0, ErrTipoNoSoportado
+		// Aquí usamos la variable que ya está declarada en evaluador.go
+		return 0, ErrTipoNoSoportado 
 	}
+}
+
+// ConvertirAListaReal transforma una lista genérica en un slice de float64.
+func ConvertirAListaReal(entrada interface{}) ([]float64, error) {
+	if lista, ok := entrada.([]float64); ok {
+		return lista, nil
+	}
+
+	if reflejo, ok := entrada.([]interface{}); ok {
+		res := make([]float64, len(reflejo))
+		for i, v := range reflejo {
+			num, err := ConvertirAReal(v)
+			if err != nil {
+				return nil, errors.New("❌ ERROR: elemento en posición " + strconv.Itoa(i) + " no es numérico")
+			}
+			res[i] = num
+		}
+		return res, nil
+	}
+
+	return nil, errors.New("❌ ERROR: se esperaba una lista o arreglo de números")
 }

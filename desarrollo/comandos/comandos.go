@@ -11,5 +11,6 @@ import (
     _ "nepa/desarrollo/comandos/bloque"
     _ "nepa/desarrollo/comandos/expresion"
     _ "nepa/desarrollo/comandos/llamada"
-    _ "nepa/desarrollo/comandos/inyectar_todas_variables"
+    _ "nepa/desarrollo/comandos/inyectar_todas_variables" // inyecta todos los tipos de variables
+    _ "nepa/desarrollo/interno/matematicas" // 🔥 Esto dispara el init() matematicas y inyecta todas las funciones()
 )

@@ -1,152 +1,113 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
+	"bufio"
+	"fmt"
+	"os"
 
-    "nepa/desarrollo/interno/core"
-    "nepa/desarrollo/interno/sintaxis"
-    "nepa/desarrollo/interno/parser"
-    "nepa/desarrollo/interno/evaluador"
-    "nepa/desarrollo/interno/modulos"
+	"nepa/desarrollo/interno/sintaxis"
+	"nepa/desarrollo/interno/parser"
+	"nepa/desarrollo/interno/evaluador"
 
-    // 🔑 Importar todos los comandos de una sola vez
-    _ "nepa/desarrollo/comandos"
+	// 🔑 El Mago Nepu: Al importar matemáticas, su init() registra todo solo
+	_ "nepa/desarrollo/interno/matematicas"
+	_ "nepa/desarrollo/comandos"
 )
 
-// Mapas globales y constantes compartidos por todos los programas
 var Globales = map[string]interface{}{}
 var Constantes = map[string]interface{}{}
 
-// EjecutarPrograma abre un archivo .nepa, valida, ejecuta y devuelve resultados o error
+// EjecutarPrograma abre un archivo .nepa, valida y ejecuta
 func EjecutarPrograma(archivo string, args map[string]interface{}) (map[string]interface{}, error) {
-    f, err := os.Open(archivo)
-    if err != nil {
-        return nil, core.ErrorEjecucion{Archivo: archivo, Linea: 0, Mensaje: fmt.Sprintf("No se pudo abrir archivo: %v", err)}
-    }
-    defer f.Close()
+	f, err := os.Open(archivo)
+	if err != nil {
+		return nil, fmt.Errorf("❌ ERROR: No se pudo abrir el archivo [%s]: %v", archivo, err)
+	}
+	defer f.Close()
 
-    scanner := bufio.NewScanner(f)
-    buf := make([]byte, 0, 64*1024)
-    scanner.Buffer(buf, 1024*1024)
+	scanner := bufio.NewScanner(f)
+	var lineas []string
+	lineaNum := 0
 
-    var lineas []string
-    lineaNum := 0
+	for scanner.Scan() {
+		lineaNum++
+		linea := scanner.Text()
 
-    for scanner.Scan() {
-        lineaNum++
-        linea := scanner.Text()
+		// Validar sintaxis básica antes de parsear
+		if err := sintaxis.ValidarLinea(linea, lineaNum, archivo); err != nil {
+			return nil, fmt.Errorf("❌ ERROR SINTAXIS [%s:%d]: %v", archivo, lineaNum, err)
+		}
 
-        if lineaNum == 1 {
-            linea = core.StripBOM(linea)
-        }
+		lineas = append(lineas, linea)
+	}
 
-        if err := sintaxis.ValidarLinea(linea, lineaNum, archivo); err != nil {
-            return nil, core.ErrorEjecucion{Archivo: archivo, Linea: lineaNum, Mensaje: err.Error()}
-        }
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("❌ ERROR LECTURA [%s]: %v", archivo, err)
+	}
 
-        lineas = append(lineas, linea)
-    }
+	ast := parser.Parse(lineas)
 
-    if err := scanner.Err(); err != nil {
-        return nil, core.ErrorEjecucion{Archivo: archivo, Linea: 0, Mensaje: fmt.Sprintf("Error leyendo archivo: %v", err)}
-    }
+	// El evaluador ahora usa el mapa global de funciones que los init() llenaron
+	resultados, err := evaluador.EjecutarConContexto(ast, args, Globales, Constantes, archivo)
+	if err != nil {
+		// Manejo de recursión de archivos (Ejecutar otros programas)
+		if solicitud, ok := err.(evaluador.SolicitudEjecutar); ok {
+			subArgs := map[string]interface{}{}
+			for i, arg := range solicitud.Argumentos {
+				subArgs[fmt.Sprintf("arg%d", i+1)] = arg
+			}
+			return EjecutarPrograma(solicitud.Archivo, subArgs)
+		}
+		return nil, err
+	}
 
-    ast := parser.Parse(lineas)
+	// Persistir resultados en globales
+	for k, v := range resultados {
+		Globales[k] = v
+	}
 
-    resultados, err := evaluador.EjecutarConContexto(ast, args, Globales, Constantes, archivo)
-    if err != nil {
-        if solicitud, ok := err.(evaluador.SolicitudEjecutar); ok {
-            subArgs := map[string]interface{}{}
-            for i, arg := range solicitud.Argumentos {
-                clave := fmt.Sprintf("arg%d", i+1)
-                subArgs[clave] = arg
-            }
-            return EjecutarPrograma(solicitud.Archivo, subArgs)
-        }
-        // ✅ No envolver de nuevo, devolver tal cual
-        return nil, err
-    }
-
-    for k, v := range resultados {
-        Globales[k] = v
-    }
-
-    return resultados, nil
+	return resultados, nil
 }
 
 func main() {
-    if len(os.Args) < 2 {
-        fmt.Println("Uso: nepa archivo.nepa [argumentos]")
-        fmt.Println("Ejemplo: nepa programa1.nepa 45 matriz.json")
-        fmt.Println("Opciones: -v/--version muestra versión, -a/--ayuda muestra ayuda")
-        os.Exit(1)
-    }
+	if len(os.Args) < 2 {
+		fmt.Println("Nepa Wizard - Intérprete de Ingeniería")
+		fmt.Println("Uso: nepa archivo.nepa [argumentos]")
+		os.Exit(1)
+	}
 
-    switch os.Args[1] {
-    case "-v", "--v", "-version", "--version":
-        fmt.Println("Nepa - Intérprete modular y orquestador de programas .nepa")
-        fmt.Printf("Versión: %s\n", core.Version)
-        os.Exit(0)
-    case "-a", "--a", "-ayuda", "--ayuda":
-        fmt.Println("Ayuda: Uso básico → nepa archivo.nepa [argumentos]")
-        fmt.Println("Ejemplo: nepa programa1.nepa 45 matriz.json")
-        fmt.Println("Opciones disponibles: -v/--version muestra versión, -a/--ayuda muestra esta ayuda")
-        os.Exit(0)
-    }
+	// Manejo de flags básicos sin depender de paquete core
+	switch os.Args[1] {
+	case "-v", "--version":
+		fmt.Println("Nepa Engine v2.0 - Super Wizard Nepu")
+		os.Exit(0)
+	case "-a", "--ayuda":
+		fmt.Println("Ayuda básica: nepa archivo.nepa [argumentos]")
+		os.Exit(0)
+	}
 
-    archivo := os.Args[1]
+	archivo := os.Args[1]
+	args := map[string]interface{}{}
+	if len(os.Args) > 2 {
+		for i, arg := range os.Args[2:] {
+			args[fmt.Sprintf("arg%d", i+1)] = arg
+		}
+	}
 
-    args := map[string]interface{}{}
-    if len(os.Args) > 2 {
-        for i, arg := range os.Args[2:] {
-            clave := fmt.Sprintf("arg%d", i+1)
-            args[clave] = arg
-        }
-    }
+	// ¡YA NO NECESITAMOS CargarCore! 
+	// El mapa evaluador.Funciones ya está lleno gracias a los imports con '_'
 
-    // --- Cargar todo el core al inicio ---
-    ctx := evaluador.Contexto{
-        Variables:  map[string]interface{}{},
-        Globales:   Globales,
-        Constantes: Constantes,
-        Funciones:  map[string]func(...interface{}) interface{}{},
-    }
-    modulos.CargarCore(&ctx)
+	resultados, err := EjecutarPrograma(archivo, args)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
-    // 🔑 pasar funciones al mapa global para que el evaluador las use
-    Globales["__funciones"] = ctx.Funciones
-
-    resultados, err := EjecutarPrograma(archivo, args)
-    if err != nil {
-        fmt.Println(err) // ✅ ya formateado por ErrorEjecucion
-        os.Exit(1)
-    }
-
-    // Mostrar resultados si existen
-    if resultados != nil && len(resultados) > 0 {
-        fmt.Println("Resultados:")
-        for k, v := range resultados {
-            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
-        }
-    }
-
-    // Mostrar globales y constantes solo si el usuario definió algo
-    if len(Globales) > 1 { // >1 porque siempre existe "__funciones"
-        fmt.Println("Globales:")
-        for k, v := range Globales {
-            if k == "__funciones" {
-                continue // no mostrar el mapa de funciones internas
-            }
-            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
-        }
-    }
-
-    if len(Constantes) > 0 {
-        fmt.Println("Constantes:")
-        for k, v := range Constantes {
-            fmt.Printf("  %s = %s\n", k, evaluador.FormatearValor(v))
-        }
-    }
+	// Mostrar resultados finales
+	if len(resultados) > 0 {
+		fmt.Println("\n--- Resultados ---")
+		for k, v := range resultados {
+			fmt.Printf(" %s = %v\n", k, v)
+		}
+	}
 }
