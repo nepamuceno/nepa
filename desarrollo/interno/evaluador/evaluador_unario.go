@@ -1,40 +1,39 @@
 package evaluador
 
 import (
-    "errors"
-    "go/ast"
-    "go/token"
+	"errors"
+	"fmt"
+	"go/ast"
+	"go/token"
 )
 
-// evalUnario maneja expresiones unarias:
-// - +x → devuelve el valor numérico positivo
-// - -x → devuelve el valor numérico negado
-// - !x → devuelve la negación lógica booleana
-func evalUnario(n *ast.UnaryExpr) (interface{}, error) {
-    valor, err := evalNode(n.X)
-    if err != nil {
-        return nil, err
-    }
+// evaluarUnario maneja expresiones de un solo operando como -a, +5 o !booleano.
+func evaluarUnario(n *ast.UnaryExpr, ctx *Contexto) (interface{}, error) {
+	// Evaluamos lo que está a la derecha del operador (X)
+	valor, err := evaluarNodo(n.X, ctx)
+	if err != nil {
+		return nil, err
+	}
 
-    switch n.Op {
-    case token.ADD: // +x
-        return ConvertirAReal(valor)
+	switch n.Op {
+	case token.ADD: // Caso: +x
+		return ConvertirAReal(valor)
 
-    case token.SUB: // -x
-        f, err := ConvertirAReal(valor)
-        if err != nil {
-            return nil, err
-        }
-        return -f, nil
+	case token.SUB: // Caso: -x
+		f, err := ConvertirAReal(valor)
+		if err != nil {
+			return nil, err
+		}
+		return -f, nil
 
-    case token.NOT: // !x
-        b, ok := valor.(bool)
-        if !ok {
-            return nil, errors.New("❌ ERROR FATAL: operador lógico '!' requiere un valor booleano")
-        }
-        return !b, nil
+	case token.NOT: // Caso: !x (Negación lógica)
+		b, ok := valor.(bool)
+		if !ok {
+			return nil, errors.New("❌ ERROR FATAL: el operador lógico '!' requiere un valor booleano")
+		}
+		return !b, nil
 
-    default:
-        return nil, errors.New("❌ ERROR FATAL: expresión unaria inválida")
-    }
+	default:
+		return nil, fmt.Errorf("❌ ERROR FATAL: operador unario '%v' no soportado", n.Op)
+	}
 }

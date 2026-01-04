@@ -45,31 +45,31 @@ func Parse(lineas []string) []Nodo {
 			continue
 		}
 
-		// --- Globales ---
+		// --- Globales (Ahora en parser_global.go) ---
 		if nodo := parseGlobal(linea); nodo != nil {
 			ast = append(ast, *nodo)
 			continue
 		}
 
-		// --- Constantes ---
+		// --- Constantes (Ahora en parser_constante.go) ---
 		if nodo := parseConst(linea); nodo != nil {
 			ast = append(ast, *nodo)
 			continue
 		}
 
-		// --- Variables ---
+		// --- Variables (En parser_variables.go) ---
 		if nodo := parseVariable(linea); nodo != nil {
 			ast = append(ast, *nodo)
 			continue
 		}
 
-		// --- Asignaciones ---
+		// --- Asignaciones (En parser_asignar.go) ---
 		if nodo := parseAsignar(linea); nodo != nil {
 			ast = append(ast, *nodo)
 			continue
 		}
 
-		// --- Llamadas ---
+		// --- Llamadas (En parser_imprimir.go) ---
 		if nodo := parseLlamada(linea); nodo != nil {
 			ast = append(ast, *nodo)
 			continue
@@ -82,51 +82,8 @@ func Parse(lineas []string) []Nodo {
 	return ast
 }
 
-// --- Funciones auxiliares ---
-
-func parseGlobal(linea string) *Nodo {
-	if strings.HasPrefix(linea, "global ") && strings.Contains(linea, "=") {
-		partes := strings.SplitN(linea[len("global "):], "=", 2)
-		if len(partes) == 2 {
-			return &Nodo{Tipo: "global", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
-		}
-	}
-	return nil
-}
-
-func parseConst(linea string) *Nodo {
-	if strings.HasPrefix(linea, "const ") && strings.Contains(linea, "=") {
-		partes := strings.SplitN(linea[len("const "):], "=", 2)
-		if len(partes) == 2 {
-			return &Nodo{Tipo: "constante", Nombre: strings.TrimSpace(partes[0]), Valor: parseValor(strings.TrimSpace(partes[1]))}
-		}
-	}
-	return nil
-}
-
-func parseLlamada(linea string) *Nodo {
-	if strings.Contains(linea, "(") && strings.HasSuffix(linea, ")") {
-		fn := strings.TrimSpace(linea[:strings.Index(linea, "(")])
-		args := extraerArgs(linea)
-		return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
-	}
-	if strings.Contains(linea, " ") {
-		partes := strings.SplitN(linea, " ", 2)
-		fn := strings.TrimSpace(partes[0])
-		resto := strings.TrimSpace(partes[1])
-		args := []interface{}{}
-		for _, p := range strings.Split(resto, ",") {
-			arg := strings.TrimSpace(p)
-			if arg != "" {
-				args = append(args, parseValor(arg))
-			}
-		}
-		return &Nodo{Tipo: "llamada", Nombre: fn, Args: args}
-	}
-	return nil
-}
-
-// --- Utilidades ---
+// --- Utilidades Compartidas ---
+// Estas funciones se quedan aquí porque las usan todos los archivos parser_*.go
 
 func extraerArgs(linea string) []interface{} {
 	ini := strings.Index(linea, "(")

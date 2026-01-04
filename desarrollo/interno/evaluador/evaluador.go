@@ -1,47 +1,67 @@
 package evaluador
 
 import (
-    "errors"
-    "fmt"
-    "go/ast"
-    "go/parser"
-    "strings"
+	"errors"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"strings"
 )
 
+// Errores originales para que los comandos externos no fallen
 var (
-    ErrExpresionInvalida = errors.New("expresión inválida")
-    ErrFuncionNoExiste   = errors.New("función no registrada")
-    ErrTipoNoSoportado   = errors.New("tipo no soportado en evaluación")
-    ErrConcatenacion     = errors.New("error de tipo en concatenación")
+	ErrExpresionInvalida = errors.New("expresión inválida")
+	ErrFuncionNoExiste   = errors.New("función no registrada")
+	ErrTipoNoSoportado   = errors.New("tipo no soportado en evaluación")
+	ErrConcatenacion     = errors.New("error de tipo en concatenación")
 )
 
-// Eval evalúa una expresión textual y devuelve un resultado como interface{}.
+// Eval es la función que buscan 'asignar', 'imprimir', etc.
+// Mantenemos EXACTAMENTE 1 argumento para que compile el resto del proyecto.
 func Eval(expr string) (interface{}, error) {
-    expr = strings.TrimSpace(expr)
-    if expr == "" {
-        return nil, ErrExpresionInvalida
-    }
-    node, err := parser.ParseExpr(expr)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrExpresionInvalida, err)
-    }
-    return evalNode(node)
+	// Creamos un contexto vacío al vuelo. 
+	// Así, el resto del sistema no tiene que saber que ahora usamos contextos.
+	ctx := &Contexto{
+		Variables: make(map[string]interface{}),
+		Funciones: make(map[string]func(...interface{}) interface{}),
+	}
+	
+	return EvalConContexto(expr, ctx)
 }
 
-// Dispatcher central: delega según el tipo de nodo AST
-func evalNode(node ast.Expr) (interface{}, error) {
-    switch n := node.(type) {
-    case *ast.BasicLit:
-        return evalLiteral(n)
-    case *ast.Ident:
-        return evalIdent(n)
-    case *ast.UnaryExpr:
-        return evalUnario(n)   // ✅ nombre en español
-    case *ast.BinaryExpr:
-        return evalBinario(n)  // ✅ nombre en español
-    case *ast.CallExpr:
-        return evalLlamada(n)  // ✅ nombre en español
-    default:
-        return nil, ErrExpresionInvalida
-    }
+// EvalConContexto es la versión que usaremos internamente o en el futuro 
+// cuando queramos pasar variables de forma explícita.
+func EvalConContexto(expr string, ctx *Contexto) (interface{}, error) {
+	expr = strings.TrimSpace(expr)
+	if expr == "" {
+		return nil, ErrExpresionInvalida
+	}
+
+	node, err := parser.ParseExpr(expr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrExpresionInvalida, err)
+	}
+
+	return evaluarNodo(node, ctx)
+}
+
+// evaluarNodo es el despachador interno que ya conoce el contexto.
+func evaluarNodo(node ast.Expr, ctx *Contexto) (interface{}, error) {
+	switch n := node.(type) {
+	case *ast.BasicLit:
+		return evaluarLiteral(n)
+	case *ast.Ident:
+		return evaluarIdentificador(n, ctx)
+	case *ast.UnaryExpr:
+		return evaluarUnario(n, ctx)
+	case *ast.BinaryExpr:
+		return evaluarBinario(n, ctx)
+	case *ast.CallExpr:
+		return evaluarLlamada(n, ctx)
+	case *ast.ParenExpr:
+		// Soporte crítico para la expresión de la presa: ( ... )
+		return evaluarNodo(n.X, ctx)
+	default:
+		return nil, ErrExpresionInvalida
+	}
 }

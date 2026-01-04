@@ -8,4 +8,8 @@ asignar a, b := 1
 a := 0
 b := a
 
-asignar bit a,b,c,d := 1
+#test 1
+variable bit w,x,y,z := 1
+
+#test 2 deberia deffecto a 0
+variable bit t,r,q,m

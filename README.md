@@ -37,7 +37,7 @@ make install
 ```
 bash compila.sh
 ```
-El binario estara en ###dist/bin/nepa###
+El binario estara en **dist/bin/nepa**
 
 ## 📂 Uso: 
 ```
@@ -47,7 +47,9 @@ El binario estara en ###dist/bin/nepa###
 ```
 echo -e '#Ejemplo Hola Mundo\nimprimir("Hola Mundo")' > holamundo.nepa
 ./dist/bin/nepa holamundo.nepa
-Hola Mundo
+```
+Salida:
+**Hola Mundo**
 ```
 
 ---

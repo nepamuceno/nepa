@@ -1,39 +1,48 @@
 package parser
 
 import (
-    "strings"
+	"strings"
 )
 
-// parseVariable: universal para cualquier tipo
-// Ejemplos:
-//   variable bit a
-//   variable bit a := 1
-//   variable caracter c
-//   variable entero x, y, z := 0
 func parseVariable(linea string) *Nodo {
-    if !strings.HasPrefix(linea, "variable ") {
-        return nil
-    }
+	if !strings.HasPrefix(linea, "variable ") {
+		return nil
+	}
 
-    partes := strings.Fields(linea)
-    if len(partes) < 3 {
-        return nil
-    }
+	contenido := strings.TrimSpace(linea[len("variable "):])
+	var tipo, nombres string
+	var valor interface{}
 
-    tipo := partes[1]
-    nombres := partes[2]
-    valor := ""
+	if strings.Contains(contenido, ":=") {
+		// Caso: variable bit a,b := 1
+		partes := strings.SplitN(contenido, ":=", 2)
+		izq := strings.TrimSpace(partes[0])
+		der := strings.TrimSpace(partes[1])
+		
+		valor = parseValor(der)
 
-    if strings.Contains(linea, ":=") {
-        idx := strings.Index(linea, ":=")
-        nombres = strings.TrimSpace(linea[len("variable ")+len(tipo) : idx])
-        valor = strings.TrimSpace(linea[idx+2:])
-    }
+		campos := strings.Fields(izq)
+		if len(campos) >= 2 {
+			tipo = campos[0]
+			nombres = strings.Join(campos[1:], "")
+		}
+	} else {
+		// Caso: variable bit a,b,c,d (Valores seguros)
+		campos := strings.Fields(contenido)
+		if len(campos) >= 2 {
+			tipo = campos[0]
+			nombres = strings.Join(campos[1:], "")
+			valor = nil // IMPORTANTE: Enviamos nil para que CrearBit use su default
+		}
+	}
 
-    return &Nodo{
-        Tipo:   "variable",
-        Nombre: nombres,
-        Valor:  parseValor(valor), // nil → constructor aplica default
-        Args:   []interface{}{tipo},
-    }
+	if tipo != "" && nombres != "" {
+		return &Nodo{
+			Tipo:   "variable",
+			Nombre: nombres, // "a,b,c,d"
+			Valor:  valor,   // El valor parseado o nil
+			Args:   []interface{}{tipo},
+		}
+	}
+	return nil
 }
