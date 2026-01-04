@@ -12,12 +12,6 @@ CONSTRAIN
 # --- Binarios y Ejecutables ---
 dist/
 bin/
-nepa
-nepa_lib
-*.exe
-*.dll
-*.so
-*.dylib
 
 # --- Dependencias de Go ---
 vendor/
