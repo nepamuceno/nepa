@@ -8,7 +8,7 @@ import (
 	"nepa/desarrollo/interno/sintaxis"
 	"nepa/desarrollo/interno/parser"
 	"nepa/desarrollo/interno/evaluador"
-
+	
 	// 🔑 El Mago Nepu: Al importar matemáticas, su init() registra todo solo
 	_ "nepa/desarrollo/interno/matematicas"
 	_ "nepa/desarrollo/comandos"

@@ -1,20 +1,16 @@
-# Hola Mundo
-imprimir("--- Test de Tipos ---")
+imprimir("--- Test de Interoperabilidad ---")
 
-variable entero edad := 25
-variable real n_pi := 3.14159
-variable real radio := 10.5
-variable real area
+variable entero base := 10
+variable real ajuste := 0.5
+variable bit interruptor := 1
 
-# Operación mixta (si ya tienes implementado multiplicar y potencia)
-# area := multiplicar(pi, potencia(radio, 2))
+# Si el evaluador funciona bien, debería convertir el bit a 1 y sumar todo
+variable real resultado := base + ajuste + interruptor
 
-imprimir("Edad:")
-imprimir(edad)
-imprimir("Área:")
-imprimir(area)
+imprimir("Cálculo (10 + 0.5 + 1):")
+imprimir(resultado)
 
-# Test de seguridad (inicialización nula)
-variable real vacio
-imprimir("Variable vacía (debe ser 0.0):")
-imprimir(vacio)
+# Test de Matriz (si ya tienes la lógica de acceso)
+variable matriz m1 := [[1, 2], [3, 4]]
+imprimir("Matriz m1:")
+imprimir(m1)

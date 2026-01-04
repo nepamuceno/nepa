@@ -10,6 +10,8 @@ import (
 // evaluarBinario maneja operaciones entre dos valores (+, -, *, /, %, etc.).
 func evaluarBinario(n *ast.BinaryExpr, ctx *Contexto) (interface{}, error) {
 	// Evaluamos el lado izquierdo y derecho recursivamente
+	// Al evaluar el nodo, si es un identificador (base, ajuste), 
+	// evaluador_ident.go ya nos traerá su valor numérico real.
 	izquierda, err := evaluarNodo(n.X, ctx)
 	if err != nil {
 		return nil, err
@@ -25,14 +27,17 @@ func evaluarBinario(n *ast.BinaryExpr, ctx *Contexto) (interface{}, error) {
 func aplicarOperacion(op token.Token, izquierda, derecha interface{}) (interface{}, error) {
 	switch op {
 	case token.ADD:
-		// Concatenación: si alguno es cadena, convertimos el otro a texto
-		if ls, ok := izquierda.(string); ok {
-			return ls + fmt.Sprint(derecha), nil
+		// MEJORA DE INTEROPERABILIDAD:
+		// Si cualquiera de los dos lados es una cadena de texto, 
+		// realizamos una concatenación en lugar de suma numérica.
+		_, esIzqString := izquierda.(string)
+		_, esDerString := derecha.(string)
+
+		if esIzqString || esDerString {
+			return fmt.Sprint(izquierda) + fmt.Sprint(derecha), nil
 		}
-		if rs, ok := derecha.(string); ok {
-			return fmt.Sprint(izquierda) + rs, nil
-		}
-		// Suma numérica universal
+
+		// Si no hay strings, procedemos a la suma numérica universal
 		return operarNumeros(izquierda, derecha, func(a, b float64) float64 { return a + b })
 
 	case token.SUB:

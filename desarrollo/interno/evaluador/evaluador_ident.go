@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"go/ast"
 	"strings"
+	"nepa/desarrollo/interno/administrador" 
 )
 
-// Error específico para identificadores inexistentes
+// ErrIdentificadorNoExiste es el error base
 var ErrIdentificadorNoExiste = errors.New("❌ ERROR FATAL: el identificador no existe")
 
-// evaluarIdentificador maneja:
-// - verdadero / falso → booleanos
-// - nombres de variables buscando en el Contexto (Locales, Globales o Constantes)
 func evaluarIdentificador(n *ast.Ident, ctx *Contexto) (interface{}, error) {
 	nombre := strings.ToLower(strings.TrimSpace(n.Name))
 
@@ -22,15 +20,22 @@ func evaluarIdentificador(n *ast.Ident, ctx *Contexto) (interface{}, error) {
 	case "falso":
 		return false, nil
 	default:
-		// Primero intentamos buscar en el contexto que trae la ejecución
+		// 1. Intentar buscar en el Contexto local
 		v, err := ctx.ObtenerVariable(nombre)
+		
+		// 2. Si hay error en el contexto, buscamos en el Administrador Global
 		if err != nil {
-			return nil, fmt.Errorf("%w → %s", ErrIdentificadorNoExiste, nombre)
+			// En tu administrador, ObtenerVariable parece devolver (Variable, error)
+			res, errGlobal := administrador.ObtenerVariable(nombre)
+			
+			// Si también hay error en el global, entonces no existe
+			if errGlobal != nil {
+				return nil, fmt.Errorf("%w → %s", ErrIdentificadorNoExiste, nombre)
+			}
+			v = res
 		}
 
-		// Si el valor es una estructura de Nepa (como Bit), extraemos su valor básico
-		// Aquí asumimos que lo que devuelve ObtenerVariable puede ser un objeto con ValorComoInterface()
-		// o el valor directamente.
+		// 3. Extraer el valor real (Interface)
 		if interfaz, ok := v.(interface{ ValorComoInterface() interface{} }); ok {
 			return interfaz.ValorComoInterface(), nil
 		}
