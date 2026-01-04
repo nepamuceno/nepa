@@ -32,18 +32,24 @@ Compilar e instalar **nepa** es sencillo. Existen dos formas principales:
 make
 make install
 ```
-Usando compila.sh
+### 🔨 Usando `compila.sh`
 
 ```
 bash compila.sh
 ```
 El binario estara en dist/bin/nepa
 
-## uso: 
+## 📂 Uso: 
 ```
 ./dist/bin/nepa <programa.nepa>
 ```
-### Ejemplo: ./dist/bin/nepa test.nepa
+### 📂 Ejemplo:
+```
+echo -e '#Ejemplo Hola Mundo\nimprimir("Hola Mundo")' > holamundo.nepa
+./dist/bin/nepa holamundo.nepa
+Hola Mundo
+```
+
 ---
 
 ## 🚀 Objetivo
