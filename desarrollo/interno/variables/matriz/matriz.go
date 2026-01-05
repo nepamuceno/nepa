@@ -35,7 +35,6 @@ func (m *Matriz) Tipo() string   { return "matriz" }
 func (m *Matriz) Mostrar() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	// Mostramos la matriz con un formato limpio
 	return fmt.Sprintf("%v", m.valor)
 }
 
@@ -43,52 +42,17 @@ func (m *Matriz) AsignarDesdeInterface(v interface{}) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
-		return fmt.Errorf("se esperaba una lista, se recibió %T", v)
+	datosPlanos, err := m.aplanarRecursivo(v)
+	if err != nil {
+		return err
 	}
 
-	// Esta lista almacenará todos los números válidos encontrados
-	var datosPlanos []float64
-
-	for i := 0; i < rv.Len(); i++ {
-		item := rv.Index(i).Interface()
-
-		// 1. Limpieza de emergencia: si el parser mandó "2]" o "[1", lo limpiamos
-		if s, ok := item.(string); ok {
-			s = strings.Trim(s, " []\t\n\r,")
-			if s == "" {
-				continue
-			}
-			item = s
-		}
-
-		// 2. Intentar convertir el item (o el item limpio) a número real
-		// Si el item es a su vez una lista, esta función lo manejará recursivamente 
-		// o fallará, pero gracias a la limpieza de arriba, los "flecos" del parser se ignoran.
-		val, err := evaluador.ConvertirAReal(item)
-		if err == nil {
-			datosPlanos = append(datosPlanos, val)
-		} else {
-			// Si el elemento es otra lista (matriz real), la procesamos
-			subRV := reflect.ValueOf(item)
-			if subRV.Kind() == reflect.Slice || subRV.Kind() == reflect.Array {
-				for j := 0; j < subRV.Len(); j++ {
-					subItem := subRV.Index(j).Interface()
-					if s, ok := subItem.(string); ok {
-						subItem = strings.Trim(s, " []\t\n\r,")
-					}
-					vSub, errSub := evaluador.ConvertirAReal(subItem)
-					if errSub == nil {
-						datosPlanos = append(datosPlanos, vSub)
-					}
-				}
-			}
-		}
+	if len(datosPlanos) == 0 {
+		m.valor = [][]float64{}
+		return nil
 	}
 
-	// Por ahora, para asegurar que el test pase, guardamos los datos encontrados
-	// Si hay 4 datos, los organizamos en 2x2 si es posible, o en una sola fila.
+	// Lógica de organización de dimensiones
 	if len(datosPlanos) == 4 {
 		m.valor = [][]float64{datosPlanos[:2], datosPlanos[2:]}
 	} else {
@@ -96,6 +60,89 @@ func (m *Matriz) AsignarDesdeInterface(v interface{}) error {
 	}
 
 	return nil
+}
+
+func (m *Matriz) aplanarRecursivo(v interface{}) ([]float64, error) {
+	var resultado []float64
+
+	rv := reflect.ValueOf(v)
+	if !rv.IsValid() {
+		return resultado, nil
+	}
+
+	switch rv.Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < rv.Len(); i++ {
+			res, err := m.aplanarRecursivo(rv.Index(i).Interface())
+			if err != nil {
+				return nil, err
+			}
+			resultado = append(resultado, res...)
+		}
+
+	case reflect.String:
+		raw := rv.String()
+		// 1. Limpieza de escombros: removemos los corchetes que separan filas
+		// Convertimos "[[a,b],[c,d]]" en "a,b,c,d" protegiendo funciones
+		elementos := m.segmentarLimpiandoCorchetes(raw)
+		
+		for _, s := range elementos {
+			s = strings.TrimSpace(s)
+			if s == "" {
+				continue
+			}
+
+			res := evaluador.ResolverEstructuraRecursiva(s, nil)
+			val, err := evaluador.ConvertirAReal(res)
+			if err != nil {
+				return nil, fmt.Errorf("❌ ERROR FATAL: no se pudo convertir la cadena a número → %s", s)
+			}
+			resultado = append(resultado, val)
+		}
+
+	default:
+		val, err := evaluador.ConvertirAReal(v)
+		if err != nil {
+			return nil, err
+		}
+		resultado = append(resultado, val)
+	}
+
+	return resultado, nil
+}
+
+// segmentarLimpiandoCorchetes ignora los corchetes al separar por comas
+func (m *Matriz) segmentarLimpiandoCorchetes(raw string) []string {
+	var pars []string
+	var buf strings.Builder
+	nivelParentesis := 0
+
+	for _, r := range raw {
+		switch r {
+		case '(':
+			nivelParentesis++
+			buf.WriteRune(r)
+		case ')':
+			nivelParentesis--
+			buf.WriteRune(r)
+		case '[', ']':
+			// Simplemente ignoramos los corchetes, no los metemos al buffer
+			continue
+		case ',':
+			if nivelParentesis == 0 {
+				pars = append(pars, buf.String())
+				buf.Reset()
+				continue
+			}
+			buf.WriteRune(r)
+		default:
+			buf.WriteRune(r)
+		}
+	}
+	if buf.Len() > 0 {
+		pars = append(pars, buf.String())
+	}
+	return pars
 }
 
 func (m *Matriz) ValorComoInterface() interface{} {

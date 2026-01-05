@@ -1,11 +1,9 @@
 package evaluador
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 )
-
-// Eliminamos la línea de ErrTipoNoSoportado porque ya existe en evaluador.go
 
 // ConvertirAReal convierte cualquier valor a float64 para cálculos universales.
 func ConvertirAReal(v interface{}) (float64, error) {
@@ -16,7 +14,7 @@ func ConvertirAReal(v interface{}) (float64, error) {
 		return float64(x), nil
 	case int64:
 		return float64(x), nil
-	case uint8: 
+	case uint8:
 		return float64(x), nil
 	case uint:
 		return float64(x), nil
@@ -31,7 +29,7 @@ func ConvertirAReal(v interface{}) (float64, error) {
 	case string:
 		f, err := strconv.ParseFloat(x, 64)
 		if err != nil {
-			return 0, errors.New("❌ ERROR FATAL: no se pudo convertir la cadena a número → " + x)
+			return 0, fmt.Errorf("❌ ERROR FATAL: no se pudo convertir la cadena a número → %s", x)
 		}
 		return f, nil
 	case bool:
@@ -40,28 +38,59 @@ func ConvertirAReal(v interface{}) (float64, error) {
 		}
 		return 0.0, nil
 	default:
-		// Aquí usamos la variable que ya está declarada en evaluador.go
-		return 0, ErrTipoNoSoportado 
+		return 0, fmt.Errorf("tipo no soportado")
 	}
 }
 
-// ConvertirAListaReal transforma una lista genérica en un slice de float64.
+// ConvertirAListaReal adaptado: resuelve y valida cada elemento.
 func ConvertirAListaReal(entrada interface{}) ([]float64, error) {
-	if lista, ok := entrada.([]float64); ok {
-		return lista, nil
-	}
+	// 1. Resolvemos variables/funciones primero (Contexto global nil)
+	resuelto := ResolverEstructuraRecursiva(entrada, nil)
 
-	if reflejo, ok := entrada.([]interface{}); ok {
+	if reflejo, ok := resuelto.([]interface{}); ok {
 		res := make([]float64, len(reflejo))
 		for i, v := range reflejo {
 			num, err := ConvertirAReal(v)
 			if err != nil {
-				return nil, errors.New("❌ ERROR: elemento en posición " + strconv.Itoa(i) + " no es numérico")
+				// Aquí capturamos el fallo (ej. potencia) y cortamos la ejecución
+				return nil, fmt.Errorf("❌ ERROR: el elemento '%v' en la posición %d no es válido", v, i)
 			}
 			res[i] = num
 		}
 		return res, nil
 	}
 
-	return nil, errors.New("❌ ERROR: se esperaba una lista o arreglo de números")
+	// Caso de un solo valor que no viene en lista
+	num, err := ConvertirAReal(resuelto)
+	if err != nil {
+		return nil, fmt.Errorf("❌ ERROR: se esperaba un valor numérico")
+	}
+	return []float64{num}, nil
+}
+
+// ResolverEstructuraRecursiva recorre la estructura y resuelve variables/funciones.
+func ResolverEstructuraRecursiva(v interface{}, ctx *Contexto) interface{} {
+	if ctx == nil {
+		ctx = &Contexto{
+			Variables: make(map[string]interface{}),
+			Funciones: make(map[string]func(...interface{}) interface{}),
+		}
+	}
+
+	switch x := v.(type) {
+	case string:
+		res, err := EvalConContexto(x, ctx)
+		if err == nil {
+			return res
+		}
+		return x
+	case []interface{}:
+		res := make([]interface{}, len(x))
+		for i, elem := range x {
+			res[i] = ResolverEstructuraRecursiva(elem, ctx)
+		}
+		return res
+	default:
+		return v
+	}
 }

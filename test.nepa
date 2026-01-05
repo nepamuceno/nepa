@@ -1,16 +1,27 @@
-imprimir("--- Test de Interoperabilidad ---")
+# Variables base
+variable entero x := 10
+variable real y := 2.5
 
-variable entero base := 10
-variable real ajuste := 0.5
-variable bit interruptor := 1
+# 1. Matriz con operaciones aritméticas combinadas y variables
+# (10 * 2 = 20), (2.5 * 4 = 10), (10 + 2.5 = 12.5), (10 - 5 = 5)
+variable matriz m_aritmetica := [[x * 2, y * 4], [x + y, x - 5]]
 
-# Si el evaluador funciona bien, debería convertir el bit a 1 y sumar todo
-variable real resultado := base + ajuste + interruptor
+# 2. Matriz con funciones internas
+# Asumiendo que tu evaluador ya maneja funciones como 'absoluto' o similares.
+# Si tienes 'seno' o 'raiz', úsalas aquí.
+variable matriz m_funciones := [[raiz(100), absoluto(-50)], [potencia(2, 3), 0]]
 
-imprimir("Cálculo (10 + 0.5 + 1):")
-imprimir(resultado)
+# 3. Test de anidamiento extremo
+# Una matriz que usa valores de otra matriz (si tu evaluador lo soporta) o expresiones largas
+variable matriz m_pro := [[(x + x) / 2, y * y], [100 / 4, 5]]
 
-# Test de Matriz (si ya tienes la lógica de acceso)
-variable matriz m1 := [[1, 2], [3, 4]]
-imprimir("Matriz m1:")
-imprimir(m1)
+imprimir "--- TEST DE EXPRESIONES COMPLEJAS ---"
+
+imprimir "Matriz Aritmética (Esperado: [[20 10] [12.5 5]]):"
+imprimir m_aritmetica
+
+imprimir "Matriz Funciones (Esperado: [[10 50] [8 0]]):"
+imprimir m_funciones
+
+imprimir "Matriz Pro (Esperado: [[10 6.25] [25 5]]):"
+imprimir m_pro
