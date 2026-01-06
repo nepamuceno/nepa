@@ -1,0 +1,8 @@
+# Datos de una muestra
+variable lista datos := [10, 20, 30, 40, 50, 60]
+variable real prom := promedio(datos)
+variable real desv := desviacion(datos)
+
+imprimir "--- ESTADÍSTICA ---"
+imprimir "Promedio de la matriz:"
+imprimir prom

@@ -41,34 +41,34 @@ func EjecutarConContexto(ast []parser.Nodo, args map[string]interface{},
 	globales map[string]interface{}, constantes map[string]interface{},
 	archivo string) (map[string]interface{}, error) {
 
-	// 1. Inicializamos el contexto con la memoria compartida
+	// 1. Inicializamos el contexto
 	ctx := &Contexto{
 		Variables:  map[string]interface{}{},
 		Globales:   globales,
 		Constantes: constantes,
-		// Aquí podríamos usar RegistrarFuncionesEstandar(ctx) si fuera necesario
-		Funciones:  map[string]func(...interface{}) interface{}{}, 
+		Funciones:  map[string]func(...interface{}) interface{}{},
 	}
 
-	// 2. Cargamos los argumentos iniciales
 	for k, v := range args {
 		ctx.Variables[k] = v
 	}
 
-	// 3. Procesamiento línea por línea
-	for i, nodo := range ast {
-		linea := i + 1 
+	// 2. Procesamiento línea por línea
+	for i := range ast {
+		linea := i + 1
+		nodo := &ast[i] 
 
-		// Si es una llamada directa (instrucción de Nepa)
+		// --- CASO A: LLAMADAS DIRECTAS ---
 		if nodo.Tipo == "llamada" {
 			nombre := strings.ToLower(nodo.Nombre)
-			
-			// Buscamos en el registro global de funciones que pulimos antes
 			f, existe := Funciones[nombre]
 			if existe {
-				// Convertimos los argumentos del nodo (que son strings/interfaces)
-				// a valores reales antes de pasar a la función
-				if _, err := f(nodo.Args...); err != nil {
+				argsResueltos := make([]interface{}, len(nodo.Args))
+				for idx, argRaw := range nodo.Args {
+					argsResueltos[idx] = ResolverEstructuraRecursiva(argRaw, ctx)
+				}
+
+				if _, err := f(argsResueltos...); err != nil {
 					return nil, fmt.Errorf("%s:%d: fallo en '%s' → %v",
 						archivo, linea, nodo.Nombre, err)
 				}
@@ -79,20 +79,42 @@ func EjecutarConContexto(ast []parser.Nodo, args map[string]interface{},
 			continue
 		}
 
-		// Si es un nodo registrado (como una expresión compleja, un bucle, etc.)
+		// --- CASO B: NODOS REGISTRADOS ---
 		mu.RLock()
 		manejador, ok := manejadores[nodo.Tipo]
 		mu.RUnlock()
 
 		if ok {
-			manejador(nodo, ctx)
+			// --- RESOLUCIÓN PREVENTIVA ---
+			// Extraemos el valor como string para analizarlo
+			if nodo.Valor != nil {
+				valorStr := fmt.Sprintf("%v", nodo.Valor)
+
+				// Si contiene una llamada a función como "promedio(" o "binario("
+				if strings.Contains(valorStr, "(") {
+					res := ResolverEstructuraRecursiva(nodo.Valor, ctx)
+					
+					// Actualizamos el nodo con el resultado real (número o matriz)
+					nodo.Valor = res
+
+					// Inyectamos en el administrador para saltar errores de tipo string
+					if nodo.Nombre != "" {
+						if v, err := administrador.CrearVariableUniversal("", nodo.Nombre, res); err == nil {
+							_ = administrador.RegistrarVariable(nodo.Nombre, v)
+							ctx.Variables[nodo.Nombre] = v
+						}
+					}
+				}
+			}
+
+			manejador(*nodo, ctx)
 		} else {
 			return nil, fmt.Errorf("%s:%d: tipo de instrucción no soportado '%s'",
 				archivo, linea, nodo.Tipo)
 		}
 	}
 
-	// 4. Recolección de resultados finales
+	// 3. Recolección de resultados
 	resultados := map[string]interface{}{}
 	for k, v := range ctx.Variables {
 		if varObj, ok := v.(administrador.Variable); ok {

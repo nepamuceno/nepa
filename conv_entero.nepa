@@ -1,0 +1,10 @@
+variable cadena cc := "123"
+variable entero ee := 0
+
+ee := convertir_entero(cc)
+ee := a_entero(cc)
+ee := convertir.entero(cc)
+
+
+imprimir(ee)
+imprimir ee

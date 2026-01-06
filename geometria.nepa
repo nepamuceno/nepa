@@ -1,0 +1,11 @@
+# Cálculo de hipotenusa y áreas
+variable real cateto1 := 3
+variable real cateto2 := 4
+variable real radio := 10
+
+# Matriz con datos geométricos
+# [Hipotenusa, Área Círculo], [Seno(90), Coseno(0)]
+variable matriz m_geo := [[raiz(potencia(cateto1, 2) + potencia(cateto2, 2)), 3.1416 * potencia(radio, 2)], [seno(90), coseno(0)]]
+
+imprimir "--- GEOMETRÍA Y TRIGONOMETRÍA ---"
+imprimir m_geo

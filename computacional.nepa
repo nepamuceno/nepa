@@ -1,0 +1,5 @@
+# Conversiones de unidades y base
+variable matriz m_comp := [[binario(255), hexadecimal(1024)], [farenheit_a_celsius(100), celsius_a_farenheit(32)]]
+
+imprimir "--- COMPUTACIONAL / UNIDADES ---"
+imprimir m_comp

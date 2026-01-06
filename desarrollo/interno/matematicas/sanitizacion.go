@@ -18,6 +18,8 @@ func finalizar(nombre string, resultado float64) (interface{}, error) {
 	return resultado, nil
 }
 
+// ... validar1, validar2, validar3, validar4 se mantienen igual ...
+
 func validar1(nombre string, args []interface{}) (float64, error) {
 	if len(args) != 1 {
 		return 0, fmt.Errorf("❌ ERROR: '%s' requiere 1 argumento, recibiste %d", nombre, len(args))
@@ -59,14 +61,28 @@ func validar4(nombre string, args []interface{}) (float64, float64, float64, flo
 	return v1, v2, v3, v4, nil
 }
 
+// validarN ACTUALIZADO: Ahora soporta matrices y listas
 func validarN(nombre string, args []interface{}) ([]float64, error) {
 	if len(args) == 0 {
 		return nil, fmt.Errorf("❌ ERROR: '%s' requiere al menos 1 valor", nombre)
 	}
+
+	// Si el primer argumento es una matriz o lista, usamos ConvertirAListaReal
+	// Esto permite hacer promedio(matriz)
+	if len(args) == 1 {
+		nums, err := evaluador.ConvertirAListaReal(args[0])
+		if err == nil {
+			return nums, nil
+		}
+	}
+
+	// Si son varios argumentos (ej: promedio(1, 2, 3)), procesamos la lista
 	nums := make([]float64, len(args))
 	for i, arg := range args {
 		v, err := evaluador.ConvertirAReal(arg)
-		if err != nil { return nil, fmt.Errorf("❌ ERROR en '%s' (posicion %d): %v", nombre, i+1, err) }
+		if err != nil { 
+			return nil, fmt.Errorf("❌ ERROR en '%s' (posicion %d): %v", nombre, i+1, err) 
+		}
 		nums[i] = v
 	}
 	return nums, nil

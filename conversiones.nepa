@@ -1,0 +1,40 @@
+# Prueba de conversiones básicas y avanzadas
+
+# Entero y real
+variable entero e := convertir_entero("123")
+variable real r := convertir_real("3.1416")
+
+# Cadena y booleano
+variable cadena c := convertir_cadena(456)
+variable booleano b1 := convertir_booleano("verdadero")
+variable booleano b2 := convertir_booleano(0)
+
+# Binario y hexadecimal
+variable cadena bin := convertir_binario(255)
+variable cadena hex := convertir_hexadecimal(1024)
+
+# Fecha, hora y tiempo
+variable fecha f := convertir_fecha("2026-01-05")
+variable hora h := convertir_hora("12:34:56")
+variable tiempo t := convertir_tiempo("2h30m")
+
+# Matriz desde cadena JSON
+variable matriz m := convertir_matriz("[[1,2],[3,4]]")
+
+# Puntero
+variable puntero p := convertir_puntero(e)
+variable entero e2 := desreferenciar(p)
+
+# Mostrar resultados
+imprimir "--- CONVERSIONES ---"
+imprimir "Entero e: " + e
+imprimir "Real r: " + r
+imprimir "Cadena c: " + c
+imprimir "Booleanos: " + b1 + ", " + b2
+imprimir "Binario: " + bin
+imprimir "Hexadecimal: " + hex
+imprimir "Fecha: " + f
+imprimir "Hora: " + h
+imprimir "Tiempo: " + t
+imprimir "Matriz: " + m
+imprimir "Puntero p -> e2: " + e2

@@ -1,0 +1,15 @@
+# Interés Compuesto: Capital * (1 + tasa)^tiempo
+variable real capital := 1000
+variable real tasa := 0.05
+variable real tiempo := 3
+
+# Física: Velocidad Final = v0 + a * t
+variable real v0 := 0
+variable real aceleracion := 9.8
+variable real t := 5
+
+variable matriz m_ciencia := [[capital * potencia((1 + tasa), tiempo)], [v0 + (aceleracion * t)]]
+
+imprimir "--- FINANZAS Y FÍSICA ---"
+imprimir "Interés y Velocidad:"
+imprimir m_ciencia

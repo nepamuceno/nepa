@@ -1,57 +1,106 @@
 package parser
 
 import (
-	"strings"
+    "strings"
 )
 
+// parseVariable: Maneja declaraciones de variables con o sin valor inicial.
+// Soporta múltiples nombres separados por coma, punteros y matrices (incluye notación [][]).
 func parseVariable(linea string) *Nodo {
-	if !strings.HasPrefix(linea, "variable ") {
-		return nil
-	}
+    if !strings.HasPrefix(linea, "variable ") {
+        return nil
+    }
 
-	contenido := strings.TrimSpace(linea[len("variable "):])
-	var tipo, nombres string
-	var valor interface{}
+    def := strings.TrimSpace(strings.TrimPrefix(linea, "variable "))
+    if def == "" {
+        return nil
+    }
 
-	if strings.Contains(contenido, ":=") {
-		// Caso: variable matriz m := [[1,2],[3,4]]
-		partes := strings.SplitN(contenido, ":=", 2)
-		izq := strings.TrimSpace(partes[0])
-		der := strings.TrimSpace(partes[1])
+    campos := strings.Fields(def)
+    if len(campos) < 2 {
+        return nil
+    }
 
-		// Extraemos tipo y nombre antes de procesar el valor
-		campos := strings.Fields(izq)
-		if len(campos) >= 2 {
-			tipo = campos[0]
-			nombres = strings.Join(campos[1:], "")
-		}
+    // Extraer tokens de tipo
+    tipoTokens, nextIdx := extraerTipoTokens(campos)
+    if len(tipoTokens) == 0 {
+        return nil
+    }
 
-		// 🛡️ PROTECCIÓN DE ESTRUCTURAS COMPLEJAS
-		// Si es matriz, enviamos la cadena 'der' completa al nodo.
-		// Esto evita que parseValor rompa funciones como potencia(2, 3) por sus espacios.
-		if tipo == "matriz" {
-			valor = der
-		} else {
-			valor = parseValor(der)
-		}
+    resto := strings.TrimSpace(strings.Join(campos[nextIdx:], " "))
 
-	} else {
-		// Caso: variable entero a,b,c (Sin asignación inmediata)
-		campos := strings.Fields(contenido)
-		if len(campos) >= 2 {
-			tipo = campos[0]
-			nombres = strings.Join(campos[1:], "")
-			valor = nil // IMPORTANTE: Enviamos nil para que Crear use su default
-		}
-	}
+    var nombresParte, valorParte string
+    if strings.Contains(resto, ":=") {
+        partes := strings.SplitN(resto, ":=", 2)
+        nombresParte = strings.TrimSpace(partes[0])
+        valorParte = strings.TrimSpace(partes[1])
+    } else {
+        nombresParte = strings.TrimSpace(resto)
+        valorParte = ""
+    }
 
-	if tipo != "" && nombres != "" {
-		return &Nodo{
-			Tipo:   "variable",
-			Nombre: nombres, // "m_funciones" o "a,b,c"
-			Valor:  valor,   // La cadena original para matrices o el valor parseado
-			Args:   []interface{}{tipo},
-		}
-	}
-	return nil
+    nombres := strings.Split(nombresParte, ",")
+    var nodos []Nodo
+    for _, n := range nombres {
+        nombre := strings.TrimSpace(n)
+        if nombre == "" {
+            continue
+        }
+        var valor interface{}
+        if valorParte != "" {
+            valor = parseValor(valorParte)
+        } else {
+            valor = nil
+        }
+        nodos = append(nodos, Nodo{
+            Tipo:   "variable",
+            Nombre: nombre,
+            Args:   tipoTokens,
+            Valor:  valor,
+        })
+    }
+
+    if len(nodos) == 1 {
+        return &nodos[0]
+    }
+
+    return &Nodo{
+        Tipo:   "variables",
+        Nombre: "",
+        Args:   tipoTokens,
+        Valor:  nodos,
+    }
+}
+
+// extraerTipoTokens toma una secuencia de tokens y devuelve los que forman el tipo compuesto.
+func extraerTipoTokens(campos []string) ([]interface{}, int) {
+    var tokens []interface{}
+    i := 0
+
+    for i < len(campos) {
+        tok := campos[i]
+
+        if strings.HasPrefix(tok, "[]") {
+            tokens = append(tokens, tok)
+            i++
+            continue
+        }
+
+        if tok == "puntero" || tok == "matriz" || tok == "diccionario" || tok == "objeto" || tok == "lista" {
+            tokens = append(tokens, tok)
+            i++
+            continue
+        }
+
+        // Aquí ya usamos TiposBase centralizado
+        if TiposBase[tok] {
+            tokens = append(tokens, tok)
+            i++
+            break
+        }
+
+        break
+    }
+
+    return tokens, i
 }

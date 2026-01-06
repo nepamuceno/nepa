@@ -1,9 +1,0 @@
---- 🎯 TEST DE ALCANCE ---
-
-var prueba = "GLOBAL"
-para x en 500 {
-    imprime("  Valor inyectado:", x)
-    imprime("  Variable global:", prueba)
-}
-
---- ✅ FIN ---

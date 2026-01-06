@@ -1,0 +1,11 @@
+# Test de potencias y resolución de variables
+variable real a := 5
+variable real b := 2
+
+# Matriz con resultados de funciones algebraicas
+variable matriz m_algebra := [[potencia(a, b), raiz(625)], [absoluto(-100), logaritmo(100)]]
+
+imprimir "--- ÁLGEBRA ---"
+imprimir "Matriz Algebraica:"
+imprimir m_algebra
+# Próximamente: imprimir "Elemento [0,0]: " + m_algebra[0,0]

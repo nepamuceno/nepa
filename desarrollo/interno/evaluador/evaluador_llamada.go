@@ -17,6 +17,8 @@ func evaluarLlamada(n *ast.CallExpr, ctx *Contexto) (interface{}, error) {
 			return nil, err
 		}
 
+		fmt.Printf("desarrollo/interno/evalador_llamada.go:\nDEBUG llamada a %s con %d argumentos: %#v\n", nombreFuncion, len(argumentos), argumentos)
+		
 		f, ok := Funciones[nombreFuncion]
 		if !ok {
 			return nil, fmt.Errorf("%w → %s", ErrFuncionNoExiste, nombreFuncion)

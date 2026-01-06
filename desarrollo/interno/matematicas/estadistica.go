@@ -9,11 +9,11 @@ import (
 
 func inyectarEstadisticaGlobal() {
 
-	// --- 1. MOMENTOS Y FORMA DE LA DISTRIBUCIÓN (Nivel Master) ---
+	// --- 1. MOMENTOS Y FORMA DE LA DISTRIBUCIÓN ---
 
-	// sesgo (Skewness): Indica la asimetría de la distribución
 	evaluador.Funciones["sesgo"] = func(args ...interface{}) (interface{}, error) {
-		nums, err := validarN("sesgo", args); if err != nil { return nil, err }
+		nums, err := validarN("sesgo", args)
+		if err != nil { return nil, err }
 		n := float64(len(nums))
 		if n < 3 { return nil, fmt.Errorf("❌ ERROR: El sesgo requiere al menos 3 datos") }
 
@@ -26,14 +26,13 @@ func inyectarEstadisticaGlobal() {
 		std := math.Sqrt(m2 / n)
 		if std == 0 { return 0.0, nil }
 		
-		// Sesgo corregido (Fisher-Pearson)
 		coef := (n / ((n - 1) * (n - 2)))
 		return finalizar("sesgo", coef * (m3 / math.Pow(std, 3)))
 	}
 
-	// curtosis: Indica qué tan "puntiaguda" o "achatada" es la distribución
 	evaluador.Funciones["curtosis"] = func(args ...interface{}) (interface{}, error) {
-		nums, err := validarN("curtosis", args); if err != nil { return nil, err }
+		nums, err := validarN("curtosis", args)
+		if err != nil { return nil, err }
 		n := float64(len(nums))
 		if n < 4 { return nil, fmt.Errorf("❌ ERROR: La curtosis requiere al menos 4 datos") }
 
@@ -51,11 +50,12 @@ func inyectarEstadisticaGlobal() {
 
 	// --- 2. RELACIÓN ENTRE VARIABLES (Bi-variada) ---
 
-	// correlacion_pearson(listaX, listaY)
 	evaluador.Funciones["correlacion_pearson"] = func(args ...interface{}) (interface{}, error) {
-		if len(args) != 2 { return nil, fmt.Errorf("requiere dos listas (X e Y)") }
-		x, _ := evaluador.ConvertirAListaReal(args[0])
-		y, _ := evaluador.ConvertirAListaReal(args[1])
+		if len(args) != 2 { return nil, fmt.Errorf("requiere dos matrices/listas (X e Y)") }
+		
+		x, errX := evaluador.ConvertirAListaReal(args[0])
+		y, errY := evaluador.ConvertirAListaReal(args[1])
+		if errX != nil || errY != nil { return nil, fmt.Errorf("error al procesar listas de entrada") }
 		
 		if len(x) != len(y) || len(x) == 0 { return nil, fmt.Errorf("listas deben tener igual tamaño") }
 		
@@ -70,14 +70,16 @@ func inyectarEstadisticaGlobal() {
 			denX += dx * dx
 			denY += dy * dy
 		}
-		return num / math.Sqrt(denX*denY), nil
+		res := num / math.Sqrt(denX*denY)
+		return finalizar("correlacion_pearson", res)
 	}
 
-	// regresion_lineal(listaX, listaY) -> Retorna [pendiente, intercepto]
 	evaluador.Funciones["regresion_lineal"] = func(args ...interface{}) (interface{}, error) {
+		if len(args) != 2 { return nil, fmt.Errorf("requiere dos matrices/listas (X e Y)") }
 		x, _ := evaluador.ConvertirAListaReal(args[0])
 		y, _ := evaluador.ConvertirAListaReal(args[1])
 		n := float64(len(x))
+		if n == 0 { return nil, fmt.Errorf("las listas no pueden estar vacías") }
 		
 		var sumX, sumY, sumXY, sumX2 float64
 		for i := 0; i < len(x); i++ {
@@ -87,7 +89,10 @@ func inyectarEstadisticaGlobal() {
 			sumX2 += x[i] * x[i]
 		}
 		
-		pendiente := (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
+		divisor := (n*sumX2 - sumX*sumX)
+		if divisor == 0 { return nil, fmt.Errorf("no se puede calcular regresión (división por cero)") }
+		
+		pendiente := (n*sumXY - sumX*sumY) / divisor
 		intercepto := (sumY - pendiente*sumX) / n
 		
 		return []float64{pendiente, intercepto}, nil
@@ -95,10 +100,10 @@ func inyectarEstadisticaGlobal() {
 
 	// --- 3. MEDIDAS DE POSICIÓN ---
 
-	// percentil(lista, p) -> El valor por debajo del cual cae el p% de los datos
 	evaluador.Funciones["percentil"] = func(args ...interface{}) (interface{}, error) {
-		if len(args) < 2 { return nil, fmt.Errorf("requiere lista y valor p (0-100)") }
-		nums, _ := evaluador.ConvertirAListaReal(args[0])
+		if len(args) < 2 { return nil, fmt.Errorf("requiere matriz/lista y valor p (0-100)") }
+		nums, err := evaluador.ConvertirAListaReal(args[0])
+		if err != nil { return nil, err }
 		p, _ := evaluador.ConvertirAReal(args[1])
 		
 		sort.Float64s(nums)
@@ -106,34 +111,31 @@ func inyectarEstadisticaGlobal() {
 		i := int(idx)
 		frac := idx - float64(i)
 		
+		var res float64
 		if i+1 < len(nums) {
-			return nums[i] + frac*(nums[i+1]-nums[i]), nil
+			res = nums[i] + frac*(nums[i+1]-nums[i])
+		} else {
+			res = nums[i]
 		}
-		return nums[i], nil
+		return finalizar("percentil", res)
 	}
 
-	// --- 4. LAS BÁSICAS MEJORADAS (Mantenemos tus originales pero optimizadas) ---
+	// --- 4. LAS BÁSICAS MEJORADAS ---
 
 	evaluador.Funciones["promedio"] = func(args ...interface{}) (interface{}, error) {
-		nums, err := validarN("promedio", args); if err != nil { return nil, err }
+		nums, err := validarN("promedio", args)
+		if err != nil { return nil, err }
 		m, _ := calcularMedia(nums)
-		return m, nil
+		return finalizar("promedio", m)
 	}
 
 	evaluador.Funciones["varianza_poblacional"] = func(args ...interface{}) (interface{}, error) {
-		nums, err := validarN("varianza", args); if err != nil { return nil, err }
+		nums, err := validarN("varianza", args)
+		if err != nil { return nil, err }
 		media, _ := calcularMedia(nums)
 		var sumaCuadrados float64
 		for _, n := range nums { sumaCuadrados += math.Pow(n-media, 2) }
-		return sumaCuadrados / float64(len(nums)), nil
-	}
-	
-	evaluador.Funciones["varianza_muestral"] = func(args ...interface{}) (interface{}, error) {
-		nums, err := validarN("varianza", args); if err != nil { return nil, err }
-		media, _ := calcularMedia(nums)
-		var sumaCuadrados float64
-		for _, n := range nums { sumaCuadrados += math.Pow(n-media, 2) }
-		return sumaCuadrados / float64(len(nums)-1), nil
+		return finalizar("varianza_poblacional", sumaCuadrados / float64(len(nums)))
 	}
 }
 

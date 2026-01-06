@@ -64,3 +64,23 @@ var Funciones = map[string]func(args ...interface{}) (interface{}, error){
         return len(s), nil
     },
 }
+
+// --- Infraestructura de registro de módulos ---
+
+// Tipo de función que registra comandos en el contexto
+type RegistradorModulo func(ctx *Contexto)
+
+// Lista global de registradores
+var modulosRegistrados []RegistradorModulo
+
+// RegistrarModulo agrega un módulo a la lista global
+func RegistrarModulo(reg RegistradorModulo) {
+    modulosRegistrados = append(modulosRegistrados, reg)
+}
+
+// InicializarModulos recorre todos los módulos registrados y los ejecuta
+func InicializarModulos(ctx *Contexto) {
+    for _, reg := range modulosRegistrados {
+        reg(ctx)
+    }
+}
